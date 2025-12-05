@@ -3,8 +3,8 @@ site_url: https://r0astr.org
 site_description: Multi-instrument live coding interface built on Strudel
 site_author: r0astr project
 
-repo_url: https://github.com/piatra_eng/r0astr
-repo_name: piatra_eng/r0astr
+repo_url: https://github.com/piatra-automation/r0astr
+repo_name: piatra-automation/r0astr
 
 theme:
   name: material
@@ -61,4 +61,4 @@ site_dir: docs
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/piatra_eng/r0astr
+      link: https://github.com/piatra-automation/r0astr

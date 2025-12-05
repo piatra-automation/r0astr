@@ -18,5 +18,5 @@ Open http://localhost:5173
 
 ## Links
 
-- [GitHub Repository](https://github.com/piatra_eng/r0astr)
+- [GitHub Repository](https://github.com/piatra-automation/r0astr)
 - [Strudel Documentation](https://strudel.cc)
