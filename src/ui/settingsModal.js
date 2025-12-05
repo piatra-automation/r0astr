@@ -3,7 +3,7 @@
  * Handles settings modal UI interactions and persistence
  */
 
-import { getSettings, saveSettings } from '../managers/settingsManager.js';
+import { getSettings, saveSettings, updateSetting } from '../managers/settingsManager.js';
 import { startAutoSaveTimer } from '../managers/panelManager.js';
 import { applyColorScheme, applyFontSize, applyActivePanelOpacity, applyBackgroundPanelOpacity, applyAnimationSpeed, applyLineWrapping, updatePanelOpacities } from '../managers/themeManager.js';
 import { validateURL, validatePath } from '../utils/validation.js';
@@ -121,6 +121,12 @@ function loadSettingsIntoForm() {
   const syntaxHighlightToggle = document.getElementById('syntax-highlight-toggle');
   if (syntaxHighlightToggle) {
     syntaxHighlightToggle.checked = settings.syntax_highlight !== false;
+  }
+
+  // Pattern Highlighting Toggle
+  const patternHighlightToggle = document.getElementById('pattern-highlighting-toggle');
+  if (patternHighlightToggle) {
+    patternHighlightToggle.checked = settings.pattern_highlighting !== false;
   }
 
   // Story 7.6: Editor Theme Selection
@@ -289,6 +295,12 @@ function collectSettingsFromForm() {
   const syntaxHighlightToggle = document.getElementById('syntax-highlight-toggle');
   if (syntaxHighlightToggle) {
     settings.syntax_highlight = syntaxHighlightToggle.checked;
+  }
+
+  // Pattern Highlighting
+  const patternHighlightToggle = document.getElementById('pattern-highlighting-toggle');
+  if (patternHighlightToggle) {
+    settings.pattern_highlighting = patternHighlightToggle.checked;
   }
 
   const editorThemeSelect = document.getElementById('editor-theme-select');
@@ -602,6 +614,17 @@ export function initializeSettingsModal() {
 
     // Recreate all editors to apply syntax highlighting change
     window.location.reload();
+  });
+
+  // Pattern Highlighting Toggle - save and update via settings-changed event
+  const patternHighlightToggle = document.getElementById('pattern-highlighting-toggle');
+  patternHighlightToggle?.addEventListener('change', (e) => {
+    const patternHighlighting = e.target.checked;
+
+    updateSetting('pattern_highlighting', patternHighlighting);
+
+    console.log(`Pattern highlighting ${patternHighlighting ? 'enabled' : 'disabled'}`);
+    // Animation loop will respond to 'settings-changed' event automatically
   });
 
   // Story 7.6: Editor Theme Selection - save and recreate editors

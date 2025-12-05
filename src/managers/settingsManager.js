@@ -23,6 +23,7 @@ export const DEFAULT_SETTINGS = {
   wrap_lines: false,              // Line wrapping in code panels (true = wrap, false = scroll) - Story 7.1
   auto_format: false,             // Auto-format code on PLAY/UPDATE (true = format, false = no format) - Story 7.4
   syntax_highlight: true,         // Enable syntax highlighting (true = CodeMirror, false = plain) - Story 7.6
+  pattern_highlighting: true,     // Enable real-time pattern highlighting (true = highlight, false = no highlight)
   editor_theme: 'atomone',        // CodeMirror theme: 'atomone', 'abcdef', 'bespin', 'dracula', 'gruvboxDark', 'materialDark', 'nord', 'solarizedDark' - Story 7.6
   default_w: 600,                 // Default panel width in px (300-2000) - Story 7.2
   default_h: 400,                 // Default panel height in px (200-1500) - Story 7.2
@@ -89,6 +90,9 @@ function validateSettings(settings) {
 
   // Validate syntax_highlight flag (Story 7.6)
   valid.syntax_highlight = valid.syntax_highlight !== false; // Default true
+
+  // Validate pattern_highlighting flag
+  valid.pattern_highlighting = valid.pattern_highlighting !== false; // Default true
 
   // Validate editor_theme (Story 7.6)
   const allowedThemes = ['atomone', 'abcdef', 'bespin', 'dracula', 'gruvboxDark', 'materialDark', 'nord', 'solarizedDark'];
@@ -307,6 +311,13 @@ export function updateSetting(key, value) {
 
   // Update in-memory settings
   currentSettings = newSettings;
+
+  // Dispatch event for reactive components (e.g., pattern highlighting toggle)
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('settings-changed', {
+      detail: { key, value }
+    }));
+  }
 
   // Debounce save to prevent excessive writes
   clearTimeout(saveTimeout);

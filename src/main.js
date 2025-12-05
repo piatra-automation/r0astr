@@ -1,7 +1,7 @@
 import { repl, evalScope, ref } from '@strudel/core';
 import { getAudioContext, webaudioOutput, initAudioOnFirstClick, registerSynthSounds } from '@strudel/webaudio';
 import { transpiler } from '@strudel/transpiler';
-import { sliderWithID, sliderValues as cmSliderValues } from '@strudel/codemirror';
+import { sliderWithID, sliderValues as cmSliderValues, highlightExtension, updateMiniLocations, highlightMiniLocations } from '@strudel/codemirror';
 import { createPanel, renderPanel, deletePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, autoSavePanelState as pmAutoSavePanelState, savePanelStateNow as pmSavePanelStateNow, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, animatePanelPosition, MASTER_PANEL_ID } from './managers/panelManager.js';
 import { initializeDragAndResize } from './ui/dragResize.js';
 import { loadSettings, getSettings, updateSetting } from './managers/settingsManager.js';
@@ -61,6 +61,9 @@ const cardStates = {};
 // CodeMirror 6 editor instances
 const editorViews = new Map(); // { panelId: EditorView }
 const fontSizeCompartments = new Map(); // { panelId: Compartment } - for dynamic font size updates
+
+// Store miniLocations per panel for pattern highlighting
+const panelMiniLocations = new Map(); // { panelId: [[start, end], [start, end], ...] }
 
 /**
  * Get the original code-editor container for a panel
@@ -1122,6 +1125,9 @@ function initializeCards() {
         pauseBtn.classList.add('hidden');
       }
 
+      // Clean up highlighting data before panel deletion
+      panelMiniLocations.delete(panelId);
+
       // Delete panel (skip confirmation since we already handled it)
       const deleted = deletePanel(panelId, null, cardStates, true);
 
@@ -1248,6 +1254,11 @@ function checkStaleness(panelId) {
   const isStale = currentCode !== panel.lastEvaluatedCode;
   panel.stale = isStale;
   updatePanel(panelId, { stale: isStale }); // Sync to panelManager for persistence
+
+  // Clear highlighting when panel becomes stale
+  if (isStale) {
+    highlightMiniLocations(view, scheduler.now(), []); // Clear highlights
+  }
 
   return isStale;
 }
@@ -1542,6 +1553,8 @@ function createEditorView(container, options = {}) {
       ...historyKeymap,
       ...closeBracketsKeymap,
     ]),
+    // Pattern highlighting extension
+    highlightExtension,
     // Make scroller non-scrollable, wrapper handles it
     // Make background transparent to show container color
     fontSizeCompartment.of(EditorView.theme({
@@ -1726,6 +1739,13 @@ function pausePanel(panelId) {
   panel.stale = false; // Clear staleness (no running pattern)
   updatePanel(panelId, { stale: false }); // Sync to panelManager
 
+  // Clear miniLocations and highlighting when paused
+  panelMiniLocations.delete(panelId);
+  const view = editorViews.get(panelId);
+  if (view) {
+    updateMiniLocations(view, []); // Clear decorations
+  }
+
   // Clear panel sliders when paused
   const slidersContainer = document.getElementById(`sliders-${panelId}`);
   if (slidersContainer) {
@@ -1824,12 +1844,24 @@ async function activatePanel(panelId) {
   ctx.resume();
 
   try {
+    // Check if pattern highlighting should be enabled
+    const currentSettings = getSettings();
+    const shouldHighlight = panelId !== MASTER_PANEL_ID && currentSettings.pattern_highlighting;
+
     // Transpile to extract widget metadata (addReturn: false to get expression not statement)
-    let { output, widgets } = transpiler(patternCode, { addReturn: false });
+    let { output, widgets, miniLocations } = transpiler(patternCode, {
+      addReturn: false,
+      emitMiniLocations: shouldHighlight  // Only emit if highlighting enabled
+    });
+
+    // Store miniLocations and update editor decorations for pattern highlighting
+    if (shouldHighlight) {
+      panelMiniLocations.set(panelId, miniLocations || []);
+      updateMiniLocations(view, miniLocations || []);
+    }
 
     // Story 7.4: Auto-format code if enabled (skip master panel)
     // Format AFTER transpilation so user can see the formatted result
-    const currentSettings = getSettings();
     if (panelId !== MASTER_PANEL_ID && currentSettings.auto_format) {
       const formattedCode = await formatCode(patternCode);
       // Update EditorView with formatted code for visual feedback
@@ -2461,6 +2493,9 @@ function handleWebSocketMessage(message) {
           }
         }
 
+        // Clean up highlighting data before panel deletion
+        panelMiniLocations.delete(panelId);
+
         // Delete panel using panelManager (removes from state, DOM, and auto-saves)
         // Skip confirmation dialog since this is an API deletion
         deletePanel(panelId, null, cardStates, true);
@@ -2702,6 +2737,100 @@ function initializeMetronome() {
   console.log('✓ Metronome indicator initialized');
 }
 
+/**
+ * Initialize pattern highlighting animation loop
+ * Updates CodeMirror decorations in sync with scheduler playback
+ * Filters haps by panel ID to avoid cross-contamination
+ */
+function initializePatternHighlighting() {
+  console.log('[Pattern Highlighting] Initializing...');
+  let animationFrameId = null;
+  let isHighlightingActive = false;
+  let lastUpdateTime = 0;
+  const UPDATE_INTERVAL_MS = 50; // 20fps throttle
+
+  // Check if any panel is playing
+  function isAnyPanelPlaying() {
+    return Object.values(cardStates).some(state => state.playing);
+  }
+
+  // Start/stop highlighting based on settings and playing state
+  function updateHighlightingState() {
+    const settings = getSettings();
+    const shouldHighlight = settings.pattern_highlighting && isAnyPanelPlaying();
+
+    if (shouldHighlight && !isHighlightingActive) {
+      isHighlightingActive = true;
+      startHighlightingLoop();
+    } else if (!shouldHighlight && isHighlightingActive) {
+      isHighlightingActive = false;
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    }
+  }
+
+  // Animation loop
+  function startHighlightingLoop() {
+    console.log('[Pattern Highlighting] Starting animation loop');
+    function loop() {
+      if (!isHighlightingActive) {
+        animationFrameId = null;
+        return;
+      }
+
+      const now = performance.now();
+
+      // Throttle updates to reduce CPU load
+      if (now - lastUpdateTime < UPDATE_INTERVAL_MS) {
+        animationFrameId = requestAnimationFrame(loop);
+        return;
+      }
+
+      lastUpdateTime = now;
+      const currentTime = scheduler.now();
+      const begin = Math.floor(currentTime);
+      const end = begin + 1;
+
+      try {
+        const allHaps = scheduler.pattern.queryArc(begin, end, {
+          _cps: scheduler.cps
+        });
+
+        // Update each panel - CodeMirror will automatically filter haps
+        // by matching context.locations against each editor's miniLocations
+        for (const [panelId, view] of editorViews.entries()) {
+          if (panelId === MASTER_PANEL_ID) continue; // Skip master
+
+          const panelState = cardStates[panelId];
+          if (!panelState || !panelState.playing || panelState.stale) {
+            highlightMiniLocations(view, currentTime, []); // Clear if not playing/stale
+            continue;
+          }
+
+          // Pass ALL haps to each editor - CodeMirror filters by location matching
+          highlightMiniLocations(view, currentTime, allHaps);
+        }
+      } catch (err) {
+        console.warn('[Pattern Highlighting] Error:', err);
+      }
+
+      animationFrameId = requestAnimationFrame(loop);
+    }
+
+    loop();
+  }
+
+  // Listen for panel state changes
+  window.addEventListener('panel-state-changed', updateHighlightingState);
+
+  // Listen for settings changes (when user toggles pattern_highlighting)
+  window.addEventListener('settings-changed', updateHighlightingState);
+
+  console.log('✓ Pattern highlighting initialized');
+}
+
 // Async initialization to ensure modules load before evaluation (matches official REPL)
 async function initializeStrudel() {
   console.log('r0astr initializing...');
@@ -2734,6 +2863,9 @@ async function initializeStrudel() {
 
   // Initialize metronome indicator
   initializeMetronome();
+
+  // Initialize pattern highlighting loop
+  initializePatternHighlighting();
 
   // Store canvas contexts globally for visualization
   window.visualizationContexts = {};
@@ -3482,6 +3614,8 @@ function initializeKeyboardShortcuts() {
                 console.error(`[Keyboard] Failed to silence panel ${focusedPanelW}:`, error);
               }
             }
+            // Clean up highlighting data before panel deletion
+            panelMiniLocations.delete(focusedPanelW);
             const deleted = deletePanel(focusedPanelW, null, cardStates, true);
             if (deleted && ws && ws.readyState === WebSocket.OPEN) {
               ws.send(JSON.stringify({
