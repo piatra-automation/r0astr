@@ -1,0 +1,70 @@
+site_name: r0astr
+site_url: https://r0astr.org
+site_description: Multi-instrument live coding interface built on Strudel
+site_author: r0astr project
+
+repo_url: https://github.com/piatra_eng/r0astr
+repo_name: piatra_eng/r0astr
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+  - glightbox
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Architecture:
+      - Brownfield Architecture: architecture/brownfield-architecture.md
+      - Strudel Integration Gotchas: architecture/strudel-integration-gotchas.md
+      - Electron Build: architecture/electron-build.md
+      - Remote Control: architecture/remote-control.md
+  - Stories: stories/
+  - PRD: prd/
+
+docs_dir: bmad
+site_dir: docs
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/piatra_eng/r0astr
