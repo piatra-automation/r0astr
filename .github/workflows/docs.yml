@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'bmad/**'
+      - 'docs-source/**'
       - 'mkdocs.yml'
       - '.github/workflows/docs.yml'
 

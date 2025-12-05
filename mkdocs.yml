@@ -53,15 +53,10 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Architecture:
-      - Brownfield Architecture: architecture/brownfield-architecture.md
-      - Strudel Integration Gotchas: architecture/strudel-integration-gotchas.md
-      - Electron Build: architecture/electron-build.md
-      - Remote Control: architecture/remote-control.md
-  - Stories: stories/
-  - PRD: prd/
+  - Getting Started: getting-started.md
+  - Remote Control: remote-control.md
 
-docs_dir: bmad
+docs_dir: docs-source
 site_dir: docs
 
 extra:
