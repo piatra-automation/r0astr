@@ -74,17 +74,17 @@ export function updatePanelOpacities() {
   // Get collapse setting synchronously (settings already loaded at this point)
   const collapseOnBlur = document.body.dataset.collapseOnBlur === 'true';
 
-  console.log('[Opacity DEBUG] CSS vars:', {
-    active: activePanelOpacity,
-    background: backgroundPanelOpacity,
-    collapseOnBlur
-  });
+  //   console.log('[Opacity DEBUG] CSS vars:', {
+  //   active: activePanelOpacity,
+  //     background: backgroundPanelOpacity,
+  //       collapseOnBlur
+  // });
 
   // Import animatePanelPosition dynamically to avoid circular dependency
   import('../managers/panelManager.js').then(({ animatePanelPosition }) => {
     // Update instrument panels (they use .card class)
     const panels = document.querySelectorAll('.card');
-    console.log('[Opacity DEBUG] Found panels:', panels.length);
+    // console.log('[Opacity DEBUG] Found panels:', panels.length);
 
     let focusedCount = 0;
     panels.forEach(panel => {
@@ -108,16 +108,16 @@ export function updatePanelOpacities() {
         }
       }
 
-      console.log(`[Opacity DEBUG] Panel ${panel.id}: focused=${isFocused}, opacity=${targetOpacity}, collapsed=${collapseOnBlur && !isFocused}`);
+      // console.log(`[Opacity DEBUG] Panel ${panel.id}: focused=${isFocused}, opacity=${targetOpacity}, collapsed=${collapseOnBlur && !isFocused}`);
     });
 
-    console.log(`[Opacity DEBUG] Total focused panels: ${focusedCount}`);
+    // console.log(`[Opacity DEBUG] Total focused panels: ${focusedCount}`);
 
     // Update master panel - ALWAYS use active opacity (never fade to background)
     const masterPanel = document.getElementById('master-panel');
     if (masterPanel) {
       masterPanel.style.opacity = activePanelOpacity;
-      console.log(`[Opacity DEBUG] Master panel: ALWAYS ACTIVE, opacity=${activePanelOpacity}`);
+      // console.log(`[Opacity DEBUG] Master panel: ALWAYS ACTIVE, opacity=${activePanelOpacity}`);
     }
   });
 }
@@ -153,7 +153,7 @@ export function applyAnimationSpeed(speed) {
   const testPanel = document.querySelector('.card .code-editor-wrapper');
   if (testPanel) {
     const panelTransition = getComputedStyle(testPanel).getPropertyValue('transition');
-    console.log('[Animation DEBUG] Panel transition property:', panelTransition);
+    // console.log('[Animation DEBUG] Panel transition property:', panelTransition);
   }
 }
 

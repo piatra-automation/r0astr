@@ -357,7 +357,7 @@ function insertSnippet(text, snippetName) {
   console.log('[Snippet Modal] Replaced panel content with snippet');
 
   // Update panel title with snippet name
-  console.log(`[Snippet Modal DEBUG] panelId: ${panelId}, snippetName: ${snippetName}`);
+  // console.log(`[Snippet Modal DEBUG] panelId: ${panelId}, snippetName: ${snippetName}`);
   if (panelId && snippetName) {
     import('../managers/panelManager.js').then(({ updatePanelTitle }) => {
       const success = updatePanelTitle(panelId, snippetName);

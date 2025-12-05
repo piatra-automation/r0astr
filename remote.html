@@ -1,451 +1,465 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>r0astr Remote Control</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-      }
 
-      body {
-        margin: 0;
-        padding: 20px;
-        background: #0a0a0a;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>r0astr Remote Control</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #0a0a0a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #fff;
+      height: 100vh;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      margin: 0 0 10px 0;
+      font-size: 28px;
+      color: #fff;
+    }
+
+    .connection-status {
+      font-size: 14px;
+      color: #888;
+      padding: 8px 16px;
+      border-radius: 16px;
+      background: #222;
+      display: inline-block;
+    }
+
+    .connection-status.connected {
+      color: #4CAF50;
+      background: #1a3a1a;
+    }
+
+    .connection-status.disconnected {
+      color: #f44336;
+      background: #3a1a1a;
+    }
+
+    .panels {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      flex: 1;
+    }
+
+    .panel-control {
+      background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+      border: 3px solid #333;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .panel-control.playing {
+      border-color: #4CAF50;
+      background: linear-gradient(135deg, #1a3a1a 0%, #0a2a0a 100%);
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
+
+    .panel-info {
+      flex: 1;
+    }
+
+    .panel-info h3 {
+      margin: 0 0 5px 0;
+      font-size: 18px;
+      color: #fff;
+      transition: color 0.3s ease;
+    }
+
+    /* Story 8.3: Title update flash animation */
+    .panel-info h3.title-updated {
+      animation: titleFlash 0.6s ease;
+    }
+
+    @keyframes titleFlash {
+      0% {
         color: #fff;
-        height: 100vh;
-        overflow: hidden;
-        touch-action: manipulation;
       }
 
-      .container {
-        max-width: 600px;
-        margin: 0 auto;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-
-      header {
-        text-align: center;
-        margin-bottom: 30px;
-      }
-
-      h1 {
-        margin: 0 0 10px 0;
-        font-size: 28px;
-        color: #fff;
-      }
-
-      .connection-status {
-        font-size: 14px;
-        color: #888;
-        padding: 8px 16px;
-        border-radius: 16px;
-        background: #222;
-        display: inline-block;
-      }
-
-      .connection-status.connected {
-        color: #4CAF50;
-        background: #1a3a1a;
-      }
-
-      .connection-status.disconnected {
-        color: #f44336;
-        background: #3a1a1a;
-      }
-
-      .panels {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        flex: 1;
-      }
-
-      .panel-control {
-        background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-        border: 3px solid #333;
-        border-radius: 16px;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        transition: all 0.2s ease;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-      }
-
-      .panel-control.playing {
-        border-color: #4CAF50;
-        background: linear-gradient(135deg, #1a3a1a 0%, #0a2a0a 100%);
-        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-      }
-
-      .panel-info {
-        flex: 1;
-      }
-
-      .panel-info h3 {
-        margin: 0 0 5px 0;
-        font-size: 18px;
-        color: #fff;
-        transition: color 0.3s ease;
-      }
-
-      /* Story 8.3: Title update flash animation */
-      .panel-info h3.title-updated {
-        animation: titleFlash 0.6s ease;
-      }
-
-      @keyframes titleFlash {
-        0% { color: #fff; }
-        50% { color: #4CAF50; }
-        100% { color: #fff; }
-      }
-
-      .panel-info .status {
-        font-size: 14px;
-        color: #888;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-
-      .panel-control.playing .panel-info .status {
+      50% {
         color: #4CAF50;
       }
 
-      .panel-button {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        border: 3px solid #555;
-        background: #333;
-        color: #fff;
-        font-size: 32px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        user-select: none;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      }
-
-      .panel-button:active {
-        transform: scale(0.95);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      }
-
-      .panel-control.playing .panel-button {
-        background: #4CAF50;
-        border-color: #45a049;
+      100% {
         color: #fff;
       }
+    }
 
-      .master-sliders-remote {
-        margin-bottom: 20px;
-        padding: 15px;
-        background: #2a2a2a;
-        border-radius: 8px;
-        border: 2px solid #444;
-      }
+    .panel-info .status {
+      font-size: 14px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
 
-      .master-sliders-remote:empty {
-        display: none;
-      }
+    .panel-control.playing .panel-info .status {
+      color: #4CAF50;
+    }
 
-      .remote-slider-control {
-        margin-bottom: 15px;
-      }
+    .panel-button {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px solid #555;
+      background: #333;
+      color: #fff;
+      font-size: 32px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
 
-      .remote-slider-control:last-child {
-        margin-bottom: 0;
-      }
+    .panel-button:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
 
-      .remote-slider-control label {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 5px;
-        font-size: 14px;
-        font-weight: 600;
-        color: #51cf66;
-      }
+    .panel-control.playing .panel-button {
+      background: #4CAF50;
+      border-color: #45a049;
+      color: #fff;
+    }
 
-      .remote-slider-control input[type="range"] {
-        width: 100%;
-        height: 40px;
-        -webkit-appearance: none;
-        background: transparent;
-      }
+    .master-sliders-remote {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #2a2a2a;
+      border-radius: 8px;
+      border: 2px solid #444;
+    }
 
-      .remote-slider-control input[type="range"]::-webkit-slider-track {
-        height: 8px;
-        background: #444;
-        border-radius: 4px;
-      }
+    .master-sliders-remote:empty {
+      display: none;
+    }
 
-      .remote-slider-control input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: #51cf66;
-        cursor: pointer;
-        margin-top: -12px;
-      }
+    .remote-slider-control {
+      margin-bottom: 15px;
+    }
 
-      .remote-slider-control input[type="range"]::-moz-range-track {
-        height: 8px;
-        background: #444;
-        border-radius: 4px;
-      }
+    .remote-slider-control:last-child {
+      margin-bottom: 0;
+    }
 
-      .remote-slider-control input[type="range"]::-moz-range-thumb {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: #51cf66;
-        cursor: pointer;
-        border: none;
-      }
+    .remote-slider-control label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #51cf66;
+    }
 
-      /* Panel-specific sliders */
-      .panel-sliders-remote {
-        margin-top: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
+    .remote-slider-control input[type="range"] {
+      width: 100%;
+      height: 40px;
+      -webkit-appearance: none;
+      background: transparent;
+    }
 
-      .panel-sliders-remote:empty {
-        display: none;
-      }
+    .remote-slider-control input[type="range"]::-webkit-slider-track {
+      height: 8px;
+      background: #444;
+      border-radius: 4px;
+    }
 
-      .panel-slider-control {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
+    .remote-slider-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #51cf66;
+      cursor: pointer;
+      margin-top: -12px;
+    }
 
-      .panel-slider-control label {
-        flex: 0 0 auto;
-        font-size: 11px;
-        color: #888;
-        min-width: 60px;
-      }
+    .remote-slider-control input[type="range"]::-moz-range-track {
+      height: 8px;
+      background: #444;
+      border-radius: 4px;
+    }
 
-      .panel-slider-control .slider-value {
-        color: #51cf66;
-        font-weight: 600;
-      }
+    .remote-slider-control input[type="range"]::-moz-range-thumb {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #51cf66;
+      cursor: pointer;
+      border: none;
+    }
 
-      .panel-slider-control input[type="range"] {
-        flex: 1;
-        height: 24px;
-        -webkit-appearance: none;
-        background: transparent;
-      }
+    /* Panel-specific sliders */
+    .panel-sliders-remote {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
 
-      .panel-slider-control input[type="range"]::-webkit-slider-track {
-        height: 4px;
-        background: #444;
-        border-radius: 2px;
-      }
+    .panel-sliders-remote:empty {
+      display: none;
+    }
 
-      .panel-slider-control input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #51cf66;
-        cursor: pointer;
-        margin-top: -8px;
-      }
+    .panel-slider-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-      .panel-slider-control input[type="range"]::-moz-range-track {
-        height: 4px;
-        background: #444;
-        border-radius: 2px;
-      }
+    .panel-slider-control label {
+      flex: 0 0 auto;
+      font-size: 11px;
+      color: #888;
+      min-width: 60px;
+    }
 
-      .panel-slider-control input[type="range"]::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #51cf66;
-        cursor: pointer;
-        border: none;
-      }
+    .panel-slider-control .slider-value {
+      color: #51cf66;
+      font-weight: 600;
+    }
 
-      .global-controls {
-        margin-top: 20px;
-        display: flex;
-        gap: 15px;
-      }
+    .panel-slider-control input[type="range"] {
+      flex: 1;
+      height: 24px;
+      -webkit-appearance: none;
+      background: transparent;
+    }
 
-      .stop-all-btn, .update-all-btn {
-        flex: 1;
-        padding: 20px;
-        border-radius: 12px;
-        color: #fff;
-        cursor: pointer;
-        font-size: 18px;
-        font-weight: 600;
-        transition: all 0.2s ease;
-        user-select: none;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      }
+    .panel-slider-control input[type="range"]::-webkit-slider-track {
+      height: 4px;
+      background: #444;
+      border-radius: 2px;
+    }
 
-      .stop-all-btn {
-        border: 3px solid #d32f2f;
-        background: #c62828;
-      }
+    .panel-slider-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #51cf66;
+      cursor: pointer;
+      margin-top: -8px;
+    }
 
-      .stop-all-btn:active {
-        transform: scale(0.98);
-        background: #b71c1c;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      }
+    .panel-slider-control input[type="range"]::-moz-range-track {
+      height: 4px;
+      background: #444;
+      border-radius: 2px;
+    }
 
-      .update-all-btn {
-        border: 3px solid #ff9800;
-        background: #f57c00;
-      }
+    .panel-slider-control input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #51cf66;
+      cursor: pointer;
+      border: none;
+    }
 
-      .update-all-btn:active:not(:disabled) {
-        transform: scale(0.98);
-        background: #e65100;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      }
+    .global-controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+    }
 
-      .update-all-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        border-color: #666;
-        background: #555;
-      }
+    .stop-all-btn,
+    .update-all-btn {
+      flex: 1;
+      padding: 20px;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      user-select: none;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
 
-      /* Story 8.1: Fade-in animation for dynamically created panels */
-      .panel-control-new {
+    .stop-all-btn {
+      border: 3px solid #d32f2f;
+      background: #c62828;
+    }
+
+    .stop-all-btn:active {
+      transform: scale(0.98);
+      background: #b71c1c;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .update-all-btn {
+      border: 3px solid #ff9800;
+      background: #f57c00;
+    }
+
+    .update-all-btn:active:not(:disabled) {
+      transform: scale(0.98);
+      background: #e65100;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .update-all-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-color: #666;
+      background: #555;
+    }
+
+    /* Story 8.1: Fade-in animation for dynamically created panels */
+    .panel-control-new {
+      opacity: 0;
+      animation: fadeIn 300ms ease-in forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
         opacity: 0;
-        animation: fadeIn 300ms ease-in forwards;
+        transform: translateY(-10px);
       }
 
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(-10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Story 8.2: Fade-out animation for panel deletion */
+    .panel-control-removing {
+      animation: fadeOutCollapse 300ms ease-out forwards;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    @keyframes fadeOutCollapse {
+      0% {
+        opacity: 1;
+        max-height: 200px;
+        margin-bottom: 15px;
+        transform: translateX(0);
       }
 
-      /* Story 8.2: Fade-out animation for panel deletion */
-      .panel-control-removing {
-        animation: fadeOutCollapse 300ms ease-out forwards;
-        overflow: hidden;
-        pointer-events: none;
+      50% {
+        opacity: 0;
+        max-height: 200px;
+        margin-bottom: 15px;
+        transform: translateX(20px);
       }
 
-      @keyframes fadeOutCollapse {
-        0% {
-          opacity: 1;
-          max-height: 200px;
-          margin-bottom: 15px;
-          transform: translateX(0);
-        }
-        50% {
-          opacity: 0;
-          max-height: 200px;
-          margin-bottom: 15px;
-          transform: translateX(20px);
-        }
-        100% {
-          opacity: 0;
-          max-height: 0;
-          margin-bottom: 0;
-          transform: translateX(20px);
-        }
+      100% {
+        opacity: 0;
+        max-height: 0;
+        margin-bottom: 0;
+        transform: translateX(20px);
       }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <header>
-        <h1>r0astr</h1>
-        <div class="connection-status disconnected" id="status">Connecting...</div>
-        <div style="font-size: 10px; color: #666; margin-top: 5px;">v8.4.0-full-state-sync</div>
-      </header>
+    }
+  </style>
+</head>
 
-      <div class="master-sliders-remote" id="master-sliders-remote">
-        <!-- Master panel sliders appear here dynamically -->
-      </div>
+<body>
+  <div class="container">
+    <header>
+      <h1>r0astr</h1>
+      <div class="connection-status disconnected" id="status">Connecting...</div>
+      <div style="font-size: 10px; color: #666; margin-top: 5px;">v8.4.0-full-state-sync</div>
+    </header>
 
-      <div class="panels">
-        <!-- Story 8.4: Panels are now dynamically created from full_state WebSocket message -->
-        <!-- This empty container will be populated by rebuildRemoteUI() on connection -->
-      </div>
-
-      <div class="global-controls">
-        <button class="update-all-btn" id="update-all" disabled>UPDATE ALL</button>
-        <button class="stop-all-btn" id="stop-all">⏹ STOP ALL</button>
-      </div>
+    <div class="master-sliders-remote" id="master-sliders-remote">
+      <!-- Master panel sliders appear here dynamically -->
     </div>
 
-    <script>
-      // Version tag
-      const REMOTE_VERSION = '8.4.0-full-state-sync';
-      console.log(`%c🎮 r0astr Remote ${REMOTE_VERSION}`, 'font-weight: bold; font-size: 14px; color: #51cf66;');
+    <div class="panels">
+      <!-- Story 8.4: Panels are now dynamically created from full_state WebSocket message -->
+      <!-- This empty container will be populated by rebuildRemoteUI() on connection -->
+    </div>
 
-      let ws = null;
-      let reconnectTimer = null;
+    <div class="global-controls">
+      <button class="update-all-btn" id="update-all" disabled>UPDATE ALL</button>
+      <button class="stop-all-btn" id="stop-all">⏹ STOP ALL</button>
+    </div>
+  </div>
 
-      // Story 8.4: Panel state tracking (dynamically populated from full_state)
-      const panelStates = {};
+  <script>
+    // Version tag
+    const REMOTE_VERSION = '8.4.0-full-state-sync';
+    console.log(`%c🎮 r0astr Remote ${REMOTE_VERSION}`, 'font-weight: bold; font-size: 14px; color: #51cf66;');
 
-      /**
-       * Story 8.1: Escape HTML to prevent XSS
-       * @param {string} text - Text to escape
-       * @returns {string} Escaped HTML
-       */
-      function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+    let ws = null;
+    let reconnectTimer = null;
+
+    // Story 8.4: Panel state tracking (dynamically populated from full_state)
+    const panelStates = {};
+
+    /**
+     * Story 8.1: Escape HTML to prevent XSS
+     * @param {string} text - Text to escape
+     * @returns {string} Escaped HTML
+     */
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    /**
+     * Story 8.1: Create remote panel control element
+     * @param {Object} panel - Panel data {id, title, position}
+     * @returns {HTMLElement} Panel control element
+     */
+    function createRemotePanelControl(panel) {
+      const { id, title, playing = false, stale = false } = panel;
+
+      const div = document.createElement('div');
+      div.className = 'panel-control panel-control-new';
+      div.id = `remote-${id}`;
+      div.dataset.panelId = id;
+
+      // Story 8.4: Add playing class if panel is playing
+      if (playing) {
+        div.classList.add('playing');
       }
 
-      /**
-       * Story 8.1: Create remote panel control element
-       * @param {Object} panel - Panel data {id, title, position}
-       * @returns {HTMLElement} Panel control element
-       */
-      function createRemotePanelControl(panel) {
-        const { id, title, playing = false, stale = false } = panel;
+      // Story 8.4: Add stale class if panel is stale
+      if (stale) {
+        div.classList.add('stale');
+      }
 
-        const div = document.createElement('div');
-        div.className = 'panel-control panel-control-new';
-        div.id = `remote-${id}`;
-        div.dataset.panelId = id;
+      const playIcon = playing ? '⏸' : '▶';
+      const statusText = playing ? 'Playing' : 'Stopped';
 
-        // Story 8.4: Add playing class if panel is playing
-        if (playing) {
-          div.classList.add('playing');
-        }
-
-        // Story 8.4: Add stale class if panel is stale
-        if (stale) {
-          div.classList.add('stale');
-        }
-
-        const playIcon = playing ? '⏸' : '▶';
-        const statusText = playing ? 'Playing' : 'Stopped';
-
-        div.innerHTML = `
+      div.innerHTML = `
           <div class="panel-info">
             <h3>${escapeHtml(title)}</h3>
             <div class="status">${statusText}</div>
@@ -454,380 +468,380 @@
           <button class="panel-button" data-panel="${id}">${playIcon}</button>
         `;
 
-        // Remove animation class after transition completes
-        div.addEventListener('animationend', () => {
-          div.classList.remove('panel-control-new');
-        }, { once: true });
+      // Remove animation class after transition completes
+      div.addEventListener('animationend', () => {
+        div.classList.remove('panel-control-new');
+      }, { once: true });
 
-        return div;
+      return div;
+    }
+
+    /**
+     * Story 8.1: Insert panel at correct position in list
+     * @param {HTMLElement} panelElement - Panel element to insert
+     * @param {number} position - Position in list (1-indexed)
+     */
+    function insertPanelAtPosition(panelElement, position) {
+      const container = document.querySelector('.panels');
+      const existingPanels = Array.from(container.querySelectorAll('.panel-control'));
+
+      // Find insertion point based on position
+      let insertBefore = null;
+      for (const panel of existingPanels) {
+        const panelPosition = parseInt(panel.dataset.position) || Infinity;
+        if (position < panelPosition) {
+          insertBefore = panel;
+          break;
+        }
       }
 
-      /**
-       * Story 8.1: Insert panel at correct position in list
-       * @param {HTMLElement} panelElement - Panel element to insert
-       * @param {number} position - Position in list (1-indexed)
-       */
-      function insertPanelAtPosition(panelElement, position) {
-        const container = document.querySelector('.panels');
-        const existingPanels = Array.from(container.querySelectorAll('.panel-control'));
+      if (insertBefore) {
+        container.insertBefore(panelElement, insertBefore);
+      } else {
+        container.appendChild(panelElement);
+      }
 
-        // Find insertion point based on position
-        let insertBefore = null;
-        for (const panel of existingPanels) {
-          const panelPosition = parseInt(panel.dataset.position) || Infinity;
-          if (position < panelPosition) {
-            insertBefore = panel;
+      // Store position in dataset
+      panelElement.dataset.position = position;
+    }
+
+    /**
+     * Story 8.2: Remove remote panel control with fade-out animation
+     * @param {string} panelId - Panel ID to remove
+     */
+    function removeRemotePanelControl(panelId) {
+      const panelElement = document.querySelector(`#remote-${panelId}`);
+
+      // Task 5: Handle non-existent panel
+      if (!panelElement) {
+        console.warn('[Remote] Panel not found for deletion:', panelId);
+        return;
+      }
+
+      // Task 8: Check if already being removed (prevent duplicate removal)
+      if (panelElement.classList.contains('panel-control-removing')) {
+        console.log('[Remote] Panel already being removed:', panelId);
+        return;
+      }
+
+      // Task 3: Add removing class to trigger fade-out animation
+      panelElement.classList.add('panel-control-removing');
+
+      // Wait for animation to complete, then remove from DOM
+      panelElement.addEventListener('animationend', () => {
+        panelElement.remove();
+        console.log('[Remote] Panel removed:', panelId);
+      }, { once: true });
+
+      // Task 4: Clean up panel state tracking
+      delete panelStates[panelId];
+    }
+
+    /**
+     * Story 8.3: Update remote panel title with visual feedback
+     * @param {string} panelId - Panel ID to update
+     * @param {string} newTitle - New title text
+     */
+    function updateRemotePanelTitle(panelId, newTitle) {
+      const panelElement = document.querySelector(`#remote-${panelId}`);
+
+      // Task 6: Handle non-existent panel
+      if (!panelElement) {
+        console.warn('[Remote] Panel not found for title update:', panelId);
+        return;
+      }
+
+      // Find title element (h3)
+      const titleElement = panelElement.querySelector('h3');
+      if (!titleElement) {
+        console.warn('[Remote] Title element not found:', panelId);
+        return;
+      }
+
+      // Task 5: Sanitize title (XSS prevention)
+      const sanitizedTitle = String(newTitle).substring(0, 50).trim() || 'Untitled';
+
+      // Update title using textContent (prevents HTML injection)
+      titleElement.textContent = sanitizedTitle;
+
+      // Task 7: Add flash animation for visual feedback
+      titleElement.classList.add('title-updated');
+      setTimeout(() => {
+        titleElement.classList.remove('title-updated');
+      }, 600);
+
+      console.log('[Remote] Title updated:', panelId, sanitizedTitle);
+    }
+
+    /**
+     * Story 8.4: Rebuild entire remote UI from full state
+     * @param {Array} panels - Array of panel state objects
+     */
+    function rebuildRemoteUI(panels) {
+      console.log('[Remote] Rebuilding UI with', panels.length, 'panels');
+
+      // Task 4: Clear existing panels (keep .panels container)
+      const panelsContainer = document.querySelector('.panels');
+      panelsContainer.innerHTML = '';
+
+      // Task 4: Clear state tracking
+      Object.keys(panelStates).forEach(key => delete panelStates[key]);
+
+      // Task 5 & 6: Create panel control for each panel in state
+      panels.forEach(panel => {
+        const panelElement = createRemotePanelControl(panel);
+
+        // Remove animation class for full state rebuild (no fade-in needed)
+        panelElement.classList.remove('panel-control-new');
+
+        // Add to DOM
+        panelsContainer.appendChild(panelElement);
+
+        // Initialize state tracking
+        panelStates[panel.id] = {
+          playing: panel.playing || false,
+          stale: panel.stale || false
+        };
+      });
+
+      // Update UPDATE ALL button state
+      updateUpdateAllButton();
+
+      console.log('[Remote] UI rebuilt successfully');
+    }
+
+    function connectWebSocket() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+
+      console.log('[Remote] Connecting to:', wsUrl);
+      updateConnectionStatus('connecting');
+
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        console.log('[Remote] Connected');
+        updateConnectionStatus('connected');
+
+        // Register as remote control client
+        ws.send(JSON.stringify({
+          type: 'client.register',
+          clientType: 'remote'
+        }));
+
+        // Clear reconnect timer
+        if (reconnectTimer) {
+          clearTimeout(reconnectTimer);
+          reconnectTimer = null;
+        }
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          handleMessage(message);
+        } catch (error) {
+          console.error('[Remote] Failed to parse message:', error);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('[Remote] WebSocket error:', error);
+      };
+
+      ws.onclose = () => {
+        console.log('[Remote] Disconnected - reconnecting in 3s');
+        ws = null;
+        updateConnectionStatus('disconnected');
+
+        // Auto-reconnect
+        reconnectTimer = setTimeout(() => {
+          connectWebSocket();
+        }, 3000);
+      };
+    }
+
+    function handleMessage(message) {
+      const { type, panels } = message;
+
+      console.log('[Remote] Received:', type);
+
+      switch (type) {
+        case 'server.hello':
+          console.log('[Remote] Server hello:', message);
+          break;
+
+        case 'full_state':
+          // Story 8.4: Rebuild UI from full state
+          if (panels) {
+            console.log('[Remote] Received full state:', panels.length, 'panels');
+            rebuildRemoteUI(panels);
+          }
+          break;
+
+        case 'state.update':
+          // Update all panel states
+          if (panels) {
+            panels.forEach(({ panel, playing, stale }) => {
+              panelStates[panel] = { playing, stale: stale || false };
+              updatePanelUI(panel, playing);
+            });
+            updateUpdateAllButton();
+          }
+          break;
+
+        case 'panel_created':
+          // Story 8.1: Handle dynamically created panels
+          const { id, title, position } = message;
+          console.log(`[Remote] Panel created: ${id} (${title})`);
+
+          // Story 8.1 Task 7: Check for duplicate panel
+          if (document.getElementById(`remote-${id}`)) {
+            console.warn(`[Remote] Panel ${id} already exists, skipping creation`);
             break;
           }
-        }
 
-        if (insertBefore) {
-          container.insertBefore(panelElement, insertBefore);
-        } else {
-          container.appendChild(panelElement);
-        }
+          // Create panel control element
+          const panelElement = createRemotePanelControl({ id, title, position });
 
-        // Store position in dataset
-        panelElement.dataset.position = position;
-      }
+          // Insert at correct position
+          insertPanelAtPosition(panelElement, position);
 
-      /**
-       * Story 8.2: Remove remote panel control with fade-out animation
-       * @param {string} panelId - Panel ID to remove
-       */
-      function removeRemotePanelControl(panelId) {
-        const panelElement = document.querySelector(`#remote-${panelId}`);
+          // Story 8.1 Task 8: Initialize panel state
+          panelStates[id] = { playing: false };
 
-        // Task 5: Handle non-existent panel
-        if (!panelElement) {
-          console.warn('[Remote] Panel not found for deletion:', panelId);
-          return;
-        }
+          console.log(`[Remote] Panel ${id} added to UI at position ${position}`);
+          break;
 
-        // Task 8: Check if already being removed (prevent duplicate removal)
-        if (panelElement.classList.contains('panel-control-removing')) {
-          console.log('[Remote] Panel already being removed:', panelId);
-          return;
-        }
+        case 'panel_deleted':
+          // Story 8.2: Handle panel deletion
+          const deletedId = message.id;
+          console.log(`[Remote] Panel deleted: ${deletedId}`);
+          removeRemotePanelControl(deletedId);
+          break;
 
-        // Task 3: Add removing class to trigger fade-out animation
-        panelElement.classList.add('panel-control-removing');
+        case 'panel_renamed':
+          // Story 8.3: Handle panel rename
+          const { id: renamedId, newTitle } = message;
+          console.log(`[Remote] Panel renamed: ${renamedId} -> ${newTitle}`);
+          updateRemotePanelTitle(renamedId, newTitle);
+          break;
 
-        // Wait for animation to complete, then remove from DOM
-        panelElement.addEventListener('animationend', () => {
-          panelElement.remove();
-          console.log('[Remote] Panel removed:', panelId);
-        }, { once: true });
-
-        // Task 4: Clean up panel state tracking
-        delete panelStates[panelId];
-      }
-
-      /**
-       * Story 8.3: Update remote panel title with visual feedback
-       * @param {string} panelId - Panel ID to update
-       * @param {string} newTitle - New title text
-       */
-      function updateRemotePanelTitle(panelId, newTitle) {
-        const panelElement = document.querySelector(`#remote-${panelId}`);
-
-        // Task 6: Handle non-existent panel
-        if (!panelElement) {
-          console.warn('[Remote] Panel not found for title update:', panelId);
-          return;
-        }
-
-        // Find title element (h3)
-        const titleElement = panelElement.querySelector('h3');
-        if (!titleElement) {
-          console.warn('[Remote] Title element not found:', panelId);
-          return;
-        }
-
-        // Task 5: Sanitize title (XSS prevention)
-        const sanitizedTitle = String(newTitle).substring(0, 50).trim() || 'Untitled';
-
-        // Update title using textContent (prevents HTML injection)
-        titleElement.textContent = sanitizedTitle;
-
-        // Task 7: Add flash animation for visual feedback
-        titleElement.classList.add('title-updated');
-        setTimeout(() => {
-          titleElement.classList.remove('title-updated');
-        }, 600);
-
-        console.log('[Remote] Title updated:', panelId, sanitizedTitle);
-      }
-
-      /**
-       * Story 8.4: Rebuild entire remote UI from full state
-       * @param {Array} panels - Array of panel state objects
-       */
-      function rebuildRemoteUI(panels) {
-        console.log('[Remote] Rebuilding UI with', panels.length, 'panels');
-
-        // Task 4: Clear existing panels (keep .panels container)
-        const panelsContainer = document.querySelector('.panels');
-        panelsContainer.innerHTML = '';
-
-        // Task 4: Clear state tracking
-        Object.keys(panelStates).forEach(key => delete panelStates[key]);
-
-        // Task 5 & 6: Create panel control for each panel in state
-        panels.forEach(panel => {
-          const panelElement = createRemotePanelControl(panel);
-
-          // Remove animation class for full state rebuild (no fade-in needed)
-          panelElement.classList.remove('panel-control-new');
-
-          // Add to DOM
-          panelsContainer.appendChild(panelElement);
-
-          // Initialize state tracking
-          panelStates[panel.id] = {
-            playing: panel.playing || false,
-            stale: panel.stale || false
-          };
-        });
-
-        // Update UPDATE ALL button state
-        updateUpdateAllButton();
-
-        console.log('[Remote] UI rebuilt successfully');
-      }
-
-      function connectWebSocket() {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/ws`;
-
-        console.log('[Remote] Connecting to:', wsUrl);
-        updateConnectionStatus('connecting');
-
-        ws = new WebSocket(wsUrl);
-
-        ws.onopen = () => {
-          console.log('[Remote] Connected');
-          updateConnectionStatus('connected');
-
-          // Register as remote control client
-          ws.send(JSON.stringify({
-            type: 'client.register',
-            clientType: 'remote'
-          }));
-
-          // Clear reconnect timer
-          if (reconnectTimer) {
-            clearTimeout(reconnectTimer);
-            reconnectTimer = null;
+        case 'master.sliders':
+          // Render master panel sliders from metadata
+          if (message.sliders) {
+            console.log(`[Remote] Received ${message.sliders.length} master sliders`);
+            renderRemoteSliders(message.sliders);
           }
-        };
+          break;
 
-        ws.onmessage = (event) => {
-          try {
-            const message = JSON.parse(event.data);
-            handleMessage(message);
-          } catch (error) {
-            console.error('[Remote] Failed to parse message:', error);
+        case 'master.sliderValue':
+          // Update individual slider value
+          if (message.sliderId !== undefined && message.value !== undefined) {
+            updateRemoteSliderValue(message.sliderId, message.value);
           }
-        };
+          break;
 
-        ws.onerror = (error) => {
-          console.error('[Remote] WebSocket error:', error);
-        };
-
-        ws.onclose = () => {
-          console.log('[Remote] Disconnected - reconnecting in 3s');
-          ws = null;
-          updateConnectionStatus('disconnected');
-
-          // Auto-reconnect
-          reconnectTimer = setTimeout(() => {
-            connectWebSocket();
-          }, 3000);
-        };
-      }
-
-      function handleMessage(message) {
-        const { type, panels } = message;
-
-        console.log('[Remote] Received:', type);
-
-        switch (type) {
-          case 'server.hello':
-            console.log('[Remote] Server hello:', message);
-            break;
-
-          case 'full_state':
-            // Story 8.4: Rebuild UI from full state
-            if (panels) {
-              console.log('[Remote] Received full state:', panels.length, 'panels');
-              rebuildRemoteUI(panels);
-            }
-            break;
-
-          case 'state.update':
-            // Update all panel states
-            if (panels) {
-              panels.forEach(({ panel, playing, stale }) => {
-                panelStates[panel] = { playing, stale: stale || false };
-                updatePanelUI(panel, playing);
-              });
-              updateUpdateAllButton();
-            }
-            break;
-
-          case 'panel_created':
-            // Story 8.1: Handle dynamically created panels
-            const { id, title, position } = message;
-            console.log(`[Remote] Panel created: ${id} (${title})`);
-
-            // Story 8.1 Task 7: Check for duplicate panel
-            if (document.getElementById(`remote-${id}`)) {
-              console.warn(`[Remote] Panel ${id} already exists, skipping creation`);
-              break;
-            }
-
-            // Create panel control element
-            const panelElement = createRemotePanelControl({ id, title, position });
-
-            // Insert at correct position
-            insertPanelAtPosition(panelElement, position);
-
-            // Story 8.1 Task 8: Initialize panel state
-            panelStates[id] = { playing: false };
-
-            console.log(`[Remote] Panel ${id} added to UI at position ${position}`);
-            break;
-
-          case 'panel_deleted':
-            // Story 8.2: Handle panel deletion
-            const deletedId = message.id;
-            console.log(`[Remote] Panel deleted: ${deletedId}`);
-            removeRemotePanelControl(deletedId);
-            break;
-
-          case 'panel_renamed':
-            // Story 8.3: Handle panel rename
-            const { id: renamedId, newTitle } = message;
-            console.log(`[Remote] Panel renamed: ${renamedId} -> ${newTitle}`);
-            updateRemotePanelTitle(renamedId, newTitle);
-            break;
-
-          case 'master.sliders':
-            // Render master panel sliders from metadata
-            if (message.sliders) {
-              console.log(`[Remote] Received ${message.sliders.length} master sliders`);
-              renderRemoteSliders(message.sliders);
-            }
-            break;
-
-          case 'master.sliderValue':
-            // Update individual slider value
-            if (message.sliderId !== undefined && message.value !== undefined) {
-              updateRemoteSliderValue(message.sliderId, message.value);
-            }
-            break;
-
-          case 'panel.sliders':
-            // Render panel sliders from metadata
-            if (message.panelId && message.sliders) {
-              console.log(`[Remote] Received ${message.sliders.length} sliders for panel ${message.panelId}`);
-              renderPanelSliders(message.panelId, message.sliders);
-            }
-            break;
-
-          case 'panel.sliderValue':
-            // Update individual panel slider value
-            if (message.panelId && message.sliderId !== undefined && message.value !== undefined) {
-              updatePanelSliderValue(message.panelId, message.sliderId, message.value);
-            }
-            break;
-        }
-      }
-
-      function updateConnectionStatus(status) {
-        const statusEl = document.getElementById('status');
-        statusEl.classList.remove('connected', 'disconnected');
-
-        if (status === 'connected') {
-          statusEl.textContent = '🟢 Connected';
-          statusEl.classList.add('connected');
-        } else if (status === 'disconnected') {
-          statusEl.textContent = '🔴 Disconnected';
-          statusEl.classList.add('disconnected');
-        } else {
-          statusEl.textContent = '🟡 Connecting...';
-        }
-      }
-
-      /**
-       * Story 8.4: Update panel UI based on playing state
-       * @param {string} panelId - Full panel ID (e.g., panel-1763389957952)
-       * @param {boolean} playing - Playing state
-       */
-      function updatePanelUI(panelId, playing) {
-        const panelEl = document.getElementById(`remote-${panelId}`);
-
-        if (!panelEl) {
-          console.warn(`[Remote] Panel not found for state update: ${panelId}`);
-          return;
-        }
-
-        const buttonEl = panelEl.querySelector('.panel-button');
-        const statusEl = panelEl.querySelector('.status');
-
-        if (playing) {
-          panelEl.classList.add('playing');
-          if (buttonEl) buttonEl.textContent = '⏸';
-          if (statusEl) statusEl.textContent = 'Playing';
-        } else {
-          panelEl.classList.remove('playing');
-          if (buttonEl) buttonEl.textContent = '▶';
-          if (statusEl) statusEl.textContent = 'Stopped';
-
-          // Clear sliders when panel stops
-          const slidersContainer = document.getElementById(`panel-sliders-${panelId}`);
-          if (slidersContainer) {
-            slidersContainer.innerHTML = '';
+        case 'panel.sliders':
+          // Render panel sliders from metadata
+          if (message.panelId && message.sliders) {
+            console.log(`[Remote] Received ${message.sliders.length} sliders for panel ${message.panelId}`);
+            renderPanelSliders(message.panelId, message.sliders);
           }
-        }
+          break;
+
+        case 'panel.sliderValue':
+          // Update individual panel slider value
+          if (message.panelId && message.sliderId !== undefined && message.value !== undefined) {
+            updatePanelSliderValue(message.panelId, message.sliderId, message.value);
+          }
+          break;
+      }
+    }
+
+    function updateConnectionStatus(status) {
+      const statusEl = document.getElementById('status');
+      statusEl.classList.remove('connected', 'disconnected');
+
+      if (status === 'connected') {
+        statusEl.textContent = '🟢 Connected';
+        statusEl.classList.add('connected');
+      } else if (status === 'disconnected') {
+        statusEl.textContent = '🔴 Disconnected';
+        statusEl.classList.add('disconnected');
+      } else {
+        statusEl.textContent = '🟡 Connecting...';
+      }
+    }
+
+    /**
+     * Story 8.4: Update panel UI based on playing state
+     * @param {string} panelId - Full panel ID (e.g., panel-1763389957952)
+     * @param {boolean} playing - Playing state
+     */
+    function updatePanelUI(panelId, playing) {
+      const panelEl = document.getElementById(`remote-${panelId}`);
+
+      if (!panelEl) {
+        console.warn(`[Remote] Panel not found for state update: ${panelId}`);
+        return;
       }
 
-      /**
-       * Update UPDATE ALL button state based on stale panels
-       * Only enabled if there are stale panels that are also playing
-       */
-      function updateUpdateAllButton() {
-        const updateAllBtn = document.getElementById('update-all');
-        // Count stale panels that are also playing
-        const stalePanelCount = Object.values(panelStates).filter(s => s.stale && s.playing).length;
+      const buttonEl = panelEl.querySelector('.panel-button');
+      const statusEl = panelEl.querySelector('.status');
 
-        if (stalePanelCount > 0) {
-          updateAllBtn.disabled = false;
-          updateAllBtn.textContent = `UPDATE ALL (${stalePanelCount})`;
-        } else {
-          updateAllBtn.disabled = true;
-          updateAllBtn.textContent = 'UPDATE ALL';
+      if (playing) {
+        panelEl.classList.add('playing');
+        if (buttonEl) buttonEl.textContent = '⏸';
+        if (statusEl) statusEl.textContent = 'Playing';
+      } else {
+        panelEl.classList.remove('playing');
+        if (buttonEl) buttonEl.textContent = '▶';
+        if (statusEl) statusEl.textContent = 'Stopped';
+
+        // Clear sliders when panel stops
+        const slidersContainer = document.getElementById(`panel-sliders-${panelId}`);
+        if (slidersContainer) {
+          slidersContainer.innerHTML = '';
         }
       }
+    }
 
-      /**
-       * Render master panel sliders from metadata
-       * @param {Array} sliders - Array of slider metadata objects
-       */
-      function renderRemoteSliders(sliders) {
-        const container = document.getElementById('master-sliders-remote');
-        container.innerHTML = '';
+    /**
+     * Update UPDATE ALL button state based on stale panels
+     * Only enabled if there are stale panels that are also playing
+     */
+    function updateUpdateAllButton() {
+      const updateAllBtn = document.getElementById('update-all');
+      // Count stale panels that are also playing
+      const stalePanelCount = Object.values(panelStates).filter(s => s.stale && s.playing).length;
 
-        if (!sliders || sliders.length === 0) {
-          return;
-        }
+      if (stalePanelCount > 0) {
+        updateAllBtn.disabled = false;
+        updateAllBtn.textContent = `UPDATE ALL (${stalePanelCount})`;
+      } else {
+        updateAllBtn.disabled = true;
+        updateAllBtn.textContent = 'UPDATE ALL';
+      }
+    }
 
-        sliders.forEach(({ sliderId, varName, value, min, max }) => {
-          const sliderControl = document.createElement('div');
-          sliderControl.className = 'remote-slider-control';
+    /**
+     * Render master panel sliders from metadata
+     * @param {Array} sliders - Array of slider metadata objects
+     */
+    function renderRemoteSliders(sliders) {
+      const container = document.getElementById('master-sliders-remote');
+      container.innerHTML = '';
 
-          sliderControl.innerHTML = `
+      if (!sliders || sliders.length === 0) {
+        return;
+      }
+
+      sliders.forEach(({ sliderId, varName, value, min, max }) => {
+        const sliderControl = document.createElement('div');
+        sliderControl.className = 'remote-slider-control';
+
+        sliderControl.innerHTML = `
             <label>
               <span>${varName}</span>
               <span class="remote-slider-value" data-slider="${sliderId}">${value.toFixed(2)}</span>
@@ -840,85 +854,85 @@
               data-slider-id="${sliderId}">
           `;
 
-          const input = sliderControl.querySelector('input');
-          input.addEventListener('input', (e) => {
-            const newValue = parseFloat(e.target.value);
+        const input = sliderControl.querySelector('input');
+        input.addEventListener('input', (e) => {
+          const newValue = parseFloat(e.target.value);
 
-            // Update local display immediately
-            const valueDisplay = sliderControl.querySelector('.remote-slider-value');
-            if (valueDisplay) {
-              valueDisplay.textContent = newValue.toFixed(2);
-            }
-
-            // Send change to main UI
-            if (ws && ws.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({
-                type: 'master.sliderChange',
-                sliderId,
-                value: newValue
-              }));
-            }
-          });
-
-          container.appendChild(sliderControl);
-        });
-      }
-
-      /**
-       * Update individual slider value from broadcast
-       * @param {string} sliderId - Slider ID
-       * @param {number} value - New value
-       */
-      function updateRemoteSliderValue(sliderId, value) {
-        const valueDisplay = document.querySelector(`.remote-slider-value[data-slider="${sliderId}"]`);
-        if (valueDisplay) {
-          valueDisplay.textContent = value.toFixed(2);
-        }
-
-        const sliderInput = document.querySelector(`input[data-slider-id="${sliderId}"]`);
-        if (sliderInput) {
-          sliderInput.value = value;
-        }
-      }
-
-      /**
-       * Render panel-specific sliders
-       * @param {string} panelId - Panel ID
-       * @param {Array} sliders - Slider metadata array
-       */
-      function renderPanelSliders(panelId, sliders) {
-        const container = document.getElementById(`panel-sliders-${panelId}`);
-        if (!container) {
-          console.warn(`[Remote] Panel sliders container not found for ${panelId}`);
-          return;
-        }
-
-        container.innerHTML = '';
-
-        if (!sliders || sliders.length === 0) {
-          console.log(`[Remote SLIDER DEBUG] No sliders to render for ${panelId}`);
-          return;
-        }
-
-        console.log(`[Remote SLIDER DEBUG] Rendering ${sliders.length} sliders for ${panelId}:`, sliders);
-
-        sliders.forEach(({ sliderId, label, value, min, max, step }) => {
-          // Ensure value is numeric (parse if string, fallback to 0 if invalid)
-          let numericValue;
-          if (typeof value === 'number' && !isNaN(value)) {
-            numericValue = value;
-          } else if (typeof value === 'string') {
-            numericValue = parseFloat(value);
-            if (isNaN(numericValue)) numericValue = 0;
-          } else {
-            numericValue = 0;
+          // Update local display immediately
+          const valueDisplay = sliderControl.querySelector('.remote-slider-value');
+          if (valueDisplay) {
+            valueDisplay.textContent = newValue.toFixed(2);
           }
-          console.log(`[Remote SLIDER DEBUG] Slider ${sliderId}: value=${value} (type: ${typeof value}), numericValue=${numericValue}`);
 
-          const sliderControl = document.createElement('div');
-          sliderControl.className = 'panel-slider-control';
+          // Send change to main UI
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              type: 'master.sliderChange',
+              sliderId,
+              value: newValue
+            }));
+          }
+        });
 
-          sliderControl.innerHTML = `
+        container.appendChild(sliderControl);
+      });
+    }
+
+    /**
+     * Update individual slider value from broadcast
+     * @param {string} sliderId - Slider ID
+     * @param {number} value - New value
+     */
+    function updateRemoteSliderValue(sliderId, value) {
+      const valueDisplay = document.querySelector(`.remote-slider-value[data-slider="${sliderId}"]`);
+      if (valueDisplay) {
+        valueDisplay.textContent = value.toFixed(2);
+      }
+
+      const sliderInput = document.querySelector(`input[data-slider-id="${sliderId}"]`);
+      if (sliderInput) {
+        sliderInput.value = value;
+      }
+    }
+
+    /**
+     * Render panel-specific sliders
+     * @param {string} panelId - Panel ID
+     * @param {Array} sliders - Slider metadata array
+     */
+    function renderPanelSliders(panelId, sliders) {
+      const container = document.getElementById(`panel-sliders-${panelId}`);
+      if (!container) {
+        console.warn(`[Remote] Panel sliders container not found for ${panelId}`);
+        return;
+      }
+
+      container.innerHTML = '';
+
+      if (!sliders || sliders.length === 0) {
+        // console.log(`[Remote SLIDER DEBUG] No sliders to render for ${panelId}`);
+        return;
+      }
+
+      // console.log(`[Remote SLIDER DEBUG] Rendering ${sliders.length} sliders for ${panelId}:`, sliders);
+
+      sliders.forEach(({ sliderId, label, value, min, max, step }) => {
+        // Ensure value is numeric (parse if string, fallback to 0 if invalid)
+        let numericValue;
+        if (typeof value === 'number' && !isNaN(value)) {
+          numericValue = value;
+        } else if (typeof value === 'string') {
+          numericValue = parseFloat(value);
+          if (isNaN(numericValue)) numericValue = 0;
+        } else {
+          numericValue = 0;
+        }
+        // console.log(`[Remote SLIDER DEBUG] Slider ${sliderId}: value=${value} (type: ${typeof value}), numericValue=${numericValue}`);
+
+        const sliderControl = document.createElement('div');
+        sliderControl.className = 'panel-slider-control';
+
+        sliderControl.innerHTML = `
             <label>
               ${label}:
               <span class="slider-value" data-panel-slider="${panelId}-${sliderId}">${numericValue.toFixed(2)}</span>
@@ -932,89 +946,90 @@
               data-panel-slider-id="${sliderId}">
           `;
 
-          const input = sliderControl.querySelector('input');
-          input.addEventListener('input', (e) => {
-            const newValue = parseFloat(e.target.value);
+        const input = sliderControl.querySelector('input');
+        input.addEventListener('input', (e) => {
+          const newValue = parseFloat(e.target.value);
 
-            // Update local display immediately
-            const valueDisplay = sliderControl.querySelector('.slider-value');
-            if (valueDisplay) {
-              valueDisplay.textContent = newValue.toFixed(2);
-            }
+          // Update local display immediately
+          const valueDisplay = sliderControl.querySelector('.slider-value');
+          if (valueDisplay) {
+            valueDisplay.textContent = newValue.toFixed(2);
+          }
 
-            // Send change to main UI
-            if (ws && ws.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({
-                type: 'panel.sliderChange',
-                panelId,
-                sliderId,
-                value: newValue
-              }));
-            }
-          });
-
-          container.appendChild(sliderControl);
+          // Send change to main UI
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              type: 'panel.sliderChange',
+              panelId,
+              sliderId,
+              value: newValue
+            }));
+          }
         });
+
+        container.appendChild(sliderControl);
+      });
+    }
+
+    /**
+     * Update individual panel slider value from broadcast
+     * @param {string} panelId - Panel ID
+     * @param {string} sliderId - Slider ID
+     * @param {number} value - New value
+     */
+    function updatePanelSliderValue(panelId, sliderId, value) {
+      const valueDisplay = document.querySelector(`[data-panel-slider="${panelId}-${sliderId}"]`);
+      if (valueDisplay) {
+        valueDisplay.textContent = value.toFixed(2);
       }
 
-      /**
-       * Update individual panel slider value from broadcast
-       * @param {string} panelId - Panel ID
-       * @param {string} sliderId - Slider ID
-       * @param {number} value - New value
-       */
-      function updatePanelSliderValue(panelId, sliderId, value) {
-        const valueDisplay = document.querySelector(`[data-panel-slider="${panelId}-${sliderId}"]`);
-        if (valueDisplay) {
-          valueDisplay.textContent = value.toFixed(2);
-        }
+      const sliderInput = document.querySelector(`input[data-panel-id="${panelId}"][data-panel-slider-id="${sliderId}"]`);
+      if (sliderInput) {
+        sliderInput.value = value;
+      }
+    }
 
-        const sliderInput = document.querySelector(`input[data-panel-id="${panelId}"][data-panel-slider-id="${sliderId}"]`);
-        if (sliderInput) {
-          sliderInput.value = value;
-        }
+    function sendCommand(type, panel = null) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        console.warn('[Remote] WebSocket not connected');
+        return;
       }
 
-      function sendCommand(type, panel = null) {
-        if (!ws || ws.readyState !== WebSocket.OPEN) {
-          console.warn('[Remote] WebSocket not connected');
-          return;
-        }
-
-        const message = { type };
-        if (panel !== null) {
-          message.panel = panel;
-        }
-
-        ws.send(JSON.stringify(message));
-        console.log('[Remote] Sent:', message);
+      const message = { type };
+      if (panel !== null) {
+        message.panel = panel;
       }
 
-      // Story 8.1 Task 5: Use event delegation for panel buttons (supports dynamic panels)
-      document.querySelector('.panels').addEventListener('click', (e) => {
-        const button = e.target.closest('.panel-button');
-        if (button) {
-          const panelId = button.dataset.panel;
-          sendCommand('panel.toggle', panelId);
-          console.log(`[Remote] Toggled panel: ${panelId}`);
-        }
-      });
+      ws.send(JSON.stringify(message));
+      console.log('[Remote] Sent:', message);
+    }
 
-      // Attach stop-all button listener
-      document.getElementById('stop-all').addEventListener('click', () => {
-        sendCommand('global.stopAll');
-      });
+    // Story 8.1 Task 5: Use event delegation for panel buttons (supports dynamic panels)
+    document.querySelector('.panels').addEventListener('click', (e) => {
+      const button = e.target.closest('.panel-button');
+      if (button) {
+        const panelId = button.dataset.panel;
+        sendCommand('panel.toggle', panelId);
+        console.log(`[Remote] Toggled panel: ${panelId}`);
+      }
+    });
 
-      // Attach update-all button listener
-      document.getElementById('update-all').addEventListener('click', () => {
-        const updateAllBtn = document.getElementById('update-all');
-        if (!updateAllBtn.disabled) {
-          sendCommand('global.updateAll');
-        }
-      });
+    // Attach stop-all button listener
+    document.getElementById('stop-all').addEventListener('click', () => {
+      sendCommand('global.stopAll');
+    });
 
-      // Initialize WebSocket connection
-      connectWebSocket();
-    </script>
-  </body>
+    // Attach update-all button listener
+    document.getElementById('update-all').addEventListener('click', () => {
+      const updateAllBtn = document.getElementById('update-all');
+      if (!updateAllBtn.disabled) {
+        sendCommand('global.updateAll');
+      }
+    });
+
+    // Initialize WebSocket connection
+    connectWebSocket();
+  </script>
+</body>
+
 </html>

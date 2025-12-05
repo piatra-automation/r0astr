@@ -1784,9 +1784,9 @@ function pausePanel(panelId) {
 
   // Clear slider VALUES from sliderValues object
   if (panelSliders[panelId]) {
-    console.log(`[SLIDER DEBUG] Clearing ${panelSliders[panelId].length} slider values for ${panelId}`);
+    // console.log(`[SLIDER DEBUG] Clearing ${panelSliders[panelId].length} slider values for ${panelId}`);
     panelSliders[panelId].forEach(({ sliderId }) => {
-      console.log(`[SLIDER DEBUG] Deleting sliderValues[${sliderId}] = ${sliderValues[sliderId]}`);
+      // console.log(`[SLIDER DEBUG] Deleting sliderValues[${sliderId}] = ${sliderValues[sliderId]}`);
       delete sliderValues[sliderId];
     });
   }
@@ -1856,6 +1856,7 @@ async function activatePanel(panelId) {
 
     // Store miniLocations and update editor decorations for pattern highlighting
     if (shouldHighlight) {
+      console.log(`[HIGHLIGHT] Captured ${(miniLocations || []).length} miniLocations for ${panelId}:`, miniLocations);
       panelMiniLocations.set(panelId, miniLocations || []);
       updateMiniLocations(view, miniLocations || []);
     }
@@ -1920,15 +1921,15 @@ async function activatePanel(panelId) {
 
     let evalResult;
     try {
-      console.log('[VIZ DEBUG] ========== START ACTIVATION FOR', panelId, '==========');
-      console.log('[VIZ DEBUG] Original pattern code:', output);
+      // console.log('[VIZ DEBUG] ========== START ACTIVATION FOR', panelId, '==========');
+      // console.log('[VIZ DEBUG] Original pattern code:', output);
 
       // Pre-process pattern code to detect visualizations BEFORE canvas setup
       let patternCode = output;
 
       // Replace .punchcard() with .pianoroll() (they render identically)
       patternCode = patternCode.replace(/\.punchcard\(/g, '.pianoroll(');
-      console.log('[VIZ DEBUG] After punchcard replacement:', patternCode);
+      // console.log('[VIZ DEBUG] After punchcard replacement:', patternCode);
 
       // Detect all visualization methods in order of appearance
       const vizMethodRegex = /\.(pianoroll|scope|tscope|fscope|spectrum)\(/g;
@@ -1936,11 +1937,11 @@ async function activatePanel(panelId) {
       const detectedVizMethods = vizMethodMatches.map(m => m[1]);
       const hasVisualization = detectedVizMethods.length > 0;
 
-      console.log('[VIZ DEBUG] Detected visualization methods:', detectedVizMethods);
+      // console.log('[VIZ DEBUG] Detected visualization methods:', detectedVizMethods);
 
       // Get container element
       const container = document.getElementById(`viz-container-${panelId}`);
-      console.log('[VIZ DEBUG] Container element found:', container);
+      // console.log('[VIZ DEBUG] Container element found:', container);
 
       if (hasVisualization && container) {
         // Show the container
@@ -1974,12 +1975,12 @@ async function activatePanel(panelId) {
           const ctx = canvas.getContext('2d');
           contexts.push(ctx);
 
-          console.log(`[VIZ DEBUG] Created canvas ${index} for ${method}:`, canvas.id, `(${canvas.width}x${canvas.height})`);
+          // console.log(`[VIZ DEBUG] Created canvas ${index} for ${method}:`, canvas.id, `(${canvas.width}x${canvas.height})`);
         });
 
         // Store contexts array
         window.visualizationContexts[panelId] = contexts;
-        console.log(`[VIZ DEBUG] Stored ${contexts.length} contexts for ${panelId}`);
+        // console.log(`[VIZ DEBUG] Stored ${contexts.length} contexts for ${panelId}`);
       } else if (!hasVisualization && container) {
         // Hide container if no visualizations
         container.style.display = 'none';
@@ -1993,7 +1994,7 @@ async function activatePanel(panelId) {
 
         if (hasVisualization && window.visualizationContexts[panelId]) {
           const contexts = window.visualizationContexts[panelId];
-          console.log('[VIZ DEBUG] Injecting contexts into pattern code');
+          // console.log('[VIZ DEBUG] Injecting contexts into pattern code');
 
           // Replace ALL visualization methods in order of appearance
           let contextIndex = 0;
@@ -2014,7 +2015,7 @@ async function activatePanel(panelId) {
             const ctxIdx = contextIndex;
             contextIndex++;
 
-            console.log(`[VIZ DEBUG] Replacing .${method}() with context index ${ctxIdx}`);
+            // console.log(`[VIZ DEBUG] Replacing .${method}() with context index ${ctxIdx}`);
 
             if (existingOptions) {
               // Remove outer braces and whitespace
@@ -2025,14 +2026,14 @@ async function activatePanel(panelId) {
             }
           });
 
-          console.log('[VIZ DEBUG] Pattern code after ctx injection:', patternCode);
-          console.log(`[VIZ DEBUG] Replaced ${contextIndex} total visualization calls`);
+          // console.log('[VIZ DEBUG] Pattern code after ctx injection:', patternCode);
+          // console.log(`[VIZ DEBUG] Replaced ${contextIndex} total visualization calls`);
         }
 
         // Evaluate pattern
-        console.log('[VIZ DEBUG] About to evaluate:', `${patternCode}.p('${panelId}')`);
+        // console.log('[VIZ DEBUG] About to evaluate:', `${patternCode}.p('${panelId}')`);
         evalResult = await evaluate(`${patternCode}.p('${panelId}')`, true, false);
-        console.log('[VIZ DEBUG] Evaluation complete');
+        // console.log('[VIZ DEBUG] Evaluation complete');
 
         // Clean up temp globals
         if (hasVisualization && window.visualizationContexts[panelId]) {
@@ -2093,9 +2094,11 @@ async function activatePanel(panelId) {
     }
 
     // Update state
+    // console.log(`[STATE DEBUG] Setting ${panelId}.playing = true`);
     panel.playing = true;
     panel.stale = false;
     panel.lastEvaluatedCode = patternCode;
+    // console.log(`[STATE DEBUG] After setting - cardStates[${panelId}].playing =`, cardStates[panelId].playing);
     updatePanel(panelId, { stale: false, lastEvaluatedCode: patternCode }); // Sync to panelManager
 
     // Story 7.3: Clear any previous error messages on successful playback
@@ -2105,6 +2108,7 @@ async function activatePanel(panelId) {
     updateVisualIndicators(panelId);
 
     // Notify metronome of state change
+    // console.log('[STATE DEBUG] Dispatching panel-state-changed event');
     window.dispatchEvent(new CustomEvent('panel-state-changed'));
 
     // Bring panel to front (Story 8.5: z-index on play)
@@ -2117,7 +2121,7 @@ async function activatePanel(panelId) {
     // Update UPDATE ALL button state (Story 6.4)
     updateAllButton();
 
-    console.log(`Panel ${panelId}: ${panel.stale ? 'Updated' : 'Activated'}`);
+    // console.log(`Panel ${panelId}: ${panel.stale ? 'Updated' : 'Activated'}`);
 
     // Broadcast state change to remote clients
     broadcastState();
@@ -3001,7 +3005,7 @@ function renderSliders(cardId, widgets, patternCode = '') {
     const rawValue = sliderValues[sliderId] ?? value ?? 0;
     const currentValue = typeof rawValue === 'number' ? rawValue : parseFloat(rawValue) || 0;
 
-    console.log(`[SLIDER DEBUG] ${cardId} ${sliderId}: sliderValues=${sliderValues[sliderId]}, widget.value=${value} (type: ${typeof value}), rawValue=${rawValue}, currentValue=${currentValue}`);
+    // console.log(`[SLIDER DEBUG] ${cardId} ${sliderId}: sliderValues=${sliderValues[sliderId]}, widget.value=${value} (type: ${typeof value}), rawValue=${rawValue}, currentValue=${currentValue}`);
 
     // Deduce label from pattern code
     const label = deduceSliderLabel(patternCode, index);
@@ -3132,11 +3136,11 @@ function updatePanelSliderValue(panelId, sliderId, newValue) {
  */
 function broadcastPanelSliders(panelId, sliders) {
   if (!ws || ws.readyState !== WebSocket.OPEN) {
-    console.log(`[SLIDER DEBUG] Cannot broadcast panel sliders - WebSocket not connected`);
+    // console.log(`[SLIDER DEBUG] Cannot broadcast panel sliders - WebSocket not connected`);
     return;
   }
 
-  console.log(`[SLIDER DEBUG] Broadcasting ${sliders.length} sliders for ${panelId}:`, sliders);
+  // console.log(`[SLIDER DEBUG] Broadcasting ${sliders.length} sliders for ${panelId}:`, sliders);
 
   ws.send(JSON.stringify({
     type: 'panel.sliders',
@@ -3265,7 +3269,7 @@ function activatePanelByIndex(index) {
       const currentlyFocused = findFocusedPanel();
       const isCompact = masterPanel.classList.contains('compact');
 
-      console.log('[Keyboard DEBUG] Master panel state: focused=', currentlyFocused === MASTER_PANEL_ID, 'compact=', isCompact);
+      // console.log('[Keyboard DEBUG] Master panel state: focused=', currentlyFocused === MASTER_PANEL_ID, 'compact=', isCompact);
 
       if (currentlyFocused === MASTER_PANEL_ID && !isCompact) {
         // Already focused and expanded - toggle to compact mode (keep focus)
@@ -3280,16 +3284,16 @@ function activatePanelByIndex(index) {
       // Expand if compact
       if (isCompact) {
         toggleMasterMode();
-        console.log('[Keyboard] Expanded master panel from compact');
+        // console.log('[Keyboard] Expanded master panel from compact');
       }
 
       // Focus editor - use setTimeout to ensure panel is brought to front first
       setTimeout(() => {
         masterView.focus();
-        console.log('[Keyboard] Focused master panel editor');
+        // console.log('[Keyboard] Focused master panel editor');
       }, 10);
 
-      console.log('[Keyboard] Activated master panel');
+      // console.log('[Keyboard] Activated master panel');
     }
     return;
   }
@@ -3348,19 +3352,19 @@ function findFocusedPanel() {
   // Check if any editor view has focus
   for (const [panelId, view] of editorViews.entries()) {
     if (view.hasFocus) {
-      console.log('[Focus DEBUG] Found focused panel via view.hasFocus:', panelId);
+      // console.log('[Focus DEBUG] Found focused panel via view.hasFocus:', panelId);
       return panelId;
     }
   }
 
   // Fallback: check which panel container is within the active element
   const activeElement = document.activeElement;
-  console.log('[Focus DEBUG] Active element:', activeElement, 'className:', activeElement?.className);
+  // console.log('[Focus DEBUG] Active element:', activeElement, 'className:', activeElement?.className);
 
   if (activeElement) {
     const panelContainer = activeElement.closest('.panel-container');
     if (panelContainer) {
-      console.log('[Focus DEBUG] Found panel container:', panelContainer.id);
+      // console.log('[Focus DEBUG] Found panel container:', panelContainer.id);
       return panelContainer.id;
     }
   }
@@ -3370,7 +3374,7 @@ function findFocusedPanel() {
     // Find which panel contains this editor
     for (const [panelId, view] of editorViews.entries()) {
       if (view.dom.contains(activeElement)) {
-        console.log('[Focus DEBUG] Found panel via editor DOM:', panelId);
+        // console.log('[Focus DEBUG] Found panel via editor DOM:', panelId);
         return panelId;
       }
     }
@@ -3380,7 +3384,7 @@ function findFocusedPanel() {
   // This handles case where panel is expanded but CodeMirror doesn't have focus
   const focusedPanel = document.querySelector('.card.focused');
   if (focusedPanel) {
-    console.log('[Focus DEBUG] Found focused panel via .focused class:', focusedPanel.id);
+    // console.log('[Focus DEBUG] Found focused panel via .focused class:', focusedPanel.id);
     return focusedPanel.id;
   }
 
