@@ -1,0 +1,19 @@
+stages:
+  - deploy
+
+pages:
+  stage: deploy
+  image: python:3.11
+  before_script:
+    - pip install poetry
+    - poetry config virtualenvs.in-project true
+    - poetry install --only docs
+  script:
+    - cd site
+    - poetry run mkdocs build --strict
+    - mv site ../public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"

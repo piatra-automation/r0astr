@@ -1,0 +1,3093 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Piatra REPL - Dual Card Interface</title>
+  <style>
+    /* Supertone Font Family */
+    @font-face {
+      font-family: 'Supertone';
+      src: url('/static/fonts/supertone-regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Supertone';
+      src: url('/static/fonts/supertone-medium.woff2') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'Supertone';
+      src: url('/static/fonts/supertone-bold.woff2') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Story 4.5: CSS Variables for Theming and Appearance */
+    :root {
+      /* Color Palette */
+      --pale-white: #d1d8e0;
+      --pearl: #dfddde;
+      --cream: #dad0bc;
+      --dark-green: #01614f;
+      --mid-green: #01614f;
+      --burnt-red: #f64c04;
+      --puke: #e3ad43;
+      --darkness: #0b0600;
+
+      /* Screen colors */
+      --screen-bkg: #076443;
+      --screen-edge: #514041;
+      --screen-top: #0d382c;
+      --screen-bottom: #359a6b;
+
+      /* Projection margins - default to 0, updated by themeManager.js */
+      --projection-margin-top: 0px;
+      --projection-margin-right: 0px;
+      --projection-margin-bottom: 0px;
+      --projection-margin-left: 0px;
+
+      --site-logo-height: 100px;
+
+      /* Appearance settings (configurable) */
+      --code-font-size: 14px;
+      --panel-opacity: 0.95;
+      --transition-duration: 0.2s;
+
+      /* Dark theme colors (default) */
+      --bg-color: var(--cream);
+      --card-bg: #1a1a1a;
+      --text-color: #fff;
+      --border-color: #00ff00;
+      --header-color: #00ff00;
+    }
+
+    /* Light theme override */
+    body.theme-light {
+      --bg-color: #f0f0f0;
+      --card-bg: #ffffff;
+      --text-color: #000000;
+      --border-color: #333333;
+      --header-color: #0066cc;
+    }
+
+    * {
+      box-sizing: border-box;
+      transition-duration: var(--transition-duration);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #969696;
+      /* Grey background for projection mode */
+      font-family: 'Supertone', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      letter-spacing: 1.5px;
+      color: var(--text-color);
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+      height: 100vh;
+    }
+
+    /* Projection mode usable area with gradient background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: var(--projection-margin-top);
+      left: var(--projection-margin-left);
+      right: var(--projection-margin-right);
+      bottom: var(--projection-margin-bottom);
+      background: linear-gradient(to bottom right, #f4ebdc, #c1b59f);
+      border-radius: 5px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Fixed logo vertically centered in hero bar */
+    .site-logo {
+      position: fixed;
+      top: calc(var(--projection-margin-top) + 42px + 45px);
+      /* Projection margin + Banner bar top (42px) + offset from banner top (45px) */
+      left: calc(var(--projection-margin-left) + 40px);
+      height: var(--site-logo-height);
+      max-height: var(--site-logo-height);
+      z-index: 10001;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease-in;
+    }
+
+    .site-logo.visible {
+      opacity: 1;
+    }
+
+    .site-logo img {
+      height: var(--site-logo-height);
+      max-height: var(--site-logo-height);
+      width: auto;
+      object-fit: contain;
+    }
+
+    /* Hero section spanning full width */
+    .hero-section {
+      position: fixed;
+      top: calc(var(--projection-margin-top) + 42px);
+      left: var(--projection-margin-left);
+      right: calc(var(--projection-margin-right) + 300px);
+      height: 255px;
+      background-image:
+        url('/static/images/corner-ring.svg'),
+        url('/static/images/corner-ring.svg'),
+        url('/static/images/corner-ring.svg'),
+        url('/static/images/corner-ring.svg'),
+        linear-gradient(to bottom right, #f4f5ef, #d9d8d4);
+      background-position:
+        top left,
+        top right,
+        bottom left,
+        bottom right,
+        center;
+      background-repeat: no-repeat;
+      background-size:
+        42px 42px,
+        42px 42px,
+        42px 42px,
+        42px 42px,
+        cover;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      padding-left: 130px;
+      /* Logo width + offset */
+      opacity: 0;
+      transition: opacity 0.3s ease-in;
+      border-radius: 3px;
+
+      /* Borders: white+20% on top/left, gray+50% on bottom/right */
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+      border-right: 1px solid rgba(128, 128, 128, 0.5);
+
+      /* Drop shadow on bottom edge only */
+      box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-section.visible {
+      opacity: 1;
+    }
+
+    .hero-banner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px;
+      padding-left: 0;
+    }
+
+    .hero-banner img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .banner-subtitle {
+      position: fixed;
+      top: calc(var(--projection-margin-top) + 42px + 255px - 13px - 18px);
+      /* Banner top (42px) + height (255px) - offset from bottom (13px) - font size (18px) */
+      left: calc(var(--projection-margin-left) + 40px);
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--mid-green);
+      white-space: nowrap;
+      z-index: 10001;
+      opacity: 0;
+      transition: opacity 0.3s ease-in;
+    }
+
+    .banner-subtitle.visible {
+      opacity: 1;
+    }
+
+    .banner-subtitle a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .banner-subtitle a:hover {
+      text-decoration: underline;
+    }
+
+    /* Hero controls container */
+    .hero-controls {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* Speaker image container */
+    .speaker-container {
+      position: fixed;
+      top: calc(var(--projection-margin-top) + 42px);
+      right: var(--projection-margin-right);
+      width: 300px;
+      height: 255px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity 0.3s ease-in;
+      /* Drop shadow on bottom edge only */
+      box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .speaker-container.visible {
+      opacity: 1;
+    }
+
+    .speaker-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* Screen area below banner bar */
+    .screen {
+      position: fixed;
+      top: calc(42px + 255px);
+      /* Below banner bar */
+      left: 0;
+      right: 0;
+      min-height: 87px;
+      background: var(--screen-bkg);
+      border-left: 14px solid var(--screen-edge);
+      border-right: 14px solid var(--screen-edge);
+      border-top: 4px solid var(--screen-top);
+      border-bottom: 4px solid var(--screen-bottom);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s ease-in;
+      /* Green drop shadow on bottom edge only */
+      box-shadow: 0px 16px 8px rgba(37, 158, 117, 0.6);
+      clip-path: inset(0px 0px -100px -100px);
+      /* CSS noise texture using SVG data URI + corner screws */
+      background-image:
+        url('/static/images/screw.svg'),
+        url('/static/images/screw.svg'),
+        url('/static/images/screw.svg'),
+        url('/static/images/screw.svg'),
+        url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.1"/></svg>');
+      background-color: var(--screen-bkg);
+      background-position:
+        20px 10px,
+        calc(100% - 20px) 10px,
+        20px calc(100% - 10px),
+        calc(100% - 20px) calc(100% - 10px),
+        center;
+      background-repeat: no-repeat;
+      background-size:
+        16px 16px,
+        16px 16px,
+        16px 16px,
+        16px 16px,
+        cover;
+      position: relative;
+    }
+
+    /* White gradient overlay using ::after pseudo-element to sit on top of content */
+    .screen::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(to bottom,
+          rgba(255, 255, 255, 0.1) 0%,
+          rgba(255, 255, 255, 0) 100%),
+        linear-gradient(135deg,
+          #ffffff0a 0%,
+          #ffffff26 49.8%,
+          #ffffff09 50%,
+          #ffffff00 100%);
+      /* background-blend-mode: normal; */
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .screen.visible {
+      opacity: 1;
+    }
+
+    /* Nested button style for hero controls */
+    .hero-btn {
+      background: var(--darkness);
+      border-radius: 2px;
+      padding: 2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .hero-btn.action-add {
+      margin-right: 28px;
+    }
+
+    .hero-btn:hover {
+      background: #4a5a5f;
+    }
+
+    .hero-btn:disabled {
+      cursor: not-allowed;
+      background: rgba(60, 76, 81, 0.1);
+    }
+
+    .hero-btn:disabled .material-icons {
+      opacity: 0.4;
+    }
+
+    .hero-btn.updating .material-icons {
+      animation: spin-update 1s linear infinite;
+      opacity: 1;
+    }
+
+    @keyframes spin-update {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .hero-btn-inner {
+      background: var(--pale-white);
+      border-radius: 4px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+
+      /* Borders: white+20% on top/left, gray+50% on bottom/right */
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+      border-right: 1px solid rgba(128, 128, 128, 0.5);
+
+      /* Shadow for depth */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transform: translateY(0);
+      transition: all 0.1s ease;
+    }
+
+    /* Button press animation - invert borders and flatten */
+    .hero-btn:active .hero-btn-inner,
+    .hero-btn.pressing .hero-btn-inner {
+      /* Invert border lighting for pressed effect */
+      border-top: 1px solid rgba(128, 128, 128, 0.5);
+      border-left: 1px solid rgba(128, 128, 128, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+
+      /* Flatten shadow and push down slightly */
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      transform: translateY(1px);
+    }
+
+    .count-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--burnt-red);
+      color: var(--pale-white);
+      border-radius: 50%;
+      min-width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px;
+      border: 2px solid var(--darkness);
+    }
+
+    .hero-btn .material-icons {
+      font-family: 'Material Icons';
+      font-size: 32px;
+      user-select: none;
+      font-weight: normal;
+      font-style: normal;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Icon colors */
+    .hero-btn.action-stop .material-icons {
+      color: var(--burnt-red);
+    }
+
+    .hero-btn.action-play .material-icons,
+    .hero-btn.action-add .material-icons {
+      color: var(--dark-green);
+    }
+
+    .hero-btn.action-record .material-icons {
+      color: var(--burnt-red);
+    }
+
+    .hero-btn.action-update .material-icons {
+      color: var(--puke);
+    }
+
+    /* Recording state - swap background and icon colors */
+    .hero-btn.recording .hero-btn-inner {
+      background: var(--burnt-red);
+    }
+
+    .hero-btn.recording .material-icons {
+      color: var(--pale-white);
+      animation: pulse-record 1.5s infinite;
+    }
+
+    /* Top bar buttons - shared styles */
+    .top-bar-btn {
+      position: fixed;
+      top: var(--projection-margin-top);
+      width: 87px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Supertone', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 2px;
+      text-align: center;
+      z-index: 1000;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s ease-in, font-weight 0.1s ease, letter-spacing 0.1s ease, border 0.1s ease;
+      border-radius: 1px;
+
+      /* Borders: white+20% on top/left, gray+50% on bottom/right - 2px beveled effect */
+      border: 2px solid;
+      border-color: rgba(255, 255, 255, 0.2) rgba(128, 128, 128, 0.5) rgba(128, 128, 128, 0.5) rgba(255, 255, 255, 0.2);
+      border-top-color: rgba(255, 255, 255, 0.2);
+      border-left-color: rgba(255, 255, 255, 0.2);
+      border-bottom-color: rgba(128, 128, 128, 0.5);
+      border-right-color: rgba(128, 128, 128, 0.5);
+
+      /* Directional drop shadow - bottom and right only, no overflow */
+      box-shadow:
+        2px 2px 3px rgba(99, 99, 99, 0.5),
+        4px 4px 6px rgba(99, 99, 99, 0.5),
+        6px 6px 8px rgba(99, 99, 99, 0.5);
+      overflow: visible;
+      clip-path: inset(-100px -100px 0px 0px);
+    }
+
+    .top-bar-btn.visible {
+      opacity: 1;
+    }
+
+    /* Hover effect - reduce shadow by 25% */
+    .top-bar-btn:hover {
+      font-weight: 700;
+      letter-spacing: 5px;
+      box-shadow:
+        1.5px 1.5px 3px rgba(99, 99, 99, 0.5),
+        3px 3px 6px rgba(99, 99, 99, 0.5),
+        4.5px 4.5px 8px rgba(99, 99, 99, 0.5);
+    }
+
+    /* Button press animation - invert borders and remove shadow */
+    .top-bar-btn:active,
+    .top-bar-btn.pressing {
+      border-top-color: rgba(128, 128, 128, 0.5);
+      border-left-color: rgba(128, 128, 128, 0.5);
+      border-bottom-color: rgba(255, 255, 255, 0.2);
+      border-right-color: rgba(255, 255, 255, 0.2);
+      box-shadow: none !important;
+      transform: translateY(1px);
+    }
+
+    /* Button type: orange */
+    .top-bar-btn.btn-orange {
+      background: var(--burnt-red);
+      color: var(--pale-white);
+    }
+
+    /* Button type: white */
+    .top-bar-btn.btn-white {
+      background: var(--pale-white);
+      color: var(--dark-green);
+    }
+
+    /* Button type: green */
+    .top-bar-btn.btn-green {
+      background: var(--mid-green);
+      color: var(--pale-white);
+    }
+
+    /* Button positions */
+    #save-btn {
+      left: calc(var(--projection-margin-left) + 42px);
+    }
+
+    #load-btn {
+      left: calc(var(--projection-margin-left) + 215px);
+    }
+
+    #osc-btn {
+      left: calc(var(--projection-margin-left) + 345px);
+    }
+
+    #midi-btn {
+      left: calc(var(--projection-margin-left) + 474px);
+    }
+
+    #config-btn {
+      right: calc(var(--projection-margin-right) + 170px);
+    }
+
+    .container {
+      position: fixed;
+      top: calc(var(--projection-margin-top) + 297px);
+      /* Projection + Below hero bar (42px + 255px) */
+      left: var(--projection-margin-left);
+      right: var(--projection-margin-right);
+      bottom: var(--projection-margin-bottom);
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    header {
+      display: none;
+    }
+
+    h1 {
+      margin: 0;
+      color: #fff;
+    }
+
+    .global-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+
+    .stop-all-btn {
+      padding: 12px 24px;
+      border-radius: 6px;
+      border: 2px solid #d32f2f;
+      background: #c62828;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .stop-all-btn:hover {
+      background: #b71c1c;
+      border-color: #b71c1c;
+    }
+
+    .update-all-btn {
+      padding: 12px 24px;
+      border-radius: 6px;
+      border: 2px solid #ffa000;
+      background: #ffd43b;
+      color: #333;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 15px rgba(255, 212, 59, 0.3);
+    }
+
+    .update-all-btn:not(:disabled):hover {
+      background: #ffc107;
+      border-color: #ff8f00;
+      box-shadow: 0 0 20px rgba(255, 212, 59, 0.5);
+    }
+
+    .update-all-btn:not(:disabled) {
+      animation: pulse-subtle 2s ease-in-out infinite;
+    }
+
+    .update-all-btn:disabled {
+      background: #495057;
+      color: #adb5bd;
+      border-color: #495057;
+      cursor: not-allowed;
+      box-shadow: none;
+      animation: none;
+    }
+
+    @keyframes pulse-subtle {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.85;
+      }
+    }
+
+    /* Metronome indicator */
+    .metronome-indicator {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(7, 84, 90, 0.2);
+      border: 2px solid var(--dark-green);
+      position: absolute;
+      left: 550px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.5;
+      transition: opacity 0.2s ease;
+    }
+
+    .metronome-indicator.active {
+      opacity: 1;
+    }
+
+    .metronome-pulse {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--dark-green);
+      transform: scale(0.7);
+      transition: transform 0.05s ease-out, background 0.05s ease-out;
+    }
+
+    .metronome-indicator.beat .metronome-pulse {
+      transform: scale(1.2);
+      background: var(--mid-green);
+    }
+
+    /* Flash animation for panels being updated (Story 6.4) */
+    @keyframes flash {
+
+      0%,
+      100% {
+        border-color: inherit;
+      }
+
+      50% {
+        border-color: #fff;
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+      }
+    }
+
+    .panel-updating {
+      animation: flash 0.3s ease-in-out;
+    }
+
+    .add-panel-btn {
+      padding: 10px 20px;
+      border-radius: 6px;
+      border: 2px solid #2196F3;
+      background: #1976D2;
+      color: #fff;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      line-height: 1;
+    }
+
+    .add-panel-btn:hover {
+      background: #1565C0;
+      border-color: #0D47A1;
+    }
+
+    .capture-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    @keyframes pulse-record {
+
+      0%,
+      100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(240, 62, 62, 0.7);
+      }
+
+      50% {
+        opacity: 0.9;
+        box-shadow: 0 0 0 10px rgba(240, 62, 62, 0);
+      }
+    }
+
+    .master-panel {
+      position: fixed;
+      z-index: 9999;
+      transition: all 0.3s ease;
+      background: var(--pale-white);
+      border-radius: 2px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+      border-right: 1px solid rgba(128, 128, 128, 0.5);
+      box-shadow: 0 -8px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Expanded state - slides down from hero bar */
+    .master-panel:not(.compact) {
+      top: calc(var(--projection-margin-top) + 182px);
+      /* Projection + Below hero bar */
+      left: calc(var(--projection-margin-left) + 20px);
+      right: calc(var(--projection-margin-right) + 20px);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Compact state - RHS under hero bar */
+    .master-panel.compact {
+      top: calc(var(--projection-margin-top) + 182px);
+      /* Projection + Just below hero bar */
+      right: calc(var(--projection-margin-right) + 20px);
+      width: 220px;
+      padding: 12px;
+      background: var(--pale-white);
+    }
+
+    .master-panel.compact .master-code-wrapper {
+      display: none;
+    }
+
+    .master-code-wrapper {
+      min-height: 120px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      border: 1px solid rgba(128, 128, 128, 0.3);
+      padding: 8px;
+    }
+
+    .master-panel .code-editor {
+      background: transparent;
+      color: var(--darkness);
+    }
+
+    .master-panel.compact .master-header h3 {
+      display: none;
+    }
+
+    .master-panel.compact .master-sliders {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      width: 100%;
+    }
+
+    /* Master panel compact sliders - horizontal sliders stacked vertically */
+    .master-panel.compact .slider-control {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .master-panel.compact .slider-control label {
+      font-size: 10px;
+      color: var(--darkness);
+      font-weight: 600;
+      min-width: 50px;
+      flex-shrink: 0;
+    }
+
+    .master-panel.compact .slider-control input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      height: 8px;
+      background: rgba(7, 84, 90, 0.2);
+      border-radius: 2px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+      border-right: 1px solid rgba(128, 128, 128, 0.5);
+    }
+
+    .master-panel.compact .slider-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--mid-green);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid var(--darkness);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .master-panel.compact .slider-control input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: var(--mid-green);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid var(--darkness);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .master-panel.compact .slider-control .slider-value {
+      font-size: 9px;
+      color: var(--darkness);
+      font-weight: 600;
+      min-width: 35px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* Master panel expanded sliders */
+    .master-panel:not(.compact) .slider-control {
+      margin-bottom: 12px;
+    }
+
+    .master-panel:not(.compact) .slider-control label {
+      color: var(--darkness);
+      font-weight: 600;
+      font-size: 12px;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .master-panel:not(.compact) .slider-control input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      background: rgba(7, 84, 90, 0.2);
+      border-radius: 2px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+      border-right: 1px solid rgba(128, 128, 128, 0.5);
+      outline: none;
+    }
+
+    .master-panel:not(.compact) .slider-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--mid-green);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid var(--darkness);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .master-panel:not(.compact) .slider-control input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: var(--mid-green);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid var(--darkness);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .master-panel:not(.compact) .slider-control .slider-value {
+      font-size: 11px;
+      color: var(--darkness);
+      font-weight: 600;
+    }
+
+    .master-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .master-panel.compact .master-header {
+      margin-bottom: 0;
+      justify-content: center;
+    }
+
+    .master-header h3 {
+      margin: 0;
+      color: var(--darkness);
+      font-size: 18px;
+    }
+
+    .master-mode-btn {
+      background: var(--darkness);
+      border-radius: 2px;
+      padding: 2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .master-mode-btn-inner {
+      background: var(--pale-white);
+      border-radius: 4px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+      border-right: 1px solid rgba(128, 128, 128, 0.5);
+    }
+
+    .master-mode-btn .material-icons {
+      font-family: 'Material Icons';
+      font-size: 24px;
+      color: var(--mid-green);
+      user-select: none;
+    }
+
+    .master-mode-btn:hover {
+      background: #444;
+      color: #fff;
+    }
+
+
+    .master-sliders {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      position: absolute;
+      width: 400px;
+      height: 300px;
+      min-width: 300px;
+      min-height: 200px;
+      background: rgba(26, 26, 26, var(--panel-opacity));
+      /* Story 4.5: Configurable opacity */
+      border: 2px solid #444;
+      border-radius: 4px;
+      padding: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      touch-action: none;
+      /* Required for interact.js */
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      /* Story 6.3: Smooth transitions */
+      overflow: hidden;
+    }
+
+    /* Expanded panel header styling */
+    .card:not(.panel-collapsed) .card-header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      background: var(--pale-white);
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+      flex-shrink: 0;
+      gap: 10px;
+    }
+
+    .card:not(.panel-collapsed) .panel-number-badge {
+      background: var(--darkness);
+      color: var(--pale-white);
+      border: none;
+      flex-shrink: 0;
+    }
+
+    .card:not(.panel-collapsed) .panel-title {
+      color: var(--darkness);
+      font-size: 16px;
+      font-weight: 600;
+      flex-shrink: 1;
+      min-width: 100px;
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card:not(.panel-collapsed) .panel-controls {
+      flex-shrink: 0;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .card:not(.panel-collapsed) .code-editor-wrapper {
+      flex: 1;
+      overflow: hidden;
+      padding: 12px;
+      background: #1a1a1a;
+    }
+
+    .card:not(.panel-collapsed) .slider-container {
+      display: block;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-top: 1px solid rgba(128, 128, 128, 0.3);
+      max-height: 150px;
+      overflow-y: auto;
+      opacity: 1;
+    }
+
+    /* Expanded panel visualization canvas container - stays in header */
+    .card:not(.panel-collapsed) .visualization-canvas-container {
+      margin-left: auto;
+      flex-shrink: 1;
+      flex-grow: 1;
+      min-width: 200px;
+      max-width: 600px;
+      width: auto;
+      height: 50px;
+      margin-top: 0;
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Individual canvas elements in expanded panels */
+    .card:not(.panel-collapsed) .visualization-canvas-container .visualization-canvas {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 2px;
+      height: 50px;
+      flex: 1 1 0;
+      min-width: 100px;
+    }
+
+    /* Panel position animation - will be handled by JavaScript */
+    .card {
+      transition: transform var(--transition-duration, 0.2s) ease-out,
+        width var(--transition-duration, 0.2s) ease-out,
+        height var(--transition-duration, 0.2s) ease-out,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+    }
+
+    /* Collapsed state - compact horizontal layout */
+    .card.panel-collapsed {
+      background: var(--pale-white);
+      border-radius: 2px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+      border-right: 1px solid rgba(128, 128, 128, 0.5);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      padding: 0;
+      height: 56px !important;
+      max-height: 56px !important;
+      min-height: 56px !important;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    .card.panel-collapsed .code-editor-wrapper,
+    .card.panel-collapsed .slider-container,
+    .card.panel-collapsed .error-message {
+      display: none !important;
+      max-height: 0 !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      opacity: 0 !important;
+    }
+
+    /* Expanded panels: code editor wrapper animates in */
+    .card:not(.panel-collapsed) .code-editor-wrapper {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      max-height: none;
+      opacity: 1;
+    }
+
+    .card.panel-collapsed .card-header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-bottom: 0 !important;
+      flex-grow: 1;
+      min-width: 0;
+      gap: 8px;
+      padding: 0 12px !important;
+      cursor: grab;
+      height: 56px;
+      max-height: 56px;
+      overflow: visible;
+    }
+
+    /* Collapsed panel controls container */
+    .card.panel-collapsed .panel-controls {
+      flex-shrink: 0;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    /* Collapsed panel sliders container */
+    .card.panel-collapsed .collapsed-sliders-container {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    /* Hide collapsed sliders in expanded panels */
+    .card:not(.panel-collapsed) .collapsed-sliders-container {
+      display: none !important;
+    }
+
+    /* Collapsed panel sliders - unlabelled, compact */
+    .card.panel-collapsed .collapsed-sliders-container input[type="range"] {
+      width: 80px;
+      height: 20px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    /* Collapsed panel number badge */
+    .card.panel-collapsed .panel-number-badge {
+      background: var(--darkness);
+      color: var(--pale-white);
+      border: none;
+      min-width: 28px;
+      height: 28px;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    /* Collapsed panel title */
+    .card.panel-collapsed .panel-title {
+      color: var(--darkness);
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Collapsed panel buttons - 71% of hero button size */
+    .card.panel-collapsed .control-btn {
+      background: var(--darkness);
+      border-radius: 2px;
+      padding: 1.5px;
+      /* 71% of 2px */
+      border: none;
+      min-width: 0;
+      flex-shrink: 0;
+    }
+
+    .card.panel-collapsed .control-btn-inner {
+      background: var(--pale-white);
+      border-radius: 3px;
+      /* 71% of 4px */
+      padding: 8.5px;
+      /* 71% of 12px */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+      border-right: 1px solid rgba(128, 128, 128, 0.5);
+
+      /* Shadow for depth */
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      transform: translateY(0);
+      transition: all 0.1s ease;
+    }
+
+    /* Panel button press animation */
+    .card.panel-collapsed .control-btn:active .control-btn-inner,
+    .card.panel-collapsed .control-btn.pressing .control-btn-inner {
+      /* Invert border lighting for pressed effect */
+      border-top: 1px solid rgba(128, 128, 128, 0.5);
+      border-left: 1px solid rgba(128, 128, 128, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+
+      /* Flatten shadow and push down slightly */
+      box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+      transform: translateY(0.5px);
+    }
+
+    .card.panel-collapsed .control-btn .material-icons {
+      font-family: 'Material Icons';
+      font-size: 23px;
+      /* 71% of 32px */
+      user-select: none;
+    }
+
+    .card.panel-collapsed .control-btn.action-play .material-icons {
+      color: var(--dark-green);
+    }
+
+    .card.panel-collapsed .control-btn.action-stop .material-icons,
+    .card.panel-collapsed .control-btn.pause-btn .material-icons {
+      color: var(--darkness);
+    }
+
+    /* Pause button icon color in all panels (collapsed and expanded) */
+    .control-btn.pause-btn .material-icons,
+    .pause-btn .material-icons,
+    .control-btn-inner .material-icons {
+      color: var(--darkness) !important;
+    }
+
+    .card.panel-collapsed .control-btn:hover {
+      background: #4a5a5f;
+    }
+
+    /* Collapsed panel delete button - discrete top-right */
+    .card.panel-collapsed .delete-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: transparent;
+      border: none;
+      color: rgba(180, 66, 22, 0.5);
+      font-size: 16px;
+      padding: 4px;
+      margin: 0;
+      width: auto;
+      height: auto;
+      min-width: 0;
+      opacity: 0.3;
+      transition: opacity 0.2s, color 0.2s;
+    }
+
+    .card.panel-collapsed .delete-btn:hover {
+      opacity: 1;
+      color: var(--burnt-red);
+      background: transparent;
+    }
+
+    /* Collapsed panel visualization canvas container - in header flex-row */
+    .card.panel-collapsed .visualization-canvas-container {
+      display: flex;
+      flex-direction: row;
+      gap: 4px;
+      align-items: center;
+      flex-shrink: 0;
+      height: 40px;
+    }
+
+    /* Individual canvas elements in collapsed panels */
+    .card.panel-collapsed .visualization-canvas-container .visualization-canvas {
+      width: 80px !important;
+      height: 40px !important;
+      margin: 0 !important;
+      flex-shrink: 0;
+      border-radius: 2px;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* Story 6.3: Panel Visual States */
+
+    /* Paused panel (neutral state) */
+    .card.panel-paused {
+      border-color: #495057;
+      /* Gray */
+    }
+
+    /* Playing panel (active, in sync) */
+    .card.panel-playing {
+      border-color: #51cf66;
+      /* Green */
+      box-shadow: 0 0 10px rgba(81, 207, 102, 0.3), 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Stale panel (playing, code modified) */
+    .card.panel-stale {
+      border-color: #ffd43b;
+      /* Yellow/Orange */
+      box-shadow: 0 0 20px rgba(255, 212, 59, 0.5), 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Optional: Stale panel header background tint */
+    .card.panel-stale .card-header {
+      background: linear-gradient(to right,
+          rgba(255, 212, 59, 0.1),
+          transparent);
+    }
+
+    .card.active,
+    #master-panel.active {
+      border-color: #4a9eff;
+      box-shadow: 0 0 20px rgba(74, 158, 255, 0.5);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-shrink: 0;
+      cursor: grab;
+      user-select: none;
+      gap: 10px;
+      transition: background var(--transition-duration), padding var(--transition-duration), border-bottom var(--transition-duration);
+    }
+
+    .card-header:active {
+      cursor: grabbing;
+    }
+
+    .panel-number-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      height: 24px;
+      padding: 0 6px;
+      background: rgba(74, 158, 255, 0.3);
+      color: #4a9eff;
+      border: 1px solid rgba(74, 158, 255, 0.5);
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: monospace;
+      flex-shrink: 0;
+    }
+
+    .card-header h3 {
+      margin: 0;
+      color: #fff;
+      font-size: 18px;
+    }
+
+    .panel-title {
+      cursor: text !important;
+      border: 1px solid transparent;
+      padding: 2px 4px;
+      border-radius: 2px;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .panel-title:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .panel-title:focus {
+      outline: none;
+      border-color: #4a9eff;
+      background-color: rgba(74, 158, 255, 0.1);
+    }
+
+    /* Story 6.2: Panel controls container */
+    .panel-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Expanded panel control buttons */
+    .card:not(.panel-collapsed) .control-btn {
+      background: var(--darkness);
+      border-radius: 2px;
+      padding: 2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      min-width: 0;
+    }
+
+    .card:not(.panel-collapsed) .control-btn-inner {
+      background: var(--pale-white);
+      border-radius: 4px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+      border-right: 1px solid rgba(128, 128, 128, 0.5);
+
+      /* Shadow for depth */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transform: translateY(0);
+      transition: all 0.1s ease;
+    }
+
+    .card:not(.panel-collapsed) .control-btn .material-icons {
+      font-family: 'Material Icons';
+      font-size: 28px;
+      user-select: none;
+    }
+
+    .card:not(.panel-collapsed) .control-btn.action-play .material-icons {
+      color: var(--dark-green);
+    }
+
+    .card:not(.panel-collapsed) .control-btn.action-stop .material-icons {
+      color: var(--burnt-red);
+    }
+
+    .card:not(.panel-collapsed) .control-btn:hover {
+      background: #4a5a5f;
+    }
+
+    /* Expanded panel button press animation */
+    .card:not(.panel-collapsed) .control-btn:active .control-btn-inner,
+    .card:not(.panel-collapsed) .control-btn.pressing .control-btn-inner {
+      /* Invert border lighting for pressed effect */
+      border-top: 1px solid rgba(128, 128, 128, 0.5);
+      border-left: 1px solid rgba(128, 128, 128, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+
+      /* Flatten shadow and push down slightly */
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      transform: translateY(1px);
+    }
+
+    .card:not(.panel-collapsed) .delete-btn {
+      background: transparent;
+      border: none;
+      color: rgba(180, 66, 22, 0.6);
+      font-size: 20px;
+      padding: 6px;
+      margin-left: 8px;
+      flex-shrink: 0;
+      opacity: 0.5;
+      transition: opacity 0.2s, color 0.2s;
+    }
+
+    .card:not(.panel-collapsed) .delete-btn:hover {
+      opacity: 1;
+      color: var(--burnt-red);
+      background: transparent;
+    }
+
+    /* Story 6.2: PAUSE button */
+    .pause-btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 2px solid #d32f2f;
+      background: #c62828;
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      min-width: 70px;
+    }
+
+    .pause-btn:hover:not(:disabled) {
+      background: #b71c1c;
+      border-color: #b71c1c;
+    }
+
+    .pause-btn:disabled,
+    .pause-btn.hidden,
+    .activate-btn.hidden {
+      display: none;
+    }
+
+    /* Story 6.2: ACTIVATE button - Default (PLAY) */
+    .activate-btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 2px solid #388E3C;
+      background: #4CAF50;
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      min-width: 70px;
+    }
+
+    .activate-btn:hover:not(:disabled) {
+      background: #45a049;
+      border-color: #2E7D32;
+    }
+
+    /* Story 6.2: ACTIVATE button - UPDATE state (stale) */
+    .activate-btn.update {
+      background: #ffd43b;
+      border-color: #ffa000;
+      color: #333;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
+    }
+
+    /* Story 6.2: ACTIVATE button - Disabled (playing, not stale) */
+    .activate-btn:disabled {
+      background: #495057;
+      border-color: #343a40;
+      color: #adb5bd;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    /* Story 7.3: ACTIVATE button - Disabled class (invalid code) */
+    .activate-btn.disabled {
+      background: #495057;
+      border-color: #343a40;
+      color: #adb5bd;
+      cursor: not-allowed;
+      opacity: 0.6;
+      pointer-events: none;
+      animation: none;
+      /* Disable pulse animation when disabled */
+    }
+
+    /* Story 7.3: Error message container */
+    .error-message {
+      display: none;
+      /* Hidden by default */
+      color: #e06c75;
+      /* Red */
+      font-size: 0.85em;
+      padding: 0.5em 0.75em;
+      margin: 0.5em 0 0 0;
+      background-color: rgba(224, 108, 117, 0.1);
+      border-left: 3px solid #e06c75;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      line-height: 1.4;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .error-message:empty {
+      display: none;
+      /* Hide when empty */
+    }
+
+    /* Legacy - for backward compatibility during migration */
+    .control-btn {
+      padding: 10px 20px;
+      border-radius: 6px;
+      border: 2px solid #555;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      min-width: 80px;
+    }
+
+    .control-btn:hover {
+      background: #444;
+      border-color: #666;
+    }
+
+    .control-btn.playing {
+      background: #4CAF50;
+      border-color: #45a049;
+    }
+
+    .control-btn.playing:hover {
+      background: #45a049;
+    }
+
+    .delete-btn {
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 2px solid #d32f2f;
+      background: #c62828;
+      color: #fff;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      line-height: 1;
+      margin-left: 10px;
+    }
+
+    .delete-btn:hover {
+      background: #b71c1c;
+      border-color: #b71c1c;
+    }
+
+    /* ===== NEW BUTTON HOLE SYSTEM ===== */
+
+    /* BUTTON HOLES - The dark recessed containers */
+    .btn-hole {
+      background: var(--darkness);
+      border: 1px solid #ede4d5;
+      border-radius: 2.5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.1s ease;
+    }
+
+    .btn-hole-slim {
+      width: 86px;
+      height: 42px;
+    }
+
+    .btn-hole-square {
+      width: 86px;
+      height: 86px;
+    }
+
+    /* INACTIVE BUTTON HOLES - Transparent background */
+    .btn-hole.inactive,
+    .btn-hole:disabled {
+      background: transparent;
+      cursor: not-allowed;
+    }
+
+    /* BUTTONS - The raised elements inside holes */
+    .btn-raised {
+      box-sizing: border-box;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      transition: all 0.1s ease;
+      user-select: none;
+
+      /* Beveled border effect - light on top/left, dark on bottom/right */
+      border: 2px solid;
+      border-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.2) rgba(255, 255, 255, 0.2);
+      border-top-color: rgba(255, 255, 255, 0.2);
+      border-left-color: rgba(255, 255, 255, 0.2);
+      border-bottom-color: rgba(0, 0, 0, 0.2);
+      border-right-color: rgba(0, 0, 0, 0.2);
+
+      /* Diffuse blurred shadow effect - bottom and right edges only */
+      box-shadow:
+        4px 4px 6px rgba(99, 99, 99, 0.5),
+        8px 8px 12px rgba(99, 99, 99, 0.5),
+        12px 12px 16px rgba(99, 99, 99, 0.5),
+        inset -1px -1px 2px rgba(0, 0, 0, 0.1),
+        inset 1px 1px 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-raised-slim {
+      width: 80px;
+      min-width: 80px;
+      height: 35px;
+      min-height: 35px;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .btn-raised-square {
+      width: 80px;
+      min-width: 80px;
+      height: 80px;
+      min-height: 80px;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    /* Button color varieties */
+    .btn-pearl {
+      background: var(--pearl);
+      color: var(--dark-green);
+    }
+
+    .btn-cream {
+      background: var(--cream);
+      color: var(--dark-green);
+    }
+
+    .btn-burnt-red {
+      background: var(--burnt-red);
+      color: white;
+    }
+
+    .btn-dark-green {
+      background: var(--dark-green);
+      color: white;
+    }
+
+    /* PRESSED STATE - Invert borders and remove drop-shadow completely */
+    .btn-hole:active .btn-raised,
+    .btn-hole.pressing .btn-raised {
+      border-top-color: rgba(0, 0, 0, 0.2);
+      border-left-color: rgba(0, 0, 0, 0.2);
+      border-bottom-color: rgba(255, 255, 255, 0.2);
+      border-right-color: rgba(255, 255, 255, 0.2);
+
+      box-shadow: none !important;
+
+      transform: translateY(1px);
+    }
+
+    /* Override hover state when pressing */
+    .btn-hole:active:hover .btn-raised,
+    .btn-hole.pressing:hover .btn-raised {
+      box-shadow: none !important;
+    }
+
+    /* HOVER STATE - Reduce shadow offset by 25% */
+    .btn-hole:hover .btn-raised {
+      box-shadow:
+        3px 3px 6px rgba(99, 99, 99, 0.5),
+        6px 6px 12px rgba(99, 99, 99, 0.5),
+        9px 9px 16px rgba(99, 99, 99, 0.5),
+        inset -1px -1px 2px rgba(0, 0, 0, 0.1),
+        inset 1px 1px 1px rgba(255, 255, 255, 0.1);
+    }
+
+    /* INACTIVE BUTTON STATE - Looks pressed with no shadow and inverted borders */
+    .btn-hole.inactive .btn-raised,
+    .btn-hole:disabled .btn-raised {
+      border-top-color: rgba(0, 0, 0, 0.2);
+      border-left-color: rgba(0, 0, 0, 0.2);
+      border-bottom-color: rgba(255, 255, 255, 0.2);
+      border-right-color: rgba(255, 255, 255, 0.2);
+      box-shadow: none !important;
+      transform: translateY(1px);
+    }
+
+    /* Keep inactive appearance on hover */
+    .btn-hole.inactive:hover .btn-raised,
+    .btn-hole:disabled:hover .btn-raised {
+      border-top-color: rgba(0, 0, 0, 0.2);
+      border-left-color: rgba(0, 0, 0, 0.2);
+      border-bottom-color: rgba(255, 255, 255, 0.2);
+      border-right-color: rgba(255, 255, 255, 0.2);
+      box-shadow: none !important;
+      transform: translateY(1px);
+    }
+
+    /* Keep inactive appearance when pressed */
+    .btn-hole.inactive:active .btn-raised,
+    .btn-hole.inactive.pressing .btn-raised,
+    .btn-hole:disabled:active .btn-raised {
+      border-top-color: rgba(0, 0, 0, 0.2);
+      border-left-color: rgba(0, 0, 0, 0.2);
+      border-bottom-color: rgba(255, 255, 255, 0.2);
+      border-right-color: rgba(255, 255, 255, 0.2);
+      box-shadow: none !important;
+      transform: translateY(1px);
+    }
+
+    /* Material Icons inside buttons */
+    .btn-raised .material-icons {
+      font-size: 24px;
+    }
+
+    .btn-raised-square .material-icons {
+      font-size: 32px;
+    }
+
+    /* ===== END BUTTON HOLE SYSTEM ===== */
+
+    .code-input {
+      width: 100%;
+      flex-grow: 1;
+      padding: 15px;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-size: var(--code-font-size);
+      /* Story 4.5: Configurable font size */
+      line-height: 1.5;
+      background: #1a1a1a;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 4px;
+      outline: none;
+      resize: none;
+      overflow-y: auto;
+      overflow-x: auto;
+      /* Story 7.1: Horizontal scrollbar */
+      white-space: pre;
+      /* Story 7.1: Default no wrap (overridden by JS if wrap_lines enabled) */
+    }
+
+    .code-input:focus {
+      border-color: #666;
+      box-shadow: 0 0 0 2px rgba(100, 100, 100, 0.2);
+    }
+
+    /* Story 7.6: Dedicated CodeMirror wrapper - handles ALL scrolling */
+    .code-editor-wrapper {
+      flex: 1 1 0;
+      min-height: 0;
+      overflow: auto;
+      /* WE handle scrolling, not CodeMirror */
+    }
+
+    /* Story 7.6: CodeMirror container - no positioning, just flows */
+    .code-editor {
+      min-height: 100%;
+    }
+
+    /* CodeMirror scroller doesn't scroll - it's just content */
+    .code-editor .cm-scroller {
+      overflow: visible !important;
+      height: auto !important;
+    }
+
+    /* CodeMirror editor expands to content size */
+    .code-editor .cm-editor {
+      height: auto !important;
+    }
+
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .slider-control {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 120px;
+    }
+
+    .slider-control label {
+      font-size: 12px;
+      color: #aaa;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .slider-control input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #444;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .slider-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #4CAF50;
+      cursor: pointer;
+    }
+
+    .slider-control input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #4CAF50;
+      cursor: pointer;
+      border: none;
+    }
+
+    /* Story 6.3: Stale indicator icon - REMOVED (excessive visual noise) */
+
+    .info {
+      display: none;
+    }
+
+    /* Visualization canvas container - base styles */
+    .visualization-canvas-container {
+      display: none;
+      /* Hidden by default, shown when visualizations present */
+      overflow: hidden;
+    }
+
+    /* Individual visualization canvas - base styles */
+    .visualization-canvas {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 2px;
+      overflow: hidden;
+      display: block;
+    }
+
+    /* Slider container for dynamically generated sliders */
+    .slider-container {
+      flex-shrink: 0;
+      max-height: 150px;
+      overflow-y: auto;
+      padding-top: 10px;
+    }
+
+    /* Resize cursors for interact.js */
+    .resize-edge {
+      position: absolute;
+    }
+
+    /* Splash Modal Styles */
+    .splash-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--cream);
+      backdrop-filter: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10002;
+      pointer-events: auto;
+    }
+
+    .splash-overlay.fade-out {
+      pointer-events: none;
+    }
+
+    .splash-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      text-align: center;
+      pointer-events: auto;
+      opacity: 1;
+      transition: opacity 0.4s ease-out;
+    }
+
+    .splash-content.fade-out {
+      opacity: 0;
+    }
+
+    /* Background that fades independently */
+    .splash-overlay::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--cream);
+      z-index: -1;
+      opacity: 1;
+      transition: opacity 0.4s ease-out;
+    }
+
+    .splash-overlay.fade-out::before {
+      opacity: 0;
+    }
+
+    /* Large splash logo that will animate */
+    .splash-logo-image {
+      width: 300px;
+      height: 300px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10003;
+      transition: none;
+    }
+
+    .splash-logo-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Animation to shrink and move logo to hero center */
+    .splash-logo-image.animating {
+      transition: all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+      top: calc(var(--projection-margin-top) + 42px + 45px);
+      /* Projection margin + Banner bar top (42px) + offset from banner top (45px) */
+      left: calc(var(--projection-margin-left) + 40px);
+      height: var(--site-logo-height);
+      max-height: var(--site-logo-height);
+      width: auto;
+      transform: translate(0, 0);
+    }
+
+    .splash-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .splash-title {
+      font-size: 3rem;
+      font-weight: bold;
+      margin: 0;
+      color: var(--dark-green);
+      letter-spacing: 2px;
+    }
+
+    .splash-tagline {
+      font-size: 1rem;
+      color: var(--mid-green);
+      margin: 0;
+    }
+
+    .splash-progress-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .splash-progress-bar {
+      width: 300px;
+      height: 6px;
+      background: #333;
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .splash-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #4a9eff, #7ec8ff);
+      transition: width 0.3s ease;
+    }
+
+    .splash-progress-indeterminate .splash-progress-fill {
+      width: 30%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(400%);
+      }
+    }
+
+    .splash-status {
+      font-size: 0.9rem;
+      color: #888;
+      margin: 0;
+    }
+
+    /* Settings Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(60, 76, 81, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 10001;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content.settings-panel {
+      background: var(--pale-white);
+      border-radius: 2px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+      border-right: 1px solid rgba(128, 128, 128, 0.5);
+      padding: 0;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+      background: rgba(0, 0, 0, 0.05);
+      flex-shrink: 0;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      color: var(--darkness);
+      font-size: 1.5rem;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--darkness);
+      font-size: 28px;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      opacity: 0.6;
+    }
+
+    .close-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
+      opacity: 1;
+    }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .settings-section {
+      margin-bottom: 30px;
+    }
+
+    .settings-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .settings-section h3 {
+      color: var(--darkness);
+      margin: 0 0 15px 0;
+      font-size: 1.1rem;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+    }
+
+    .settings-placeholder {
+      color: rgba(60, 76, 81, 0.6);
+      font-style: italic;
+      margin: 0;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    /* Story 4.4: Behavior Settings Controls */
+    .setting-item {
+      margin-bottom: 24px;
+    }
+
+    .setting-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .setting-item>label:not(.toggle-label) {
+      display: block;
+      color: var(--darkness);
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    /* Toggle Switch Styles */
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      gap: 10px;
+    }
+
+    .toggle-input {
+      display: none;
+    }
+
+    .toggle-slider {
+      position: relative;
+      width: 50px;
+      height: 24px;
+      background: rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(128, 128, 128, 0.3);
+      border-radius: 12px;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 2px;
+      top: 2px;
+      background: rgba(128, 128, 128, 0.5);
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .toggle-input:checked+.toggle-slider {
+      background: rgba(180, 66, 22, 0.2);
+      border-color: var(--burnt-red);
+    }
+
+    .toggle-input:checked+.toggle-slider::before {
+      transform: translateX(26px);
+      background: var(--burnt-red);
+    }
+
+    .toggle-text {
+      color: var(--darkness);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* Select Dropdown Styles */
+    .setting-select {
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(128, 128, 128, 0.3);
+      color: var(--darkness);
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .setting-select:focus {
+      outline: none;
+      border-color: var(--burnt-red);
+      box-shadow: 0 0 5px rgba(180, 66, 22, 0.3);
+    }
+
+    .setting-select option {
+      background: var(--pale-white);
+      color: var(--darkness);
+    }
+
+    /* Story 4.6: Text Input Styles */
+    .setting-text-input {
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(128, 128, 128, 0.3);
+      color: var(--darkness);
+      font-size: 14px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      margin-top: 4px;
+    }
+
+    .setting-text-input:focus {
+      outline: none;
+      border-color: var(--burnt-red);
+      box-shadow: 0 0 5px rgba(180, 66, 22, 0.3);
+    }
+
+    .setting-text-input::placeholder {
+      color: rgba(60, 76, 81, 0.4);
+    }
+
+    .setting-text-input.invalid {
+      border-color: #ff0000;
+      box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+    }
+
+    /* Story 7.2: Number Input Styles */
+    .setting-number-input {
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(128, 128, 128, 0.3);
+      color: var(--darkness);
+      font-size: 14px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      margin-top: 4px;
+    }
+
+    .setting-number-input:focus {
+      outline: none;
+      border-color: var(--burnt-red);
+      box-shadow: 0 0 5px rgba(180, 66, 22, 0.3);
+    }
+
+    .setting-number-input:invalid {
+      border-color: #ff0000;
+      box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+    }
+
+    /* Story 7.2: Validation Message Styles */
+    .validation-message {
+      display: inline-block;
+      font-size: 0.85em;
+      margin-left: 0.5em;
+      font-weight: 600;
+    }
+
+    .validation-message.valid {
+      color: #98c379;
+      /* Green */
+    }
+
+    .validation-message.invalid {
+      color: #e06c75;
+      /* Red */
+    }
+
+    /* Setting Description Text */
+    .setting-description {
+      color: rgba(60, 76, 81, 0.7);
+      font-size: 12px;
+      margin: 8px 0 0 0;
+      line-height: 1.4;
+    }
+
+    .toggle-label+.setting-description {
+      margin-left: 60px;
+    }
+
+    /* Notice box for important messages in settings */
+    .notice-box {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin: 16px 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .notice-info {
+      background: rgba(33, 150, 243, 0.1);
+      border: 1px solid rgba(33, 150, 243, 0.3);
+      color: var(--darkness);
+    }
+
+    .notice-info .material-icons {
+      color: rgba(33, 150, 243, 0.8);
+    }
+
+    /* Story 4.5: Appearance Settings Controls */
+    /* Range Slider Styles */
+    .setting-slider {
+      width: 100%;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+      margin-top: 8px;
+      border: 1px solid rgba(128, 128, 128, 0.2);
+    }
+
+    .setting-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: var(--burnt-red);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid var(--darkness);
+    }
+
+    .setting-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: var(--burnt-red);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid var(--darkness);
+    }
+
+    .setting-slider:hover::-webkit-slider-thumb {
+      box-shadow: 0 0 5px rgba(180, 66, 22, 0.5);
+    }
+
+    .setting-slider:hover::-moz-range-thumb {
+      box-shadow: 0 0 5px rgba(180, 66, 22, 0.5);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 16px 24px;
+      border-top: 1px solid #444;
+      background: #222;
+      flex-shrink: 0;
+    }
+
+    .btn-primary {
+      background: #4CAF50;
+      color: #fff;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      background: #45a049;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #888;
+      border: 1px solid #555;
+      padding: 10px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: #333;
+      color: #fff;
+      border-color: #666;
+    }
+
+    /* Confirmation Modal (non-blocking replacement for confirm()) */
+    .confirm-modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .confirm-modal {
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 400px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .confirm-modal-danger {
+      border-color: #ff4444;
+    }
+
+    .confirm-modal-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .confirm-modal-message {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--text-color);
+    }
+
+    .confirm-modal-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .confirm-modal-btn {
+      padding: 10px 20px;
+      border: 2px solid;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--text-color);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .confirm-modal-cancel {
+      border-color: #666;
+    }
+
+    .confirm-modal-cancel:hover {
+      background: #333;
+      border-color: #888;
+    }
+
+    .confirm-modal-confirm {
+      border-color: #ff4444;
+      color: #ff4444;
+    }
+
+    .confirm-modal-confirm:hover {
+      background: #ff4444;
+      color: #fff;
+    }
+
+    .confirm-modal-confirm:focus,
+    .confirm-modal-cancel:focus {
+      outline: 2px solid var(--border-color);
+      outline-offset: 2px;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+  <!-- Fixed logo in corner -->
+  <div class="site-logo">
+    <img src="/static/images/banner.png" alt="r0astr Logo">
+  </div>
+
+  <!-- Subtitle positioned independently from logo -->
+  <div class="banner-subtitle">
+    <a href="https://strudel.cc" target="_blank" rel="noopener noreferrer">STRUDEL</a> SYNTH API | ORCHESTRATOR
+  </div>
+
+  <!-- Top bar buttons -->
+  <button class="top-bar-btn btn-white" id="save-btn">SAVE</button>
+  <button class="top-bar-btn btn-orange" id="load-btn">LOAD</button>
+  <button class="top-bar-btn btn-green" id="osc-btn">OSC</button>
+  <button class="top-bar-btn btn-green" id="midi-btn">MIDI</button>
+  <button class="top-bar-btn btn-orange" id="config-btn">CONFIG</button>
+
+  <!-- Speaker container -->
+  <div class="speaker-container">
+    <img src="/static/images/speaker.png" alt="Speaker">
+  </div>
+
+  <!-- Screen area -->
+  <div class="screen"></div>
+
+  <!-- Hero section with banner -->
+  <div class="hero-section">
+    <div class="hero-banner">
+    </div>
+
+    <!-- Metronome indicator (left side, after banner) -->
+    <div class="metronome-indicator" id="metronome" title="Cycle pulse">
+      <div class="metronome-pulse"></div>
+    </div>
+
+    <!-- Hero controls -->
+    <div class="hero-controls">
+      <button class="btn-hole btn-hole-slim action-add" id="add-panel-btn" title="Add New Panel">
+        <div class="btn-raised btn-raised-slim btn-dark-green">
+          <span class="material-icons">add</span>
+        </div>
+      </button>
+
+      <button class="btn-hole btn-hole-square action-update" id="update-all-btn" title="Update all stale panels">
+        <div class="btn-raised btn-raised-square btn-pearl">
+          <span class="material-icons">eco</span>
+          <span class="count-badge" style="display: none;"></span>
+        </div>
+      </button>
+
+      <button class="btn-hole btn-hole-square action-stop" id="stop-all" title="Stop All">
+        <div class="btn-raised btn-raised-square btn-cream">
+          <span class="material-icons">stop</span>
+        </div>
+      </button>
+
+      <button class="btn-hole btn-hole-square action-record" id="record-btn" title="Toggle pattern recording">
+        <div class="btn-raised btn-raised-square btn-burnt-red">
+          <span class="material-icons">fiber_manual_record</span>
+        </div>
+      </button>
+
+      <!-- Pattern Capture Controls -->
+      <div class="capture-controls">
+        <label for="cycle-length" style="color: #555; font-size: 12px; margin-right: 5px;">Cycles:</label>
+        <select id="cycle-length" title="Pattern length in cycles (1-8)"
+          style="padding: 6px 8px; border-radius: 3px; border: 1px solid #999; background: var(--pale-white); color: var(--darkness); cursor: pointer; font-family: 'marvelregular', sans-serif; font-size: 11px;">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+        </select>
+        <label
+          style="color: #555; font-size: 12px; margin-left: 10px; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+          <input type="checkbox" id="duration-mode" title="Track note duration (hold keys)" style="cursor: pointer;">
+          Duration
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div id="splash-modal" class="splash-overlay" role="dialog" aria-modal="true" aria-label="Loading r0astr">
+    <!-- Large animated logo -->
+    <div class="splash-logo-image" id="splash-logo-animate">
+      <img src="/static/images/banner.png" alt="r0astr Logo">
+    </div>
+
+    <div class="splash-content">
+      <div class="splash-logo" style="margin-top: 250px;">
+        <h1 class="splash-title">r0astr</h1>
+      </div>
+      <p class="splash-tagline">Multi-Instrument Live Coding Interface</p>
+      <div class="splash-progress-container">
+        <div class="splash-progress-bar splash-progress-indeterminate">
+          <div class="splash-progress-fill"></div>
+        </div>
+        <p class="splash-status">Loading samples...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-overlay" role="dialog" aria-labelledby="settings-title" aria-modal="true"
+    style="display: none;">
+    <div class="modal-content settings-panel">
+      <div class="modal-header">
+        <h2 id="settings-title">Settings</h2>
+      </div>
+
+      <div class="modal-body">
+        <!-- Appearance Section (Story 4.5) -->
+        <section class="settings-section" id="appearance-settings">
+          <h3>Appearance</h3>
+
+          <!-- Color Scheme Dropdown (AC: 1) -->
+          <div class="setting-item">
+            <label for="color-scheme-select">Color Scheme</label>
+            <select id="color-scheme-select" class="setting-select">
+              <option value="dark">Dark (Default)</option>
+              <option value="light">Light</option>
+            </select>
+            <p class="setting-description">
+              Choose between dark and light themes
+            </p>
+          </div>
+
+          <!-- Font Size Slider (AC: 2) -->
+          <div class="setting-item">
+            <label for="font-size-slider">
+              Code Editor Font Size: <span id="font-size-value">14px</span>
+            </label>
+            <input type="range" id="font-size-slider" class="setting-slider" min="10" max="24" value="14" step="1">
+            <p class="setting-description">
+              Adjust font size for all code editors (10-24px)
+            </p>
+          </div>
+
+          <!-- Active Panel Opacity Slider -->
+          <div class="setting-item">
+            <label for="active-panel-opacity-slider">
+              Active Panel Opacity: <span id="active-panel-opacity-value">95%</span>
+            </label>
+            <input type="range" id="active-panel-opacity-slider" class="setting-slider" min="50" max="100" value="95"
+              step="5">
+            <p class="setting-description">
+              Opacity for the currently focused/active panel (50-100%)
+            </p>
+          </div>
+
+          <!-- Background Panel Opacity Slider -->
+          <div class="setting-item">
+            <label for="background-panel-opacity-slider">
+              Background Panels Opacity: <span id="background-panel-opacity-value">60%</span>
+            </label>
+            <input type="range" id="background-panel-opacity-slider" class="setting-slider" min="20" max="100"
+              value="60" step="5">
+            <p class="setting-description">
+              Cumulative opacity for unfocused panels (includes text, borders, everything) (20-100%)
+            </p>
+          </div>
+
+          <!-- Collapse on Blur Toggle -->
+          <div class="setting-item">
+            <label class="toggle-label">
+              <input type="checkbox" id="collapse-on-blur-toggle" class="toggle-input">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Collapse unfocused panels</span>
+            </label>
+            <p class="setting-description">
+              When enabled, background panels collapse to show only header (badge, title, buttons)
+            </p>
+          </div>
+
+          <!-- Animation Speed Dropdown (AC: 4) -->
+          <div class="setting-item">
+            <label for="animation-speed-select">UI Animation Speed</label>
+            <select id="animation-speed-select" class="setting-select">
+              <option value="slow">Slow (1.2s)</option>
+              <option value="normal">Normal (0.2s)</option>
+              <option value="fast">Fast (0.1s)</option>
+              <option value="disabled">Disabled</option>
+            </select>
+            <p class="setting-description">
+              Control speed of UI transitions and animations
+            </p>
+          </div>
+
+          <!-- Wrap Lines Toggle (Story 7.1) -->
+          <div class="setting-item">
+            <label class="toggle-label">
+              <input type="checkbox" id="wrap-lines-toggle" class="toggle-input">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Wrap long lines in code panels</span>
+            </label>
+            <p class="setting-description">
+              When enabled, long lines wrap to next line instead of scrolling horizontally
+            </p>
+          </div>
+
+          <!-- Auto-Format Toggle (Story 7.4) -->
+          <div class="setting-item">
+            <label class="toggle-label">
+              <input type="checkbox" id="auto-format-toggle" class="toggle-input">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Auto-format code on PLAY/UPDATE</span>
+            </label>
+            <p class="setting-description">
+              Automatically formats code for readability when pressing PLAY or UPDATE. Does not change code behavior.
+            </p>
+          </div>
+
+          <!-- Syntax Highlighting Toggle (Story 7.6) -->
+          <div class="setting-item">
+            <label class="toggle-label">
+              <input type="checkbox" id="syntax-highlight-toggle" class="toggle-input">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Enable syntax highlighting</span>
+            </label>
+            <p class="setting-description">
+              Use CodeMirror for syntax highlighting. Disable for plain text editor (better performance on very long
+              files).
+            </p>
+          </div>
+
+          <!-- Editor Theme Selection (Story 7.6) -->
+          <div class="setting-item">
+            <label for="editor-theme-select">
+              Editor Theme
+            </label>
+            <select id="editor-theme-select" class="setting-select">
+              <option value="atomone">Atom One Dark</option>
+              <option value="abcdef">Abcdef</option>
+              <option value="bespin">Bespin</option>
+              <option value="dracula">Dracula</option>
+              <option value="gruvboxDark">Gruvbox Dark</option>
+              <option value="materialDark">Material Dark</option>
+              <option value="nord">Nord</option>
+              <option value="solarizedDark">Solarized Dark</option>
+            </select>
+            <p class="setting-description">
+              Color theme for code editor (requires syntax highlighting enabled)
+            </p>
+          </div>
+
+          <!-- Default Panel Width (Story 7.2) -->
+          <div class="setting-item">
+            <label for="default-width">
+              Default Panel Width (px): <span id="default-width-value">600</span>
+            </label>
+            <input type="number" id="default-width" class="setting-number-input" min="300" max="2000" value="600"
+              step="10">
+            <span class="validation-message" id="width-validation"></span>
+            <p class="setting-description">
+              New panels will be created with this width (300-2000px)
+            </p>
+          </div>
+
+          <!-- Default Panel Height (Story 7.2) -->
+          <div class="setting-item">
+            <label for="default-height">
+              Default Panel Height (px): <span id="default-height-value">400</span>
+            </label>
+            <input type="number" id="default-height" class="setting-number-input" min="200" max="1500" value="400"
+              step="10">
+            <span class="validation-message" id="height-validation"></span>
+            <p class="setting-description">
+              New panels will be created with this height (200-1500px)
+            </p>
+          </div>
+        </section>
+
+        <!-- Behavior Section (Story 4.4) -->
+        <section class="settings-section" id="behavior-settings">
+          <h3>Behavior</h3>
+
+          <!-- YOLO Mode Toggle (AC: 1) -->
+          <div class="setting-item">
+            <label class="toggle-label">
+              <input type="checkbox" id="yolo-toggle" class="toggle-input">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">YOLO Mode (Skip deletion confirmations)</span>
+            </label>
+            <p class="setting-description">
+              Disable confirmation dialogs when deleting panels. For users who like to live dangerously.
+            </p>
+          </div>
+
+          <!-- Auto-save Interval (AC: 2) -->
+          <div class="setting-item">
+            <label for="autosave-interval-select">Auto-save Panel State</label>
+            <select id="autosave-interval-select" class="setting-select">
+              <option value="manual">Manual (on panel change)</option>
+              <option value="30s">Every 30 seconds</option>
+              <option value="1min">Every 1 minute</option>
+              <option value="5min">Every 5 minutes</option>
+            </select>
+            <p class="setting-description">
+              How frequently to save panel state to localStorage
+            </p>
+          </div>
+
+          <!-- Restore Session Toggle (AC: 3) -->
+          <div class="setting-item">
+            <label class="toggle-label">
+              <input type="checkbox" id="restore-session-toggle" class="toggle-input">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Restore Session on Load</span>
+            </label>
+            <p class="setting-description">
+              Automatically restore panels and code from previous session when opening the app
+            </p>
+          </div>
+
+          <!-- Confirmation Dialogs Toggle (AC: 4) -->
+          <div class="setting-item">
+            <label class="toggle-label">
+              <input type="checkbox" id="confirmation-dialogs-toggle" class="toggle-input">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Show Confirmation Dialogs</span>
+            </label>
+            <p class="setting-description">
+              Show confirmation prompts for destructive actions (overrides YOLO mode if disabled)
+            </p>
+          </div>
+        </section>
+
+        <!-- Integrations Section (Story 4.6) -->
+        <section class="settings-section" id="integration-settings">
+          <h3>Integrations</h3>
+
+          <!-- Snippet Location Input (AC: 1) -->
+          <div class="setting-item">
+            <label for="snippet-location-input">Snippet Library URL/Path</label>
+            <input type="text" id="snippet-location-input" class="setting-text-input"
+              placeholder="https://example.com/snippets.json">
+            <p class="setting-description">
+              URL or file path to external snippet library (JSON format). Leave empty to disable.
+            </p>
+          </div>
+
+          <!-- Remote WebSocket Layout Dropdown (AC: 2) -->
+          <div class="setting-item">
+            <label for="remote-ws-layout-select">Remote Control Panel Layout</label>
+            <select id="remote-ws-layout-select" class="setting-select">
+              <option value="side-panel">Side Panel (Default)</option>
+              <option value="modal">Modal Overlay</option>
+              <option value="hidden">Hidden</option>
+            </select>
+            <p class="setting-description">
+              Where to display remote control panel (requires WebSocket server from Epic 5)
+            </p>
+          </div>
+
+          <!-- Skin Pack Path Input (AC: 3) -->
+          <div class="setting-item">
+            <label for="skin-pack-input">Skin Pack Folder Path</label>
+            <input type="text" id="skin-pack-input" class="setting-text-input" placeholder="/path/to/skins">
+            <p class="setting-description">
+              Path to WinAmp-style skin folder (future feature, Epic 2 extension)
+            </p>
+          </div>
+        </section>
+
+        <!-- Projection Tweaks Section -->
+        <section class="settings-section" id="projection-settings">
+          <h3>Projection Tweaks</h3>
+          <p class="setting-description">
+            Add margins to the entire UI for projection or screen sharing adjustments
+          </p>
+
+          <div class="notice-box notice-info">
+            <span class="material-icons" style="font-size: 18px; margin-right: 8px;">info</span>
+            <span>Changing projection margins requires a page reload to take effect</span>
+          </div>
+
+          <!-- Top Margin -->
+          <div class="setting-item">
+            <label for="projection-margin-top">
+              Top Margin: <span id="projection-margin-top-value">0px</span>
+            </label>
+            <input type="range" id="projection-margin-top" class="setting-slider" min="0" max="200" value="0" step="5">
+            <p class="setting-description">
+              Top margin in pixels (0-200px)
+            </p>
+          </div>
+
+          <!-- Right Margin -->
+          <div class="setting-item">
+            <label for="projection-margin-right">
+              Right Margin: <span id="projection-margin-right-value">0px</span>
+            </label>
+            <input type="range" id="projection-margin-right" class="setting-slider" min="0" max="200" value="0"
+              step="5">
+            <p class="setting-description">
+              Right margin in pixels (0-200px)
+            </p>
+          </div>
+
+          <!-- Bottom Margin -->
+          <div class="setting-item">
+            <label for="projection-margin-bottom">
+              Bottom Margin: <span id="projection-margin-bottom-value">0px</span>
+            </label>
+            <input type="range" id="projection-margin-bottom" class="setting-slider" min="0" max="200" value="0"
+              step="5">
+            <p class="setting-description">
+              Bottom margin in pixels (0-200px)
+            </p>
+          </div>
+
+          <!-- Left Margin -->
+          <div class="setting-item">
+            <label for="projection-margin-left">
+              Left Margin: <span id="projection-margin-left-value">0px</span>
+            </label>
+            <input type="range" id="projection-margin-left" class="setting-slider" min="0" max="200" value="0" step="5">
+            <p class="setting-description">
+              Left margin in pixels (0-200px)
+            </p>
+          </div>
+        </section>
+
+        <!-- Advanced Settings Section -->
+        <section class="settings-section" id="advanced-settings">
+          <h3>Advanced</h3>
+          <p class="setting-description">
+            Advanced playback and tempo controls
+          </p>
+
+          <!-- Show Tempo Knob -->
+          <div class="setting-item">
+            <label class="toggle-label">
+              <span class="setting-label-text">Automatic TEMPO Control</span>
+              <div class="toggle-switch">
+                <input type="checkbox" id="show-tempo-knob" class="toggle-input">
+                <span class="toggle-slider"></span>
+              </div>
+            </label>
+            <p class="setting-description">
+              Automatically adds a global tempo slider controlling playback speed
+            </p>
+          </div>
+
+          <!-- Show CPM -->
+          <div class="setting-item">
+            <label class="toggle-label">
+              <span class="setting-label-text">Display as CPM (Cycles Per Minute)</span>
+              <div class="toggle-switch">
+                <input type="checkbox" id="show-cpm" class="toggle-input">
+                <span class="toggle-slider"></span>
+              </div>
+            </label>
+            <p class="setting-description">
+              Show tempo as CPM instead of BPM (BPM = CPM × 4)
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <div class="modal-footer">
+        <button id="settings-save-btn" class="btn-primary">Save</button>
+        <button id="settings-cancel-btn" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="global-controls">
+      <!-- Controls moved to hero section -->
+    </div>
+  </header>
+
+  <div class="master-panel compact" id="master-panel">
+    <div class="master-header">
+      <h3>Master Controls</h3>
+      <button class="master-mode-btn" id="master-mode">
+        <div class="master-mode-btn-inner">
+          <span class="material-icons">unfold_more</span>
+        </div>
+      </button>
+    </div>
+    <div class="code-editor-wrapper master-code-wrapper">
+      <div class="code-editor master-code" id="master-code" data-card="master-panel"></div>
+    </div>
+    <div class="master-sliders" id="master-sliders"></div>
+  </div>
+
+  <div class="container">
+    <!-- Dynamic panels created via [+] button will appear here -->
+  </div>
+
+  <div class="info">
+    Click [+] to create new instrument panels. Click "Play" to start each instrument.
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>

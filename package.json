@@ -1,0 +1,50 @@
+{
+  "name": "r0astr",
+  "version": "0.6.0",
+  "description": "r0astr - Multi-instrument live coding interface built on Strudel",
+  "type": "module",
+  "private": true,
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node src/server/index.js",
+    "electron:dev": "concurrently -k \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "npm run build && electron-builder",
+    "electron:build:mac": "npm run build && electron-builder --mac",
+    "electron:build:win": "npm run build && electron-builder --win",
+    "electron:build:linux": "npm run build && electron-builder --linux",
+    "electron:pack": "npm run build && electron-builder --dir",
+    "docs:serve": "cd site && poetry run mkdocs serve",
+    "docs:build": "cd site && poetry run mkdocs build",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@strudel/codemirror": "^1.2.6",
+    "@strudel/core": "^1.2.5",
+    "@strudel/mini": "^1.2.5",
+    "@strudel/soundfonts": "^1.2.6",
+    "@strudel/tonal": "^1.2.5",
+    "@strudel/transpiler": "^1.2.5",
+    "@strudel/webaudio": "^1.2.6",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "interactjs": "^1.10.27",
+    "prettier": "^3.6.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8",
+    "vite": "^6.0.11",
+    "vite-plugin-bundle-audioworklet": "^0.1.1",
+    "wait-on": "^8.0.0",
+    "ws": "^8.18.3"
+  },
+  "author": "Peter Kalt <peter.kalt@piatra.com.au>",
+  "license": "AGPL-3.0-or-later",
+  "build": {
+    "extends": "electron-builder.json"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "client": {
+    "id": "891f23d4-6943-4cc0-be41-bca81e33f1e3",
+    "name": "Peter Kalt",
+    "email": "peter.kalt@piatra.com.au"
+  },
+  "project": {
+    "id": "5d9e8fa7-3529-4c9d-a878-5645250beec1",
+    "name": "r0astr",
+    "status": "active"
+  },
+  "configured_at": "2025-11-15T02:50:27.028121+00:00"
+}
