@@ -1856,7 +1856,6 @@ async function activatePanel(panelId) {
 
     // Store miniLocations and update editor decorations for pattern highlighting
     if (shouldHighlight) {
-      console.log(`[HIGHLIGHT] Captured ${(miniLocations || []).length} miniLocations for ${panelId}:`, miniLocations);
       panelMiniLocations.set(panelId, miniLocations || []);
       updateMiniLocations(view, miniLocations || []);
     }
@@ -2747,7 +2746,6 @@ function initializeMetronome() {
  * Filters haps by panel ID to avoid cross-contamination
  */
 function initializePatternHighlighting() {
-  console.log('[Pattern Highlighting] Initializing...');
   let animationFrameId = null;
   let isHighlightingActive = false;
   let lastUpdateTime = 0;
@@ -2777,7 +2775,6 @@ function initializePatternHighlighting() {
 
   // Animation loop
   function startHighlightingLoop() {
-    console.log('[Pattern Highlighting] Starting animation loop');
     function loop() {
       if (!isHighlightingActive) {
         animationFrameId = null;
@@ -2786,7 +2783,7 @@ function initializePatternHighlighting() {
 
       const now = performance.now();
 
-      // Throttle updates to reduce CPU load
+      // Throttle updates to reduce CPU load (20fps)
       if (now - lastUpdateTime < UPDATE_INTERVAL_MS) {
         animationFrameId = requestAnimationFrame(loop);
         return;
@@ -2831,8 +2828,6 @@ function initializePatternHighlighting() {
 
   // Listen for settings changes (when user toggles pattern_highlighting)
   window.addEventListener('settings-changed', updateHighlightingState);
-
-  console.log('✓ Pattern highlighting initialized');
 }
 
 // Async initialization to ensure modules load before evaluation (matches official REPL)
