@@ -5,6 +5,7 @@
 
 import { getSettings } from './settingsManager.js';
 import { updatePanelOpacities } from './themeManager.js';
+import { eventBus } from '../utils/eventBus.js';
 
 // Master panel identifier constant
 export const MASTER_PANEL_ID = 'master-panel';
@@ -86,6 +87,14 @@ export function createPanel(options = {}) {
 
   panels.set(panelId, panel);
 
+  // Emit panel created event
+  eventBus.emit('panel:created', {
+    id: panelId,
+    title: panel.title,
+    code: panel.code,
+    options
+  });
+
   // Auto-save panel state (debounced)
   autoSavePanelState();
 
@@ -107,6 +116,43 @@ export function getPanel(panelId) {
  */
 export function getAllPanels() {
   return panels;
+}
+
+/**
+ * Check if panel is currently playing
+ * @param {string} panelId - Panel ID
+ * @returns {boolean} True if playing, false otherwise
+ */
+export function isPanelPlaying(panelId) {
+  const panel = panels.get(panelId);
+  return panel?.playing || false;
+}
+
+/**
+ * Set panel playing state
+ * @param {string} panelId - Panel ID
+ * @param {boolean} playing - Playing state
+ * @returns {boolean} Success status
+ */
+export function setPanelPlaying(panelId, playing) {
+  const panel = panels.get(panelId);
+  if (!panel) {
+    console.warn(`Panel ${panelId} not found`);
+    return false;
+  }
+
+  const previousState = panel.playing;
+  panel.playing = playing;
+
+  // Emit event only if state actually changed
+  if (previousState !== playing) {
+    eventBus.emit('panel:playingChanged', {
+      panelId,
+      playing
+    });
+  }
+
+  return true;
 }
 
 /**
@@ -196,6 +242,36 @@ export function updatePanelTitle(panelId, newTitle) {
 }
 
 /**
+ * Update panel code
+ * Updates the code in panel state and optionally in textarea/CodeMirror
+ * @param {string} panelId - Panel ID
+ * @param {string} code - New pattern code
+ * @returns {boolean} Success status
+ */
+export function updatePanelCode(panelId, code) {
+  const panel = panels.get(panelId);
+  if (!panel) {
+    console.warn(`Panel ${panelId} not found`);
+    return false;
+  }
+
+  // Update panel state
+  panel.code = code;
+
+  // Emit code updated event
+  eventBus.emit('panel:codeUpdated', {
+    panelId,
+    code
+  });
+
+  // Auto-save panel state (debounced)
+  autoSavePanelState();
+
+  console.log(`Updated code for panel ${panelId}`);
+  return true;
+}
+
+/**
  * Delete panel by ID
  * Removes from state and DOM
  * NOTE: Audio must be stopped BEFORE calling this (using silence pattern)
@@ -242,6 +318,11 @@ export function deletePanel(panelId, scheduler = null, cardStates = null, skipCo
 
     // Renumber remaining panels to maintain hotkey mapping (Cmd+Opt+1-9)
     renumberPanels();
+  }
+
+  // Emit panel deleted event
+  if (removed) {
+    eventBus.emit('panel:deleted', panelId);
   }
 
   // Auto-save panel state (debounced, only in browser)
