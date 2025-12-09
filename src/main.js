@@ -2093,11 +2093,9 @@ async function activatePanel(panelId) {
     }
 
     // Update state
-    // console.log(`[STATE DEBUG] Setting ${panelId}.playing = true`);
     panel.playing = true;
     panel.stale = false;
     panel.lastEvaluatedCode = patternCode;
-    // console.log(`[STATE DEBUG] After setting - cardStates[${panelId}].playing =`, cardStates[panelId].playing);
     updatePanel(panelId, { stale: false, lastEvaluatedCode: patternCode }); // Sync to panelManager
 
     // Story 7.3: Clear any previous error messages on successful playback
@@ -2107,7 +2105,6 @@ async function activatePanel(panelId) {
     updateVisualIndicators(panelId);
 
     // Notify metronome of state change
-    // console.log('[STATE DEBUG] Dispatching panel-state-changed event');
     window.dispatchEvent(new CustomEvent('panel-state-changed'));
 
     // Bring panel to front (Story 8.5: z-index on play)
@@ -2799,6 +2796,15 @@ function initializePatternHighlighting() {
           _cps: scheduler.cps
         });
 
+        // Filter to only haps that are CURRENTLY playing (not future haps in the query arc)
+        // queryArc returns all haps in the 1-cycle window, but we only want to highlight
+        // the ones actively playing RIGHT NOW
+        const activeHaps = allHaps.filter(hap => {
+          if (!hap.whole) return false;
+          // Check if currentTime falls within this hap's time span
+          return currentTime >= hap.whole.begin && currentTime < hap.whole.end;
+        });
+
         // Update each panel - CodeMirror will automatically filter haps
         // by matching context.locations against each editor's miniLocations
         for (const [panelId, view] of editorViews.entries()) {
@@ -2810,8 +2816,8 @@ function initializePatternHighlighting() {
             continue;
           }
 
-          // Pass ALL haps to each editor - CodeMirror filters by location matching
-          highlightMiniLocations(view, currentTime, allHaps);
+          // Pass only ACTIVE haps (currently playing) to prevent all notes highlighting at once
+          highlightMiniLocations(view, currentTime, activeHaps);
         }
       } catch (err) {
         console.warn('[Pattern Highlighting] Error:', err);

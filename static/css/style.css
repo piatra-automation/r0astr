@@ -35,6 +35,9 @@
       --puke: #e3ad43;
       --darkness: #0b0600;
 
+      /* Pattern Highlighting (Strudel) */
+      --foreground: #00ffff;         /* Bright cyan for pattern highlights */
+
       /* Panel Base Colors */
       --panel-base-warm: #dad0bc;        /* Warm beige for background */
       --panel-base-cool: #d9d8d4;        /* Cool gray for hero/controls */
