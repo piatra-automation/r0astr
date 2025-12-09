@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Piatra REPL - Dual Card Interface</title>
-  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/base.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap"
@@ -56,7 +56,7 @@
       <button class="btn-hole btn-hole-square action-update" id="update-all-btn" title="Update all stale panels">
         <div class="btn-raised btn-raised-square btn-pearl">
           <span class="material-icons">eco</span>
-          <span class="count-badge" style="display: none;"></span>
+          <span class="count-badge hidden"></span>
         </div>
       </button>
 
@@ -74,9 +74,8 @@
 
       <!-- Pattern Capture Controls -->
       <div class="capture-controls">
-        <label for="cycle-length" style="color: #555; font-size: 12px; margin-right: 5px;">Cycles:</label>
-        <select id="cycle-length" title="Pattern length in cycles (1-8)"
-          style="padding: 6px 8px; border-radius: 3px; border: 1px solid #999; background: var(--pale-white); color: var(--darkness); cursor: pointer; font-family: 'marvelregular', sans-serif; font-size: 11px;">
+        <label for="cycle-length">Cycles:</label>
+        <select id="cycle-length" title="Pattern length in cycles (1-8)">
           <option value="1">1</option>
           <option value="2" selected>2</option>
           <option value="3">3</option>
@@ -86,9 +85,8 @@
           <option value="7">7</option>
           <option value="8">8</option>
         </select>
-        <label
-          style="color: #555; font-size: 12px; margin-left: 10px; display: flex; align-items: center; gap: 5px; cursor: pointer;">
-          <input type="checkbox" id="duration-mode" title="Track note duration (hold keys)" style="cursor: pointer;">
+        <label>
+          <input type="checkbox" id="duration-mode" title="Track note duration (hold keys)">
           Duration
         </label>
       </div>
@@ -102,7 +100,7 @@
     </div>
 
     <div class="splash-content">
-      <div class="splash-logo" style="margin-top: 250px;">
+      <div class="splash-logo">
         <h1 class="splash-title">r0astr</h1>
       </div>
       <p class="splash-tagline">Multi-Instrument Live Coding Interface</p>
@@ -116,8 +114,7 @@
   </div>
 
   <!-- Settings Modal -->
-  <div id="settings-modal" class="modal-overlay" role="dialog" aria-labelledby="settings-title" aria-modal="true"
-    style="display: none;">
+  <div id="settings-modal" class="modal-overlay" role="dialog" aria-labelledby="settings-title" aria-modal="true">
     <div class="modal-content settings-panel">
       <div class="modal-header">
         <h2 id="settings-title">Settings</h2>
@@ -397,7 +394,7 @@
           </p>
 
           <div class="notice-box notice-info">
-            <span class="material-icons" style="font-size: 18px; margin-right: 8px;">info</span>
+            <span class="material-icons">info</span>
             <span>Changing projection margins requires a page reload to take effect</span>
           </div>
 

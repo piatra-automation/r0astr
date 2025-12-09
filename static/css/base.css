@@ -2377,6 +2377,7 @@
       flex-direction: column;
       align-items: center;
       gap: 10px;
+      margin-top: 250px;
     }
 
     .splash-title {
@@ -2902,4 +2903,54 @@
     .confirm-modal-cancel:focus {
       outline: 2px solid var(--border-color);
       outline-offset: 2px;
+    }
+
+    /* Story 9.1: Extracted inline styles */
+    /* Utility class for hidden elements (initially) */
+    .hidden {
+      display: none;
+    }
+
+    /* Capture controls styling */
+    .capture-controls label {
+      color: #555;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .capture-controls label:first-of-type {
+      margin-right: 5px;
+    }
+
+    .capture-controls label:last-of-type {
+      margin-left: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .capture-controls select {
+      padding: 6px 8px;
+      border-radius: 3px;
+      border: 1px solid #999;
+      background: var(--pale-white);
+      color: var(--darkness);
+      cursor: pointer;
+      font-family: 'marvelregular', sans-serif;
+      font-size: 11px;
+    }
+
+    .capture-controls input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    /* Notice box icons */
+    .notice-box .material-icons {
+      font-size: 18px;
+      margin-right: 8px;
+    }
+
+    /* Modal initial state */
+    .modal-overlay {
+      display: none;
     }
