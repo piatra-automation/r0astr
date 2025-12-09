@@ -4,6 +4,8 @@
  * @module settingsManager
  */
 
+import { eventBus } from '../utils/eventBus.js';
+
 const STORAGE_KEY = 'r0astr_settings';
 
 /**
@@ -265,6 +267,9 @@ export function saveSettings(settings) {
     localStorage.setItem(STORAGE_KEY, json);
     currentSettings = validSettings;
 
+    // Emit event for cross-module communication
+    eventBus.emit('settings:saved', validSettings);
+
     console.log('Settings saved successfully');
     return true;
   } catch (error) {
@@ -311,6 +316,9 @@ export function updateSetting(key, value) {
 
   // Update in-memory settings
   currentSettings = newSettings;
+
+  // Emit event for specific setting change
+  eventBus.emit('setting:changed', { key, value });
 
   // Dispatch event for reactive components (e.g., pattern highlighting toggle)
   if (typeof window !== 'undefined') {
