@@ -158,6 +158,30 @@
       /* Button hover states */
       --btn-hole-hover-bg: #4a5a5f;
 
+      /* Typography (Story 9.2) */
+      --font-family-base: 'Supertone', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-family-monospace: monospace;
+      --font-family-icons: 'Material Icons';
+      --font-size-base: 14px;
+      --font-size-lg: 18px;
+      --font-size-sm: 12px;
+      --font-size-xs: 10px;
+
+      /* Z-index layers (Story 9.2) */
+      --z-behind: -1;
+      --z-base: 1;
+      --z-above-base: 2;
+      --z-screen: 999;
+      --z-topbar: 1000;
+      --z-master-panel: 9999;
+      --z-hero: 10000;
+      --z-panel: 10000;
+      --z-logo: 10001;
+      --z-subtitle: 10001;
+      --z-modal: 10001;
+      --z-splash: 10002;
+      --z-splash-content: 10003;
+
       /* Dark theme colors (default) */
       --bg-color: var(--cream);
       --card-bg: #1a1a1a;
@@ -185,7 +209,7 @@
       padding: 0;
       background: #969696;
       /* Grey background for projection mode */
-      font-family: 'Supertone', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: var(--font-family-base);
       letter-spacing: 1.5px;
       color: var(--text-color);
       overflow: hidden;
@@ -204,7 +228,7 @@
       bottom: var(--projection-margin-bottom);
       background: linear-gradient(to bottom right, var(--panel-warm-light), var(--panel-warm-dark));
       border-radius: 5px;
-      z-index: -1;
+      z-index: var(--z-behind);
       pointer-events: none;
     }
 
@@ -373,7 +397,7 @@
        ============================================ */
 
     .btn-surface .material-icons {
-      font-family: 'Material Icons';
+      font-family: var(--font-family-icons);
       user-select: none;
       font-weight: normal;
       font-style: normal;
@@ -433,7 +457,7 @@
       left: calc(var(--projection-margin-left) + 40px);
       height: var(--site-logo-height);
       max-height: var(--site-logo-height);
-      z-index: 10001;
+      z-index: var(--z-logo);
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.3s ease-in;
@@ -476,7 +500,7 @@
         42px 42px,
         42px 42px,
         cover;
-      z-index: 10000;
+      z-index: var(--z-panel);
       display: flex;
       align-items: center;
       padding-left: 130px;
@@ -526,7 +550,7 @@
       letter-spacing: 0.5px;
       color: var(--mid-green);
       white-space: nowrap;
-      z-index: 10001;
+      z-index: var(--z-subtitle);
       opacity: 0;
       transition: opacity 0.3s ease-in;
     }
@@ -571,7 +595,7 @@
       border-right: 14px solid var(--screen-edge);
       border-top: 4px solid var(--screen-top);
       border-bottom: 4px solid var(--screen-bottom);
-      z-index: 999;
+      z-index: var(--z-screen);
       opacity: 0;
       transition: opacity 0.3s ease-in;
       /* Green drop shadow on bottom edge only */
@@ -624,7 +648,7 @@
           #ffffff00 100%);
       /* background-blend-mode: normal; */
       pointer-events: none;
-      z-index: 1;
+      z-index: var(--z-base);
     }
 
     .screen.visible {
@@ -641,7 +665,7 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       overflow: hidden;
       position: relative;
-      z-index: 2; /* Above ::after overlay */
+      z-index: var(--z-above-base); /* Above ::after overlay */
     }
 
     .screen .screen-editor-wrapper .code-editor {
@@ -777,7 +801,7 @@
     }
 
     .hero-btn .material-icons {
-      font-family: 'Material Icons';
+      font-family: var(--font-family-icons);
       font-size: 32px;
       user-select: none;
       font-weight: normal;
@@ -830,13 +854,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Supertone', sans-serif;
+      font-family: var(--font-family-base);
       font-size: 13px;
       font-weight: 400;
       text-decoration: none;
       letter-spacing: 2px;
       text-align: center;
-      z-index: 1000;
+      z-index: var(--z-topbar);
       cursor: pointer;
       opacity: 0;
       transition: opacity 0.3s ease-in, font-weight 0.1s ease, letter-spacing 0.1s ease, border 0.1s ease;
@@ -1109,7 +1133,7 @@
 
     .master-panel {
       position: fixed;
-      z-index: 9999;
+      z-index: var(--z-master-panel);
       transition: all 0.3s ease;
       background: var(--pale-white);
       border-radius: 2px;
@@ -1579,7 +1603,7 @@
     }
 
     .card.panel-collapsed .control-btn .material-icons {
-      font-family: 'Material Icons';
+      font-family: var(--font-family-icons);
       font-size: 23px;
       /* 71% of 32px */
       user-select: none;
@@ -1713,7 +1737,7 @@
       border-radius: 4px;
       font-size: 12px;
       font-weight: 600;
-      font-family: monospace;
+      font-family: var(--font-family-monospace);
       flex-shrink: 0;
     }
 
@@ -1779,7 +1803,7 @@
     }
 
     .card:not(.panel-collapsed) .control-btn .material-icons {
-      font-family: 'Material Icons';
+      font-family: var(--font-family-icons);
       font-size: 28px;
       user-select: none;
     }
@@ -1925,7 +1949,7 @@
       background-color: rgba(224, 108, 117, 0.1);
       border-left: 3px solid #e06c75;
       border-radius: 4px;
-      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-family: var(--font-family-monospace);
       line-height: 1.4;
       transition: opacity 0.2s ease-in-out;
     }
@@ -2160,7 +2184,7 @@
       width: 100%;
       flex-grow: 1;
       padding: 15px;
-      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-family: var(--font-family-monospace);
       font-size: var(--code-font-size);
       /* Story 4.5: Configurable font size */
       line-height: 1.5;
@@ -2301,7 +2325,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10002;
+      z-index: var(--z-splash);
       pointer-events: auto;
     }
 
@@ -2333,7 +2357,7 @@
       width: 100vw;
       height: 100vh;
       background: var(--cream);
-      z-index: -1;
+      z-index: var(--z-behind);
       opacity: 1;
       transition: opacity 0.4s ease-out;
     }
@@ -2350,7 +2374,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      z-index: 10003;
+      z-index: var(--z-splash-content);
       transition: none;
     }
 
@@ -2449,7 +2473,7 @@
       height: 100vh;
       background: rgba(60, 76, 81, 0.7);
       backdrop-filter: blur(8px);
-      z-index: 10001;
+      z-index: var(--z-modal);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -2643,7 +2667,7 @@
       color: var(--darkness);
       font-size: 14px;
       border-radius: 4px;
-      font-family: 'Courier New', monospace;
+      font-family: var(--font-family-monospace);
       margin-top: 4px;
     }
 
@@ -2671,7 +2695,7 @@
       color: var(--darkness);
       font-size: 14px;
       border-radius: 4px;
-      font-family: 'Courier New', monospace;
+      font-family: var(--font-family-monospace);
       margin-top: 4px;
     }
 
@@ -2833,7 +2857,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10000;
+      z-index: var(--z-panel);
     }
 
     .confirm-modal {
@@ -2936,7 +2960,7 @@
       background: var(--pale-white);
       color: var(--darkness);
       cursor: pointer;
-      font-family: 'marvelregular', sans-serif;
+      font-family: var(--font-family-base);
       font-size: 11px;
     }
 
