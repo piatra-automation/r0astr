@@ -251,7 +251,10 @@ export function getPanelSliders(panelId) {
 
 /**
  * Deduce slider label from pattern code
- * Attempts to extract the method call preceding the slider
+ * Priority:
+ * 1. Comment on the same line as slider() call
+ * 2. Function name: .lpf(slider(...)) -> "Lpf"
+ * 3. Default: "Slider N"
  * @param {string} patternCode - Pattern code string
  * @param {number} sliderIndex - Index of slider in pattern
  * @returns {string} Deduced label or fallback
@@ -261,18 +264,42 @@ function deduceSliderLabel(patternCode, sliderIndex) {
     return `Slider ${sliderIndex + 1}`;
   }
 
-  // Find all slider() calls
-  const sliderMatches = patternCode.match(/\.(\w+)\s*\(\s*slider\s*\(/g);
+  // Split pattern into lines to search for comments
+  const lines = patternCode.split('\n');
 
-  if (!sliderMatches || sliderMatches.length === 0) {
-    return `Slider ${sliderIndex + 1}`;
-  }
+  // Find all slider() calls with function names
+  const sliderRegex = /\.(\w+)\s*\(\s*slider\s*\([^)]+\)\s*\)/g;
+  const matches = [...patternCode.matchAll(sliderRegex)];
 
-  // Get the method name for this slider index
-  const match = sliderMatches[sliderIndex];
-  if (match) {
-    const methodName = match.match(/\.(\w+)/)[1];
-    return methodName || `Slider ${sliderIndex + 1}`;
+  if (matches[sliderIndex]) {
+    const [fullMatch, functionName] = matches[sliderIndex];
+
+    // Find which line this match is on
+    let currentPos = 0;
+    let matchLine = null;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const lineEnd = currentPos + line.length;
+
+      if (matches[sliderIndex].index >= currentPos && matches[sliderIndex].index < lineEnd) {
+        matchLine = line;
+        break;
+      }
+
+      currentPos = lineEnd + 1; // +1 for newline character
+    }
+
+    // Priority 1: Look for comment on the same line
+    if (matchLine) {
+      const commentMatch = matchLine.match(/\/\/\s*(.+?)$/);
+      if (commentMatch && commentMatch[1].trim()) {
+        return commentMatch[1].trim();
+      }
+    }
+
+    // Priority 2: Function name (capitalize first letter)
+    return functionName.charAt(0).toUpperCase() + functionName.slice(1);
   }
 
   return `Slider ${sliderIndex + 1}`;

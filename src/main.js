@@ -2,7 +2,7 @@ import { repl, evalScope, ref } from '@strudel/core';
 import { getAudioContext, webaudioOutput, initAudioOnFirstClick, registerSynthSounds } from '@strudel/webaudio';
 import { transpiler } from '@strudel/transpiler';
 import { sliderWithID, sliderValues as cmSliderValues, highlightExtension, updateMiniLocations, highlightMiniLocations } from '@strudel/codemirror';
-import { createPanel, renderPanel, deletePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, autoSavePanelState as pmAutoSavePanelState, savePanelStateNow as pmSavePanelStateNow, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, animatePanelPosition, MASTER_PANEL_ID } from './managers/panelManager.js';
+import { createPanel, renderPanel, deletePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, animatePanelPosition, MASTER_PANEL_ID } from './managers/panelManager.js';
 import { initializeDragAndResize } from './ui/dragResize.js';
 import { loadSettings, getSettings, updateSetting } from './managers/settingsManager.js';
 import { moveEditorToScreen, removeEditorFromScreen, removeAllEditorsExcept, isEditorInScreen } from './managers/screenManager.js';
@@ -15,6 +15,21 @@ import * as prettier from 'prettier/standalone';
 import * as babelPlugin from 'prettier/plugins/babel';
 import * as estreePlugin from 'prettier/plugins/estree';
 import { PatternCapture } from './managers/patternCapture.js';
+import { connect as wsConnect, send as wsSend, isConnected as wsIsConnected, MESSAGE_TYPES, syncPanelState, sendFullState } from './managers/websocketManager.js';
+import { eventBus } from './utils/eventBus.js';
+import { renderSliders as smRenderSliders, renderCollapsedSliders as smRenderCollapsedSliders, updateSliderValue as smUpdateSliderValue, clearSliders as smClearSliders, getPanelSliders } from './managers/sliderManager.js';
+import { initializeWithSplash, dismissSplash, updateSplashProgress, prebake } from './managers/splash.js';
+import { initializeMetronome, initializePatternHighlighting } from './managers/visualization.js';
+import {
+  cardStates,
+  editorViews,
+  fontSizeCompartments,
+  panelMiniLocations,
+  ctx,
+  strudelCore,
+  appState,
+  patternCaptureRef
+} from './state.js';
 
 // CodeMirror 6 imports
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
@@ -55,15 +70,8 @@ const createSlider = (id, initialValue) => {
   return ref(() => sliderValues[id]);
 };
 
-// Card state tracking (dynamically managed)
-const cardStates = {};
-
-// CodeMirror 6 editor instances
-const editorViews = new Map(); // { panelId: EditorView }
-const fontSizeCompartments = new Map(); // { panelId: Compartment } - for dynamic font size updates
-
-// Store miniLocations per panel for pattern highlighting
-const panelMiniLocations = new Map(); // { panelId: [[start, end], [start, end], ...] }
+// State is now imported from state.js:
+// cardStates, editorViews, fontSizeCompartments, panelMiniLocations
 
 /**
  * Get the original code-editor container for a panel
@@ -76,26 +84,17 @@ function getEditorContainer(panelId) {
   return panelElement.querySelector('.code-editor');
 }
 
-// Initialize audio context and repl (shared across all cards)
-const ctx = getAudioContext();
+// Audio context initialized in state.js (ctx)
+// Core state managed via state.js objects
 initAudioOnFirstClick();
 
-// Global evaluate and scheduler (set after async initialization)
-let evaluate, scheduler;
-let samplesReady = false;
-
-// Pattern capture instance (initialized after scheduler is ready)
-let patternCapture = null;
-
-// Master panel state
-// Master panel is always visible, just tracks compact mode
-let masterPanelCompact = true; // Start in compact mode
+// Local aliases for frequently-used state (reduces code changes)
+// These reference the state.js objects, so mutations are shared
+const getEvaluate = () => strudelCore.evaluate;
+const getScheduler = () => strudelCore.scheduler;
 let masterCode = ''; // Restored from savedPanels, used in initializeCards()
 let masterCodeEvaluating = false;
 let currentMasterSliders = []; // Track current master sliders for remote sync
-
-// Panel sliders tracking { panelId: [sliderMetadata, ...] }
-const panelSliders = {};
 
 // Override autoSavePanelState to use CodeMirror (Story 7.6)
 let saveTimeout;
@@ -118,12 +117,8 @@ function autoSavePanelState() {
 function savePanelStateNow() {
   const masterView = editorViews.get(MASTER_PANEL_ID);
   const masterCode = masterView ? masterView.state.doc.toString() : '';
-  savePanelStateWithMasterCode(masterCode, masterPanelCompact);
+  savePanelStateWithMasterCode(masterCode, appState.masterPanelCompact);
 }
-
-// WebSocket client for remote control
-let ws = null;
-let wsReconnectTimer = null;
 
 // Story 8.3: Debounce timers for title broadcasts (panel ID -> timer ID)
 const titleBroadcastTimers = {};
@@ -178,229 +173,12 @@ async function loadModules() {
   return scope;
 }
 
-// Dismiss splash screen with logo animation
-function dismissSplash() {
-  const splash = document.getElementById('splash-modal');
-  const splashContent = document.querySelector('.splash-content');
-  const splashLogo = document.getElementById('splash-logo-animate');
-  const siteLogo = document.querySelector('.site-logo');
-  const heroSection = document.querySelector('.hero-section');
-
-  if (!splash) return;
-
-  // Step 1: Start logo animation (0.6s) and fade content
-  if (splashLogo) {
-    splashLogo.classList.add('animating');
-  }
-  if (splashContent) {
-    splashContent.classList.add('fade-out');
-  }
-
-  // Step 2: After 0.2s, fade out splash background (0.4s)
-  setTimeout(() => {
-    splash.classList.add('fade-out');
-  }, 200);
-
-  // Step 3: After animation completes (0.6s), show fixed logo, hero, and load button
-  setTimeout(() => {
-    if (siteLogo) {
-      siteLogo.classList.add('visible');
-    }
-    if (heroSection) {
-      heroSection.classList.add('visible');
-    }
-    // Show banner subtitle
-    const bannerSubtitle = document.querySelector('.banner-subtitle');
-    if (bannerSubtitle) {
-      bannerSubtitle.classList.add('visible');
-    }
-    // Show screen area
-    const screen = document.querySelector('.screen');
-    if (screen) {
-      screen.classList.add('visible');
-    }
-    // Show all top bar buttons
-    document.querySelectorAll('.top-bar-btn').forEach(btn => {
-      btn.classList.add('visible');
-    });
-  }, 600);
-
-  // Step 4: Clean up splash after all animations (1s total)
-  setTimeout(() => {
-    splash.style.display = 'none';
-    splash.remove();
-  }, 1000);
-}
-
-// Update splash screen progress bar
-function updateSplashProgress(percent) {
-  const progressFill = document.querySelector('.splash-progress-fill');
-  const progressBar = document.querySelector('.splash-progress-bar');
-  const statusText = document.querySelector('.splash-status');
-
-  if (!progressFill || !progressBar) return;
-
-  // Remove indeterminate animation if present
-  progressBar.classList.remove('splash-progress-indeterminate');
-
-  // Update width
-  progressFill.style.width = percent + '%';
-
-  // Update status text
-  if (percent >= 100 && statusText) {
-    statusText.textContent = 'Ready!';
-  }
-}
-
-// Initialize with splash screen timing coordination
-async function initializeWithSplash() {
-  const minDisplayTime = 1200; // 1.2 seconds minimum
-  const completionDisplayTime = 200; // Brief delay to show "Ready!" state
-
-  // Start minimum timer immediately
-  const minTimer = new Promise(resolve => setTimeout(resolve, minDisplayTime));
-
-  try {
-    // Wait for both sample loading AND minimum display time
-    await Promise.all([prebake(), minTimer]);
-
-    // Show completion state
-    updateSplashProgress(100);
-    const statusText = document.querySelector('.splash-status');
-    if (statusText) {
-      statusText.textContent = 'Ready!';
-    }
-
-    // Brief delay to show completion
-    await new Promise(resolve => setTimeout(resolve, completionDisplayTime));
-
-    // Dismiss splash with fade-out
-    dismissSplash();
-  } catch (error) {
-    console.error('Sample loading failed:', error);
-
-    // Update splash to show error (don't dismiss)
-    const statusText = document.querySelector('.splash-status');
-    if (statusText) {
-      statusText.textContent = 'Error loading samples. Check console.';
-    }
-    // Don't dismiss splash on error - user needs to see error message
-  }
-}
-
-// Pre-load samples (matches official REPL prebake pattern)
-async function prebake() {
-  const baseCDN = 'https://strudel.b-cdn.net';
-
-  let completed = 0;
-  const total = 9; // synths, zzfx, piano, vcsl, tidal-drums, uzu-drumkit, mridangam, dirt-samples, snippets
-
-  const trackProgress = () => {
-    completed++;
-    updateSplashProgress((completed / total) * 100);
-  };
-
-  // Load snippet URL from settings
-  const snippetUrl = appSettings?.snippetLocation || '';
-
-  // Create parallel loading tasks
-  const loadingTasks = [
-    // Register synth sounds (sawtooth, square, triangle, etc.)
-    Promise.resolve(registerSynthSounds()).then((result) => {
-      trackProgress();
-      return result;
-    }),
-    // Register ZZFX sounds (chiptune-style synthesizer)
-    import('@strudel/webaudio').then(({ registerZZFXSounds }) =>
-      registerZZFXSounds()
-    ).then((result) => {
-      trackProgress();
-      return result;
-    }),
-    // Load piano samples (Salamander Grand Piano)
-    import('@strudel/webaudio').then(({ samples }) =>
-      samples(`${baseCDN}/piano.json`, `${baseCDN}/piano/`, { prebake: true })
-    ).then((result) => {
-      trackProgress();
-      return result;
-    }),
-    // Load VCSL samples (strings, violin, cello, etc.)
-    import('@strudel/webaudio').then(({ samples }) =>
-      samples(`${baseCDN}/vcsl.json`, `${baseCDN}/VCSL/`, { prebake: true })
-    ).then((result) => {
-      trackProgress();
-      return result;
-    }),
-    // Load tidal-drum-machines
-    import('@strudel/webaudio').then(({ samples }) =>
-      samples(`${baseCDN}/tidal-drum-machines.json`, `${baseCDN}/tidal-drum-machines/machines/`, {
-        prebake: true,
-        tag: 'drum-machines',
-      })
-    ).then((result) => {
-      trackProgress();
-      return result;
-    }),
-    // Load uzu-drumkit
-    import('@strudel/webaudio').then(({ samples }) =>
-      samples(`${baseCDN}/uzu-drumkit.json`, `${baseCDN}/uzu-drumkit/`, {
-        prebake: true,
-        tag: 'drum-machines',
-      })
-    ).then((result) => {
-      trackProgress();
-      return result;
-    }),
-    // Load mridangam (Indian percussion)
-    import('@strudel/webaudio').then(({ samples }) =>
-      samples(`${baseCDN}/mridangam.json`, `${baseCDN}/mrid/`, {
-        prebake: true,
-        tag: 'drum-machines'
-      })
-    ).then((result) => {
-      trackProgress();
-      return result;
-    }),
-    // Load dirt-samples (main TidalCycles library)
-    import('@strudel/webaudio').then(({ samples }) =>
-      samples('github:tidalcycles/dirt-samples')
-    ).then((result) => {
-      trackProgress();
-      return result;
-    }),
-    // Load snippets (non-blocking - errors handled gracefully)
-    (async () => {
-      if (snippetUrl) {
-        console.log('Loading snippets during splash:', snippetUrl);
-        try {
-          await loadSnippets(snippetUrl);
-          console.log('✓ Snippets loaded during splash');
-        } catch (error) {
-          console.warn('Snippet loading failed during splash (non-critical):', error.message);
-          // Gracefully continue - snippets are optional
-        }
-      } else {
-        console.log('No snippet URL configured - skipping snippet loading');
-      }
-      trackProgress();
-    })(),
-  ];
-
-  await Promise.all(loadingTasks);
-
-  // Load drum machine aliases after samples are loaded
-  // This provides convenient names like 'RolandTR909' instead of 'RolandTR909:0'
-  const { aliasBank } = await import('@strudel/webaudio');
-  await aliasBank(`${baseCDN}/tidal-drum-machines-alias.json`);
-  console.log('✓ Drum machine aliases loaded');
-}
-
 // Toggle between code and compact mode
 function toggleMasterMode() {
-  masterPanelCompact = !masterPanelCompact;
+  appState.masterPanelCompact = !appState.masterPanelCompact;
   const panel = document.getElementById(MASTER_PANEL_ID);
 
-  if (masterPanelCompact) {
+  if (appState.masterPanelCompact) {
     panel.classList.add('compact');
   } else {
     panel.classList.remove('compact');
@@ -593,7 +371,7 @@ function renderTempoControl() {
     // Update scheduler CPS (CPM / 60 = CPS)
     if (scheduler) {
       const cps = cpm / 60;
-      scheduler.setCps(cps);
+      strudelCore.scheduler.setCps(cps);
       console.log(`🎵 Tempo: ${cpm.toFixed(1)} CPM (${(cpm * 4).toFixed(0)} BPM, ${cps.toFixed(3)} CPS)`);
     }
   });
@@ -601,7 +379,7 @@ function renderTempoControl() {
   // Initialize scheduler on first render
   if (scheduler && !window.TEMPO_INITIALIZED) {
     const cps = currentCpm / 60;
-    scheduler.setCps(cps);
+    strudelCore.scheduler.setCps(cps);
     window.TEMPO_INITIALIZED = true;
     console.log(`🎵 Auto Tempo initialized: ${currentCpm} CPM (${(currentCpm * 4).toFixed(0)} BPM)`);
   }
@@ -634,7 +412,7 @@ function updateSliderValue(sliderId, newValue) {
  * Broadcast slider metadata to remote clients
  */
 function broadcastSliders(widgets) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  if (!wsIsConnected()) return;
 
   const sliderData = widgets.map(w => ({
     sliderId: w.sliderId,
@@ -644,23 +422,16 @@ function broadcastSliders(widgets) {
     max: w.max
   }));
 
-  ws.send(JSON.stringify({
-    type: 'master.sliders',
-    sliders: sliderData
-  }));
+  wsSend(MESSAGE_TYPES.MASTER_SLIDERS, { sliders: sliderData });
 }
 
 /**
  * Broadcast slider value change to remote clients
  */
 function broadcastSliderValue(sliderId, value) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  if (!wsIsConnected()) return;
 
-  ws.send(JSON.stringify({
-    type: 'master.sliderValue',
-    sliderId,
-    value
-  }));
+  wsSend('master.sliderValue', { sliderId, value });
 }
 
 // Restore panels from saved state
@@ -677,8 +448,8 @@ function restorePanels() {
     if (panelState.id === MASTER_PANEL_ID) {
       // Store master panel code and compact state to be set when EditorView initializes
       masterCode = panelState.code || '';
-      masterPanelCompact = panelState.compact !== undefined ? panelState.compact : true;
-      console.log(`Master panel will be restored: compact=${masterPanelCompact}`);
+      appState.masterPanelCompact = panelState.compact !== undefined ? panelState.compact : true;
+      console.log(`Master panel will be restored: compact=${appState.masterPanelCompact}`);
     } else {
       // Use expandedPosition for initial position/size if available, otherwise use saved position/size
       const initialPosition = panelState.expandedPosition
@@ -883,12 +654,12 @@ function initializeCards() {
     // Apply restored compact state to DOM
     const panel = document.getElementById(MASTER_PANEL_ID);
     if (panel) {
-      if (masterPanelCompact) {
+      if (appState.masterPanelCompact) {
         panel.classList.add('compact');
       } else {
         panel.classList.remove('compact');
       }
-      console.log(`[Init] Master panel compact state restored: ${masterPanelCompact}`);
+      console.log(`[Init] Master panel compact state restored: ${appState.masterPanelCompact}`);
     }
   } else {
     console.warn('[Init] Master code container not found!');
@@ -952,14 +723,13 @@ function initializeCards() {
 
       // Story 8.1: Broadcast panel_created event to remote clients
       const panel = getPanel(panelId);
-      if (panel && ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-          type: 'panel_created',
+      if (panel && wsIsConnected()) {
+        wsSend(MESSAGE_TYPES.PANEL_CREATED, {
           id: panelId,
           title: panel.title,
           position: panelCount + 1, // Position in list (1-indexed)
           timestamp: Date.now()
-        }));
+        });
         console.log(`[WebSocket] Broadcasted panel_created: ${panelId}`);
       }
     });
@@ -1044,13 +814,12 @@ function initializeCards() {
           }
 
           titleBroadcastTimers[panelId] = setTimeout(() => {
-            if (ws && ws.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({
-                type: 'panel_renamed',
+            if (wsIsConnected()) {
+              wsSend(MESSAGE_TYPES.PANEL_RENAMED, {
                 id: panelId,
                 newTitle: panel.title,
                 timestamp: Date.now()
-              }));
+              });
               console.log(`[WebSocket] Broadcasted panel_renamed: ${panelId}`);
             }
             delete titleBroadcastTimers[panelId];
@@ -1109,7 +878,7 @@ function initializeCards() {
       // User confirmed (or YOLO mode) - now stop audio and delete
       if (cardStates[panelId] && cardStates[panelId].playing) {
         try {
-          evaluate(`silence.p('${panelId}')`, false, false);
+          strudelCore.evaluate(`silence.p('${panelId}')`, false, false);
           cardStates[panelId].playing = false;
           console.log(`Stopped audio for panel ${panelId}`);
         } catch (error) {
@@ -1132,12 +901,11 @@ function initializeCards() {
       const deleted = deletePanel(panelId, null, cardStates, true);
 
       // Story 8.2: Broadcast panel_deleted event to remote clients
-      if (deleted && ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-          type: 'panel_deleted',
-          id: panelId,
+      if (deleted && wsIsConnected()) {
+        wsSend(MESSAGE_TYPES.PANEL_DELETED, {
+          panel: panelId,
           timestamp: Date.now()
-        }));
+        });
         console.log(`[WebSocket] Broadcasted panel_deleted: ${panelId}`);
       }
     }
@@ -1257,7 +1025,7 @@ function checkStaleness(panelId) {
 
   // Clear highlighting when panel becomes stale
   if (isStale) {
-    highlightMiniLocations(view, scheduler.now(), []); // Clear highlights
+    highlightMiniLocations(view, strudelCore.scheduler.now(), []); // Clear highlights
   }
 
   return isStale;
@@ -1385,7 +1153,7 @@ async function validateCode(panelId) {
     try {
       // This executes the code and returns a Pattern, but doesn't start playback
       // Catches: undefined variables, undefined functions, some type errors
-      await evaluate(output, false, false);
+      await strudelCore.evaluate(output, false, false);
     } finally {
       // Restore console.error
       console.error = originalConsoleError;
@@ -1728,7 +1496,7 @@ function pausePanel(panelId) {
 
   // Stop audio by replacing with silence
   try {
-    evaluate(`silence.p('${panelId}')`, true, false);
+    strudelCore.evaluate(`silence.p('${panelId}')`, true, false);
     console.log(`Panel ${panelId}: Paused`);
   } catch (error) {
     console.error(`Panel ${panelId}: Pause error`, error);
@@ -1783,16 +1551,15 @@ function pausePanel(panelId) {
   delete window.visualizationContexts[panelId];
 
   // Clear slider VALUES from sliderValues object
-  if (panelSliders[panelId]) {
-    // console.log(`[SLIDER DEBUG] Clearing ${panelSliders[panelId].length} slider values for ${panelId}`);
-    panelSliders[panelId].forEach(({ sliderId }) => {
-      // console.log(`[SLIDER DEBUG] Deleting sliderValues[${sliderId}] = ${sliderValues[sliderId]}`);
+  const panelSlidersData = getPanelSliders(panelId);
+  if (panelSlidersData) {
+    panelSlidersData.forEach(({ sliderId }) => {
       delete sliderValues[sliderId];
     });
   }
 
-  // Clear slider data for this panel
-  delete panelSliders[panelId];
+  // Clear slider data for this panel using sliderManager
+  smClearSliders(panelId);
 
   // Broadcast empty sliders to remote
   broadcastPanelSliders(panelId, []);
@@ -1817,7 +1584,7 @@ function pausePanel(panelId) {
  */
 async function activatePanel(panelId) {
   // Check if Strudel is initialized
-  if (!evaluate || !scheduler) {
+  if (!strudelCore.evaluate || !strudelCore.scheduler) {
     alert('Strudel is still initializing. Please wait a moment and try again.');
     return;
   }
@@ -1836,7 +1603,7 @@ async function activatePanel(panelId) {
   }
 
   // Warn if samples aren't ready (for patterns using s() function)
-  if (!samplesReady && patternCode.includes('s(')) {
+  if (!appState.samplesReady && patternCode.includes('s(')) {
     console.warn('Samples may still be loading - you might hear errors until they finish downloading');
   }
 
@@ -1892,8 +1659,8 @@ async function activatePanel(panelId) {
       output = output.replace(/\.p\(['"]?\$['"]?\)/g, `.p('${panelId}')`);
     }
 
-    // Render sliders from widget metadata
-    renderSliders(panelId, widgets, patternCode);
+    // Render sliders from widget metadata (uses sliderManager)
+    smRenderSliders(panelId, widgets, patternCode);
 
     // console.log(`Transpiled code for ${panelId}:`, output);
 
@@ -1987,7 +1754,7 @@ async function activatePanel(panelId) {
       }
 
       if (hasLabeledStatements) {
-        evalResult = await evaluate(output, true, false);
+        evalResult = await strudelCore.evaluate(output, true, false);
       } else {
         // Inject panel canvas contexts into visualization calls in user code
 
@@ -2031,7 +1798,7 @@ async function activatePanel(panelId) {
 
         // Evaluate pattern
         // console.log('[VIZ DEBUG] About to evaluate:', `${patternCode}.p('${panelId}')`);
-        evalResult = await evaluate(`${patternCode}.p('${panelId}')`, true, false);
+        evalResult = await strudelCore.evaluate(`${patternCode}.p('${panelId}')`, true, false);
         // console.log('[VIZ DEBUG] Evaluation complete');
 
         // Clean up temp globals
@@ -2078,7 +1845,7 @@ async function activatePanel(panelId) {
 
       // Clean up: stop any partial pattern that might have been registered
       try {
-        scheduler.stop(panelId);
+        strudelCore.scheduler.stop(panelId);
       } catch (stopError) {
         // Ignore errors if pattern wasn't registered
       }
@@ -2230,7 +1997,7 @@ function stopAll() {
   // This removes them from memory before stopping scheduler
   Object.keys(cardStates).forEach((cardId) => {
     try {
-      evaluate(`silence.p('${cardId}')`, false, false);
+      strudelCore.evaluate(`silence.p('${cardId}')`, false, false);
     } catch (e) {
       console.warn(`Failed to silence ${cardId}:`, e);
     }
@@ -2243,7 +2010,7 @@ function stopAll() {
   });
 
   // Stop scheduler AFTER clearing patterns
-  scheduler.stop();
+  strudelCore.scheduler.stop();
 
   console.log('⏹ All patterns stopped');
 
@@ -2252,25 +2019,20 @@ function stopAll() {
 }
 
 // Initialize WebSocket connection for remote control
+// Uses websocketManager for connection, wires eventBus listeners for incoming events
 function initializeWebSocket() {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${protocol}//${window.location.host}/ws`;
+  // Wire up eventBus listeners for incoming WebSocket events
+  wireWebSocketEventListeners();
 
-  console.log('[WebSocket] Connecting to:', wsUrl);
+  // Connect using websocketManager (handles reconnect automatically)
+  wsConnect();
+}
 
-  ws = new WebSocket(wsUrl);
-
-  ws.onopen = () => {
-    console.log('[WebSocket] Connected to server');
-
-    // Register as main interface client
-    ws.send(JSON.stringify({
-      type: 'client.register',
-      clientType: 'main'
-    }));
-
+// Wire up all eventBus listeners for WebSocket events from websocketManager
+function wireWebSocketEventListeners() {
+  // Connection event - sync panels when connected
+  eventBus.on('websocket:connected', () => {
     // Sync all panels to server
-    // This ensures server-side panelManager has the same state as client
     const allPanels = getAllPanels();
     const panelsArray = Array.from(allPanels.values()).map(panel => ({
       id: panel.id,
@@ -2281,381 +2043,208 @@ function initializeWebSocket() {
       playing: panel.playing || false,
       zIndex: panel.zIndex
     }));
-
-    ws.send(JSON.stringify({
-      type: 'client.syncPanels',
-      panels: panelsArray
-    }));
-
+    syncPanelState(panelsArray);
     console.log(`[WebSocket] Synced ${panelsArray.length} panels to server`);
+  });
 
-    // Story 8.4: Server will send full_state to remote clients when they register
-    // Main client doesn't need to send full_state (server handles it)
+  // Server requests full state
+  eventBus.on('websocket:requestState', () => {
+    console.log('[WebSocket] Server requested full_state');
+    const allPanels = getAllPanels();
+    const fullStatePanels = Array.from(allPanels.values()).map(panel => ({
+      id: panel.id,
+      title: panel.title,
+      playing: cardStates[panel.id]?.playing || false,
+      stale: cardStates[panel.id]?.stale || false,
+      position: panel.position || 0
+    }));
+    sendFullState({ panels: fullStatePanels, timestamp: Date.now() });
 
-    // Clear reconnect timer
-    if (wsReconnectTimer) {
-      clearTimeout(wsReconnectTimer);
-      wsReconnectTimer = null;
+    // Also send current master sliders
+    if (currentMasterSliders.length > 0) {
+      broadcastSliders(currentMasterSliders);
+      console.log(`[WebSocket] Sent master sliders: ${currentMasterSliders.length} sliders`);
     }
-  };
+  });
 
-  ws.onmessage = (event) => {
-    try {
-      const message = JSON.parse(event.data);
-      handleWebSocketMessage(message);
-    } catch (error) {
-      console.error('[WebSocket] Failed to parse message:', error);
+  // Panel toggle (remote control)
+  eventBus.on('panel:toggle', (panel) => {
+    if (panel && cardStates[panel]) {
+      if (cardStates[panel].playing) {
+        pausePanel(panel);
+      } else {
+        activatePanel(panel);
+      }
     }
-  };
+  });
 
-  ws.onerror = (error) => {
-    console.error('[WebSocket] Error:', error);
-  };
+  // Panel play (remote control)
+  eventBus.on('panel:remotePlay', (panel) => {
+    if (panel && cardStates[panel] && !cardStates[panel].playing) {
+      activatePanel(panel);
+    }
+  });
 
-  ws.onclose = () => {
-    console.log('[WebSocket] Disconnected - will reconnect in 3s');
-    ws = null;
+  // Panel pause (remote control)
+  eventBus.on('panel:remotePause', (panel) => {
+    if (panel && cardStates[panel] && cardStates[panel].playing) {
+      pausePanel(panel);
+    }
+  });
 
-    // Auto-reconnect after 3 seconds
-    wsReconnectTimer = setTimeout(() => {
-      initializeWebSocket();
-    }, 3000);
-  };
-}
+  // Global stop all
+  eventBus.on('global:stopAll', () => {
+    stopAll();
+  });
 
-// Handle incoming WebSocket messages
-function handleWebSocketMessage(message) {
-  const { type, panel, data } = message;
+  // Global update all
+  eventBus.on('global:updateAll', () => {
+    updateAllPanels();
+  });
 
-  console.log('[WebSocket] Received:', type, panel ? `panel ${panel}` : '');
+  // Master slider remote change
+  eventBus.on('slider:masterRemoteChange', ({ sliderId, value }) => {
+    updateSliderValue(sliderId, value);
+  });
 
-  switch (type) {
-    case 'server.hello':
-      console.log('[WebSocket] Server hello:', message);
-      break;
+  // Panel slider remote change
+  eventBus.on('slider:panelRemoteChange', ({ panelId, sliderId, value }) => {
+    smUpdateSliderValue(panelId, sliderId, value);
+  });
 
-    case 'server.requestFullState':
-      // Story 8.4: Server requests full state to send to a remote client
-      // Main client has authoritative state, server is just a relay
-      console.log('[WebSocket] Server requested full_state');
-      const allPanels = getAllPanels();
-      const fullStatePanels = Array.from(allPanels.values()).map(panel => ({
-        id: panel.id,
-        title: panel.title,
-        playing: cardStates[panel.id]?.playing || false,
-        stale: cardStates[panel.id]?.stale || false,
-        position: panel.position || 0
-      }));
+  // API: Panel created
+  eventBus.on('panel:apiCreated', async ({ panelId, title, code, position, size }) => {
+    console.log(`[WebSocket] Panel created via API: ${panelId}`);
 
-      ws.send(JSON.stringify({
-        type: 'full_state',
-        panels: fullStatePanels,
-        timestamp: Date.now()
-      }));
-      console.log(`[WebSocket] Sent full_state: ${fullStatePanels.length} panels`);
+    // Check if panel already exists
+    if (document.getElementById(panelId)) {
+      console.log(`[WebSocket] Panel ${panelId} already exists, skipping`);
+      return;
+    }
 
-      // Also send current master sliders to the remote client
-      if (currentMasterSliders.length > 0) {
-        broadcastSliders(currentMasterSliders);
-        console.log(`[WebSocket] Sent master sliders: ${currentMasterSliders.length} sliders`);
+    // Create panel
+    const newPanelId = createPanel({
+      id: panelId,
+      title: title,
+      code: code || '',
+      position: position || { x: 0, y: 0 },
+      size: size || { w: 600, h: 200 }
+    });
+
+    // Render panel
+    const panelElement = renderPanel(newPanelId);
+
+    // Initialize state
+    cardStates[newPanelId] = { playing: false, stale: false, lastEvaluatedCode: '' };
+
+    // Initialize drag/resize
+    initializeDragAndResize(panelElement);
+    updateVisualIndicators(newPanelId);
+    attachValidationListener(newPanelId);
+
+    // Validate
+    setTimeout(async () => {
+      const validation = await validateCode(newPanelId);
+      await updateActivateButton(newPanelId);
+      if (!validation.valid) {
+        displayError(newPanelId, validation.error, validation.line);
       }
-      break;
+    }, 0);
 
-    case 'panel.toggle':
-      // Story 8.4: panel is now full panel ID (e.g., panel-1763389957952)
-      if (panel && cardStates[panel]) {
-        if (cardStates[panel].playing) {
-          pausePanel(panel);
-        } else {
-          activatePanel(panel);
-        }
+    console.log(`[WebSocket] Panel ${newPanelId} rendered in UI`);
+  });
+
+  // API: Panel deleted
+  eventBus.on('panel:apiDeleted', ({ panelId }) => {
+    console.log(`[WebSocket] Panel deleted via API: ${panelId}`);
+
+    // Stop audio if playing
+    if (cardStates[panelId]?.playing) {
+      try {
+        strudelCore.evaluate(`silence.p('${panelId}')`, false, false);
+        cardStates[panelId].playing = false;
+      } catch (error) {
+        console.error(`Failed to silence panel ${panelId}:`, error);
       }
-      break;
+    }
 
-    case 'panel.play':
-      // Story 8.4: panel is now full panel ID
-      if (panel && cardStates[panel]) {
-        if (!cardStates[panel].playing) {
-          activatePanel(panel);
-        }
+    // Clean up
+    panelMiniLocations.delete(panelId);
+    deletePanel(panelId, null, cardStates, true);
+    console.log(`[WebSocket] Panel ${panelId} deleted from UI`);
+  });
+
+  // API: Panel updated
+  eventBus.on('panel:apiUpdated', async ({ panelId, code, autoPlay }) => {
+    console.log(`[WebSocket] Panel code updated via API: ${panelId}, autoPlay: ${autoPlay}`);
+
+    // Find editor view
+    const view = editorViews.get(panelId);
+    if (!view) {
+      console.error(`[WebSocket] Panel ${panelId} editor not found`);
+      return;
+    }
+
+    // Update editor
+    view.dispatch({
+      changes: { from: 0, to: view.state.doc.length, insert: code }
+    });
+
+    // Update state
+    updatePanel(panelId, { code: code });
+
+    // Validate
+    setTimeout(async () => {
+      const validation = await validateCode(panelId);
+      await updateActivateButton(panelId);
+      if (!validation.valid) {
+        displayError(panelId, validation.error, validation.line);
+      } else {
+        clearErrorMessage(panelId);
       }
-      break;
+    }, 0);
 
-    case 'panel.pause':
-      // Story 8.4: panel is now full panel ID
-      if (panel && cardStates[panel]) {
-        if (cardStates[panel].playing) {
-          pausePanel(panel);
-        }
-      }
-      break;
+    // Auto-play if requested
+    if (autoPlay) {
+      activatePanel(panelId);
+    }
+  });
 
-    case 'global.stopAll':
-      stopAll();
-      break;
+  // API: Playback changed
+  eventBus.on('panel:apiPlaybackChanged', ({ panelId, playing }) => {
+    console.log(`[WebSocket] Playback changed via API: ${panelId}, playing: ${playing}`);
 
-    case 'global.updateAll':
-      updateAllPanels();
-      break;
+    if (!cardStates[panelId]) {
+      console.error(`[WebSocket] Panel ${panelId} not found`);
+      return;
+    }
 
-    case 'master.sliderChange':
-      // Remote client changed a master slider value
-      if (message.sliderId && message.value !== undefined) {
-        updateSliderValue(message.sliderId, message.value);
-      }
-      break;
+    const currentlyPlaying = cardStates[panelId].playing;
+    if (currentlyPlaying === playing) return; // Already in desired state
 
-    case 'panel.sliderChange':
-      // Remote client changed a panel slider value
-      if (message.panelId && message.sliderId && message.value !== undefined) {
-        updatePanelSliderValue(message.panelId, message.sliderId, message.value);
-      }
-      break;
+    if (playing) {
+      activatePanel(panelId);
+    } else {
+      pausePanel(panelId);
+    }
+  });
 
-    case 'panel.update':
-      if (panel && data && data.code) {
-        const cardId = `card-${panel}`;
-        const textarea = document.querySelector(`.code-input[data-card="${cardId}"]`);
-        if (textarea) {
-          textarea.value = data.code;
-          console.log(`[WebSocket] Updated ${cardId} code`);
-        }
-      }
-      break;
+  // Legacy: Panel update
+  eventBus.on('panel:legacyUpdate', ({ panel, code }) => {
+    const cardId = `card-${panel}`;
+    const textarea = document.querySelector(`.code-input[data-card="${cardId}"]`);
+    if (textarea) {
+      textarea.value = code;
+      console.log(`[WebSocket] Updated ${cardId} code`);
+    }
+  });
 
-    case 'panel_created':
-      // Handle panel creation from API
-      if (message.panelId) {
-        console.log(`[WebSocket] Panel created via API: ${message.panelId}`);
-
-        // Check if panel already exists in DOM (avoid duplicates)
-        if (document.getElementById(message.panelId)) {
-          console.log(`[WebSocket] Panel ${message.panelId} already exists, skipping`);
-          break;
-        }
-
-        // Create panel in panelManager state
-        const panelId = createPanel({
-          id: message.panelId,
-          title: message.title,
-          code: message.code || '',
-          position: message.position || { x: 0, y: 0 },
-          size: message.size || { w: 600, h: 200 }
-        });
-
-        // Render panel in DOM
-        const panelElement = renderPanel(panelId);
-
-        // Initialize cardStates for this panel
-        cardStates[panelId] = {
-          playing: false,
-          stale: false,
-          lastEvaluatedCode: ''
-        };
-
-        // Initialize drag and resize for the new panel
-        initializeDragAndResize(panelElement);
-
-        // Initialize visual state (Story 6.3)
-        updateVisualIndicators(panelId);
-
-        // Story 7.3: Attach validation listener and run initial validation
-        attachValidationListener(panelId);
-
-        setTimeout(async () => {
-          const validation = await validateCode(panelId);
-          await updateActivateButton(panelId);
-          if (!validation.valid) {
-            displayError(panelId, validation.error, validation.line);
-          }
-        }, 0);
-
-        // Event listeners are delegated on document - no need to attach
-
-        console.log(`[WebSocket] Panel ${panelId} rendered in UI`);
-      }
-      break;
-
-    case 'panel_deleted':
-      // Handle panel deletion from API
-      if (message.panelId) {
-        const panelId = message.panelId;
-        console.log(`[WebSocket] Panel deleted via API: ${panelId}`);
-
-        // Stop audio if panel is playing
-        if (cardStates[panelId]?.playing) {
-          try {
-            evaluate(`silence.p('${panelId}')`, false, false);
-            cardStates[panelId].playing = false;
-            console.log(`Stopped audio for panel ${panelId}`);
-          } catch (error) {
-            console.error(`Failed to silence panel ${panelId}:`, error);
-          }
-        }
-
-        // Clean up highlighting data before panel deletion
-        panelMiniLocations.delete(panelId);
-
-        // Delete panel using panelManager (removes from state, DOM, and auto-saves)
-        // Skip confirmation dialog since this is an API deletion
-        deletePanel(panelId, null, cardStates, true);
-
-        console.log(`[WebSocket] Panel ${panelId} deleted from UI`);
-      }
-      break;
-
-    case 'panel_updated':
-      // Handle panel code update from API
-      if (message.panelId && message.code !== undefined) {
-        const panelId = message.panelId;
-        const newCode = message.code;
-        const autoPlay = message.autoPlay || false;
-
-        console.log(`[WebSocket] Panel code updated via API: ${panelId}, autoPlay: ${autoPlay}`);
-
-        // Find textarea
-        const textarea = document.querySelector(`#${panelId} .code-input`) ||
-          document.querySelector(`.code-input[data-card="${panelId}"]`);
-
-        if (!textarea) {
-          console.error(`[WebSocket] Panel ${panelId} not found in DOM`);
-          break;
-        }
-
-        // Detect staleness: panel is stale if it was playing and autoPlay is false
-        const wasPlaying = cardStates[panelId]?.playing || false;
-        const stale = wasPlaying && !autoPlay;
-
-        if (stale) {
-          console.warn(`[WebSocket] Panel ${panelId} is now STALE (was playing, autoPlay=false)`);
-        }
-
-        // Update textarea with new code
-        textarea.value = newCode;
-        console.log(`[WebSocket] Updated textarea for ${panelId}`);
-
-        // Update panelManager state
-        updatePanel(panelId, { code: newCode });
-
-        // Story 7.3: Run validation on updated code and update button state
-        setTimeout(async () => {
-          const validation = await validateCode(panelId);
-          await updateActivateButton(panelId);
-          if (!validation.valid) {
-            displayError(panelId, validation.error, validation.line);
-          } else {
-            clearErrorMessage(panelId);
-          }
-        }, 0);
-
-        // If autoPlay is true, execute the pattern
-        if (autoPlay) {
-          console.log(`[WebSocket] Auto-playing panel ${panelId}`);
-
-          // Resume audio context
-          ctx.resume();
-
-          const patternCode = newCode.trim();
-
-          if (!patternCode) {
-            console.warn(`[WebSocket] No pattern code to evaluate for ${panelId}`);
-            break;
-          }
-
-          try {
-            // Transpile to extract widget metadata
-            let { output, widgets } = transpiler(patternCode, { addReturn: false });
-
-            // Remove trailing semicolon
-            output = output.trim().replace(/;$/, '');
-
-            // Check if code uses labeled statements ($:)
-            const hasLabeledStatements = output.includes(".p('$')");
-
-            // Fix labeled statements: replace .p('$') with .p('panelId')
-            if (hasLabeledStatements) {
-              output = output.replace(/\.p\(['"]?\$['"]?\)/g, `.p('${panelId}')`);
-            }
-
-            // Render sliders from widget metadata
-            renderSliders(panelId, widgets, patternCode);
-
-            console.log(`[WebSocket] Transpiled code for ${panelId}:`, output);
-
-            // Evaluate transpiled code with unique ID
-            if (hasLabeledStatements) {
-              evaluate(output, true, false);
-            } else {
-              evaluate(`${output}.p('${panelId}')`, true, false);
-            }
-
-            // Update state and UI
-            cardStates[panelId].playing = true;
-            cardStates[panelId].stale = false;
-            cardStates[panelId].lastEvaluatedCode = newCode;
-            updatePanel(panelId, { stale: false, lastEvaluatedCode: newCode });
-
-            // Update visual indicators (Story 6.3)
-            updateVisualIndicators(panelId);
-
-            console.log(`[WebSocket] Panel ${panelId} auto-playing with new code`);
-
-            // Broadcast state change to remote clients
-            broadcastState();
-          } catch (error) {
-            console.error(`[WebSocket] Pattern evaluation error for ${panelId}:`, error);
-          }
-        }
-      }
-      break;
-
-    case 'playback_changed':
-      // Handle playback state change from API
-      if (message.panelId !== undefined && message.playing !== undefined) {
-        const panelId = message.panelId;
-        const shouldPlay = message.playing;
-
-        console.log(`[WebSocket] Playback changed via API: ${panelId}, playing: ${shouldPlay}`);
-
-        // Check if panel exists in cardStates
-        if (!cardStates[panelId]) {
-          console.error(`[WebSocket] Panel ${panelId} not found in cardStates`);
-          break;
-        }
-
-        const currentlyPlaying = cardStates[panelId].playing;
-
-        // Only change state if different from current state (idempotent)
-        if (currentlyPlaying === shouldPlay) {
-          console.log(`[WebSocket] Panel ${panelId} already in ${shouldPlay ? 'playing' : 'paused'} state`);
-          break;
-        }
-
-        // Call appropriate handler based on desired state
-        if (shouldPlay) {
-          activatePanel(panelId);
-        } else {
-          pausePanel(panelId);
-        }
-
-        console.log(`[WebSocket] Panel ${panelId} playback changed to ${shouldPlay ? 'playing' : 'paused'}`);
-      }
-      break;
-
-    case 'full_state':
-      // Story 8.4: full_state messages are sent by main interface to remote clients
-      // Main interface should ignore these (they echo back via WebSocket broadcast)
-      console.log('[WebSocket] Ignoring full_state message (intended for remote clients)');
-      break;
-
-    default:
-      console.warn('[WebSocket] Unknown message type:', type);
-  }
+  console.log('[WebSocket] Event listeners wired');
 }
 
 // Broadcast current state to remote clients
 function broadcastState() {
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
+  if (!wsIsConnected()) {
     return;
   }
 
@@ -2668,173 +2257,10 @@ function broadcastState() {
     };
   });
 
-  ws.send(JSON.stringify({
-    type: 'state.update',
-    panels
-  }));
+  wsSend(MESSAGE_TYPES.STATE_UPDATE, { panels });
 }
 
-/**
- * Initialize metronome indicator that pulses with cycle beats
- * Hooks into Strudel scheduler to sync with playback
- */
-function initializeMetronome() {
-  const metronome = document.getElementById('metronome');
-  if (!metronome) {
-    console.warn('Metronome element not found');
-    return;
-  }
-
-  let lastCycle = -1;
-  let isAnyPanelPlaying = false;
-  let animationFrameId = null;
-
-  // Check if any panel is playing
-  function updatePlayingState() {
-    isAnyPanelPlaying = Object.values(cardStates).some(state => state.playing);
-
-    if (isAnyPanelPlaying) {
-      metronome.classList.add('active');
-      if (!animationFrameId) {
-        startMetronomeLoop();
-      }
-    } else {
-      metronome.classList.remove('active');
-      metronome.classList.remove('beat');
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-      }
-    }
-  }
-
-  // Animation loop that checks for cycle changes
-  function startMetronomeLoop() {
-    function loop() {
-      if (!isAnyPanelPlaying) {
-        animationFrameId = null;
-        return;
-      }
-
-      const currentCycle = Math.floor(scheduler.now());
-
-      if (currentCycle !== lastCycle) {
-        // New cycle - trigger beat pulse
-        metronome.classList.add('beat');
-        setTimeout(() => metronome.classList.remove('beat'), 100);
-        lastCycle = currentCycle;
-      }
-
-      animationFrameId = requestAnimationFrame(loop);
-    }
-
-    loop();
-  }
-
-  // Update metronome state when panels play/pause
-  window.addEventListener('panel-state-changed', updatePlayingState);
-
-  console.log('✓ Metronome indicator initialized');
-}
-
-/**
- * Initialize pattern highlighting animation loop
- * Updates CodeMirror decorations in sync with scheduler playback
- * Filters haps by panel ID to avoid cross-contamination
- */
-function initializePatternHighlighting() {
-  let animationFrameId = null;
-  let isHighlightingActive = false;
-  let lastUpdateTime = 0;
-  const UPDATE_INTERVAL_MS = 50; // 20fps throttle
-
-  // Check if any panel is playing
-  function isAnyPanelPlaying() {
-    return Object.values(cardStates).some(state => state.playing);
-  }
-
-  // Start/stop highlighting based on settings and playing state
-  function updateHighlightingState() {
-    const settings = getSettings();
-    const shouldHighlight = settings.pattern_highlighting && isAnyPanelPlaying();
-
-    if (shouldHighlight && !isHighlightingActive) {
-      isHighlightingActive = true;
-      startHighlightingLoop();
-    } else if (!shouldHighlight && isHighlightingActive) {
-      isHighlightingActive = false;
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-      }
-    }
-  }
-
-  // Animation loop
-  function startHighlightingLoop() {
-    function loop() {
-      if (!isHighlightingActive) {
-        animationFrameId = null;
-        return;
-      }
-
-      const now = performance.now();
-
-      // Throttle updates to reduce CPU load (20fps)
-      if (now - lastUpdateTime < UPDATE_INTERVAL_MS) {
-        animationFrameId = requestAnimationFrame(loop);
-        return;
-      }
-
-      lastUpdateTime = now;
-      const currentTime = scheduler.now();
-      const begin = Math.floor(currentTime);
-      const end = begin + 1;
-
-      try {
-        const allHaps = scheduler.pattern.queryArc(begin, end, {
-          _cps: scheduler.cps
-        });
-
-        // Filter to only haps that are CURRENTLY playing (not future haps in the query arc)
-        // queryArc returns all haps in the 1-cycle window, but we only want to highlight
-        // the ones actively playing RIGHT NOW
-        const activeHaps = allHaps.filter(hap => {
-          if (!hap.whole) return false;
-          // Check if currentTime falls within this hap's time span
-          return currentTime >= hap.whole.begin && currentTime < hap.whole.end;
-        });
-
-        // Update each panel - CodeMirror will automatically filter haps
-        // by matching context.locations against each editor's miniLocations
-        for (const [panelId, view] of editorViews.entries()) {
-          if (panelId === MASTER_PANEL_ID) continue; // Skip master
-
-          const panelState = cardStates[panelId];
-          if (!panelState || !panelState.playing || panelState.stale) {
-            highlightMiniLocations(view, currentTime, []); // Clear if not playing/stale
-            continue;
-          }
-
-          // Pass only ACTIVE haps (currently playing) to prevent all notes highlighting at once
-          highlightMiniLocations(view, currentTime, activeHaps);
-        }
-      } catch (err) {
-        console.warn('[Pattern Highlighting] Error:', err);
-      }
-
-      animationFrameId = requestAnimationFrame(loop);
-    }
-
-    loop();
-  }
-
-  // Listen for panel state changes
-  window.addEventListener('panel-state-changed', updateHighlightingState);
-
-  // Listen for settings changes (when user toggles pattern_highlighting)
-  window.addEventListener('settings-changed', updateHighlightingState);
-}
+// initializeMetronome and initializePatternHighlighting moved to visualization.js
 
 // Async initialization to ensure modules load before evaluation (matches official REPL)
 async function initializeStrudel() {
@@ -2848,7 +2274,8 @@ async function initializeStrudel() {
 
   // Load modules and samples with splash timing coordination
   const modulesLoading = loadModules();
-  const samplesLoadingWithSplash = initializeWithSplash();
+  const snippetUrl = appSettings?.snippetLocation || '';
+  const samplesLoadingWithSplash = initializeWithSplash(snippetUrl);
 
   await Promise.all([modulesLoading, samplesLoadingWithSplash]);
 
@@ -2859,11 +2286,11 @@ async function initializeStrudel() {
     transpiler,
   });
 
-  evaluate = replInstance.evaluate;
-  scheduler = replInstance.scheduler;
+  strudelCore.evaluate = replInstance.evaluate;
+  strudelCore.scheduler = replInstance.scheduler;
 
   // Initialize pattern capture with scheduler
-  patternCapture = new PatternCapture(scheduler);
+  patternCaptureRef.instance = new PatternCapture(strudelCore.scheduler);
   console.log('✓ Pattern capture initialized');
 
   // Initialize metronome indicator
@@ -2883,10 +2310,10 @@ async function initializeStrudel() {
     const value = typeof cpm === 'function' ? cpm() : cpm;
     // Convert CPM to CPS: CPM / 60 = CPS
     const cps = value / 60;
-    scheduler.setCps(cps);
+    strudelCore.scheduler.setCps(cps);
   };
 
-  samplesReady = true;
+  appState.samplesReady = true;
 
   console.log('✓ r0astr ready');
   console.log('  - Piano samples (s("piano"))');
@@ -2922,246 +2349,23 @@ async function initializeStrudel() {
 }
 
 /**
- * Extract label from pattern code where slider is used
- * Priority:
- * 1. User comment on same line: slider(...) // LABEL
- * 2. Function name: .lpf(slider(...)) -> "Lpf"
- * 3. Default: "Slider N"
- */
-function deduceSliderLabel(patternCode, sliderIndex) {
-  console.log('[SLIDER LABEL] Pattern code:', patternCode);
-
-  // Split pattern into lines to search for comments
-  const lines = patternCode.split('\n');
-
-  // Find all slider() calls with function names
-  const sliderRegex = /\.(\w+)\s*\(\s*slider\s*\([^)]+\)\s*\)/g;
-  const matches = [...patternCode.matchAll(sliderRegex)];
-
-  console.log('[SLIDER LABEL] Found', matches.length, 'slider matches');
-
-  if (matches[sliderIndex]) {
-    const [fullMatch, functionName] = matches[sliderIndex];
-
-    // Find which line this match is on
-    let currentPos = 0;
-    let matchLine = null;
-    let matchLineNumber = -1;
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const lineEnd = currentPos + line.length;
-
-      if (matches[sliderIndex].index >= currentPos && matches[sliderIndex].index < lineEnd) {
-        matchLine = line;
-        matchLineNumber = i;
-        break;
-      }
-
-      currentPos = lineEnd + 1; // +1 for newline character
-    }
-
-    // Priority 1: Look for comment on the same line
-    if (matchLine) {
-      const commentMatch = matchLine.match(/\/\/\s*(.+?)$/);
-      if (commentMatch && commentMatch[1].trim()) {
-        const label = commentMatch[1].trim();
-        console.log(`[SLIDER LABEL] Index ${sliderIndex} -> comment: "${label}"`);
-        return label;
-      }
-    }
-
-    // Priority 2: Function name
-    console.log(`[SLIDER LABEL] Index ${sliderIndex} -> function: ${functionName}`);
-    // Capitalize first letter for display
-    return functionName.charAt(0).toUpperCase() + functionName.slice(1);
-  }
-
-  console.log(`[SLIDER LABEL] No match for index ${sliderIndex}, falling back to default`);
-  return `Slider ${sliderIndex + 1}`;
-}
-
-// Render sliders dynamically from widget metadata
-function renderSliders(cardId, widgets, patternCode = '') {
-  const slidersContainer = document.getElementById(`sliders-${cardId}`);
-
-  if (!slidersContainer) {
-    console.warn(`Slider container not found for ${cardId}`);
-    return;
-  }
-
-  // Clear existing sliders
-  slidersContainer.innerHTML = '';
-
-  // Render sliders from widget metadata
-  const sliderWidgets = widgets.filter(w => w.type === 'slider');
-  const sliderMetadata = [];
-
-  sliderWidgets.forEach((widget, index) => {
-    const { value, min = 0, max = 1, step, from } = widget;
-    const sliderId = `slider_${from}`;
-
-    // Get current value from sliderValues (widget.value might be undefined)
-    // Ensure value is numeric (parseFloat to handle string values from transpiler)
-    const rawValue = sliderValues[sliderId] ?? value ?? 0;
-    const currentValue = typeof rawValue === 'number' ? rawValue : parseFloat(rawValue) || 0;
-
-    // console.log(`[SLIDER DEBUG] ${cardId} ${sliderId}: sliderValues=${sliderValues[sliderId]}, widget.value=${value} (type: ${typeof value}), rawValue=${rawValue}, currentValue=${currentValue}`);
-
-    // Deduce label from pattern code
-    const label = deduceSliderLabel(patternCode, index);
-
-    // Track slider metadata for remote sync
-    sliderMetadata.push({
-      sliderId,
-      label,
-      value: currentValue,  // Guaranteed to be numeric now
-      min,
-      max,
-      step: step ?? (max - min) / 1000
-    });
-
-    const sliderControl = document.createElement('div');
-    sliderControl.className = 'slider-control';
-
-    sliderControl.innerHTML = `
-      <label>
-        <span>${label}</span>
-        <span class="slider-value" data-slider="${sliderId}">${currentValue}</span>
-      </label>
-      <input type="range"
-        min="${min}"
-        max="${max}"
-        step="${step ?? (max - min) / 1000}"
-        value="${currentValue}"
-        data-slider-id="${sliderId}">
-    `;
-
-    const input = sliderControl.querySelector('input');
-    input.addEventListener('input', (e) => {
-      const newValue = parseFloat(e.target.value);
-      updatePanelSliderValue(cardId, sliderId, newValue);
-    });
-
-    slidersContainer.appendChild(sliderControl);
-  });
-
-  // Store slider metadata for this panel
-  panelSliders[cardId] = sliderMetadata;
-
-  // Also render sliders in collapsed panel header (if panel exists)
-  renderCollapsedSliders(cardId, sliderWidgets);
-
-  // Broadcast slider metadata to remote clients
-  broadcastPanelSliders(cardId, sliderMetadata);
-}
-
-/**
- * Render sliders in collapsed panel header (unlabelled)
- */
-function renderCollapsedSliders(cardId, sliderWidgets) {
-  const collapsedSlidersContainer = document.getElementById(`collapsed-sliders-${cardId}`);
-
-  if (!collapsedSlidersContainer) {
-    return; // Panel not rendered yet
-  }
-
-  // Clear existing collapsed sliders
-  collapsedSlidersContainer.innerHTML = '';
-
-  // Render each slider without labels
-  sliderWidgets.forEach((widget, index) => {
-    const { value, min = 0, max = 1, step, from } = widget;
-    const sliderId = `slider_${from}`;
-
-    const rawValue = sliderValues[sliderId] ?? value ?? 0;
-    const currentValue = typeof rawValue === 'number' ? rawValue : parseFloat(rawValue) || 0;
-
-    const input = document.createElement('input');
-    input.type = 'range';
-    input.min = min;
-    input.max = max;
-    input.step = step ?? (max - min) / 1000;
-    input.value = currentValue;
-    input.dataset.sliderId = sliderId;
-    input.title = `Slider ${index + 1}: ${currentValue}`;
-
-    input.addEventListener('input', (e) => {
-      const newValue = parseFloat(e.target.value);
-      updatePanelSliderValue(cardId, sliderId, newValue);
-      // Update tooltip
-      e.target.title = `Slider ${index + 1}: ${newValue}`;
-    });
-
-    collapsedSlidersContainer.appendChild(input);
-  });
-
-  // Update collapsed panel width to accommodate sliders
-  const panelElement = document.getElementById(cardId);
-  if (panelElement && panelElement.classList.contains('panel-collapsed')) {
-    const numSliders = sliderWidgets.length;
-    const baseWidth = 450;
-    const sliderWidth = 80;
-    const sliderGap = 8;
-    const extraWidth = numSliders > 0 ? (numSliders * sliderWidth) + ((numSliders - 1) * sliderGap) + 16 : 0;
-    const newWidth = baseWidth + extraWidth;
-    panelElement.style.width = `${newWidth}px`;
-  }
-}
-
-/**
- * Update panel slider value (local and remote)
- */
-function updatePanelSliderValue(panelId, sliderId, newValue) {
-  sliderValues[sliderId] = newValue;
-
-  // Update local UI
-  const valueDisplay = document.querySelector(`.slider-value[data-slider="${sliderId}"]`);
-  if (valueDisplay) {
-    valueDisplay.textContent = newValue.toFixed(2);
-  }
-
-  const sliderInput = document.querySelector(`input[data-slider-id="${sliderId}"]`);
-  if (sliderInput) {
-    sliderInput.value = newValue;
-  }
-
-  console.log(`Slider ${sliderId} updated: ${newValue}`);
-
-  // Broadcast to remote
-  broadcastPanelSliderValue(panelId, sliderId, newValue);
-}
-
-/**
  * Broadcast panel slider metadata to remote clients
  */
 function broadcastPanelSliders(panelId, sliders) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
-    // console.log(`[SLIDER DEBUG] Cannot broadcast panel sliders - WebSocket not connected`);
+  if (!wsIsConnected()) {
     return;
   }
 
-  // console.log(`[SLIDER DEBUG] Broadcasting ${sliders.length} sliders for ${panelId}:`, sliders);
-
-  ws.send(JSON.stringify({
-    type: 'panel.sliders',
-    panelId,
-    sliders
-  }));
+  wsSend(MESSAGE_TYPES.PANEL_SLIDERS, { panelId, sliders });
 }
 
 /**
  * Broadcast panel slider value change to remote clients
  */
 function broadcastPanelSliderValue(panelId, sliderId, value) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  if (!wsIsConnected()) return;
 
-  ws.send(JSON.stringify({
-    type: 'panel.sliderValue',
-    panelId,
-    sliderId,
-    value
-  }));
+  wsSend('panel.sliderValue', { panelId, sliderId, value });
 }
 
 /**
@@ -3232,14 +2436,13 @@ function createNewPanelAndFocus() {
 
   // Broadcast panel_created event to remote clients
   const panel = getPanel(panelId);
-  if (panel && ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({
-      type: 'panel_created',
+  if (panel && wsIsConnected()) {
+    wsSend(MESSAGE_TYPES.PANEL_CREATED, {
       id: panelId,
       title: panel.title,
       position: getAllPanels().size, // Position in list
       timestamp: Date.now()
-    }));
+    });
     console.log(`[WebSocket] Broadcasted panel_created: ${panelId}`);
   }
 }
@@ -3612,7 +2815,7 @@ function initializeKeyboardShortcuts() {
             }
             if (cardStates[focusedPanelW] && cardStates[focusedPanelW].playing) {
               try {
-                evaluate(`silence.p('${focusedPanelW}')`, false, false);
+                strudelCore.evaluate(`silence.p('${focusedPanelW}')`, false, false);
                 cardStates[focusedPanelW].playing = false;
                 console.log(`[Keyboard] Stopped audio for panel ${focusedPanelW}`);
               } catch (error) {
@@ -3622,12 +2825,11 @@ function initializeKeyboardShortcuts() {
             // Clean up highlighting data before panel deletion
             panelMiniLocations.delete(focusedPanelW);
             const deleted = deletePanel(focusedPanelW, null, cardStates, true);
-            if (deleted && ws && ws.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({
-                type: 'panel_deleted',
-                id: focusedPanelW,
+            if (deleted && wsIsConnected()) {
+              wsSend(MESSAGE_TYPES.PANEL_DELETED, {
+                panel: focusedPanelW,
                 timestamp: Date.now()
-              }));
+              });
               console.log(`[Keyboard] Broadcasted panel_deleted: ${focusedPanelW}`);
             }
           } else if (focusedPanelW === MASTER_PANEL_ID) {
@@ -3722,14 +2924,14 @@ function initializePatternCaptureKeys() {
     if (modifier && e.code === 'KeyR') {
       e.preventDefault();
 
-      if (!patternCapture) {
+      if (!patternCaptureRef.instance) {
         console.warn('[PatternCapture] Not initialized yet');
         return;
       }
 
-      if (!patternCapture.captureMode) {
+      if (!patternCaptureRef.instance.captureMode) {
         // Start capturing
-        const started = patternCapture.startCapture();
+        const started = patternCaptureRef.instance.startCapture();
         if (started) {
           // Defocus CodeMirror so keystrokes aren't typed
           const focusedPanel = findFocusedPanel();
@@ -3744,7 +2946,7 @@ function initializePatternCaptureKeys() {
         }
       } else {
         // Stop capturing and insert pattern
-        const pattern = patternCapture.stopCapture();
+        const pattern = patternCaptureRef.instance.stopCapture();
         showCaptureIndicator(false);
 
         if (pattern) {
@@ -3772,10 +2974,10 @@ function initializePatternCaptureKeys() {
     }
 
     // Capture key presses when in capture mode
-    if (patternCapture && patternCapture.captureMode) {
-      if (patternCapture.isMappedKey(e.key)) {
+    if (patternCaptureRef.instance && patternCaptureRef.instance.captureMode) {
+      if (patternCaptureRef.instance.isMappedKey(e.key)) {
         e.preventDefault();
-        patternCapture.captureKeyDown(e.key, performance.now());
+        patternCaptureRef.instance.captureKeyDown(e.key, performance.now());
 
         // Visual feedback
         flashCaptureKey(e.key);
@@ -3791,8 +2993,8 @@ function initializePatternCaptureKeys() {
     }
 
     // ALWAYS call captureKeyUp to clear keysPressed Set (even when not capturing)
-    if (patternCapture && patternCapture.isMappedKey(e.key)) {
-      patternCapture.captureKeyUp(e.key, performance.now());
+    if (patternCaptureRef.instance && patternCaptureRef.instance.isMappedKey(e.key)) {
+      patternCaptureRef.instance.captureKeyUp(e.key, performance.now());
     }
   });
 
@@ -3869,7 +3071,7 @@ function flashCaptureKey(key) {
     pointer-events: none;
   `;
 
-  const note = patternCapture.keyMap[key];
+  const note = patternCaptureRef.instance.keyMap[key];
   flash.textContent = `${key.toUpperCase()} → ${note}`;
   document.body.appendChild(flash);
 
@@ -3945,12 +3147,12 @@ function extractNoteLines(pattern) {
  * Can be called while capturing to see generated pattern so far
  */
 window.getCapturePreview = function () {
-  if (!patternCapture || !patternCapture.captureMode) {
+  if (!patternCaptureRef.instance || !patternCaptureRef.instance.captureMode) {
     console.log('[PatternCapture] Not currently capturing');
     return null;
   }
 
-  const pattern = patternCapture.generatePattern();
+  const pattern = patternCaptureRef.instance.generatePattern();
   console.log('[PatternCapture] Preview:\n' + pattern);
   return pattern;
 };
@@ -3972,29 +3174,29 @@ function initializeCaptureUI() {
   // Wire up cycle length selector
   cycleLengthSelect.addEventListener('change', (e) => {
     const cycleLength = parseInt(e.target.value);
-    if (patternCapture) {
-      patternCapture.updateConfig({ chunkSize: cycleLength });
+    if (patternCaptureRef.instance) {
+      patternCaptureRef.instance.updateConfig({ chunkSize: cycleLength });
       console.log(`[PatternCapture] Cycle length set to ${cycleLength}`);
     }
   });
 
   // Wire up duration mode checkbox
   durationModeCheckbox.addEventListener('change', (e) => {
-    if (patternCapture) {
-      patternCapture.updateConfig({ durationMode: e.target.checked });
+    if (patternCaptureRef.instance) {
+      patternCaptureRef.instance.updateConfig({ durationMode: e.target.checked });
     }
   });
 
   // Wire up RECORD button
   recordBtn.addEventListener('click', () => {
-    if (!patternCapture) {
+    if (!patternCaptureRef.instance) {
       console.warn('[PatternCapture] Not initialized yet');
       return;
     }
 
-    if (!patternCapture.captureMode) {
+    if (!patternCaptureRef.instance.captureMode) {
       // Start recording
-      const started = patternCapture.startCapture();
+      const started = patternCaptureRef.instance.startCapture();
       if (started) {
         // Defocus editor
         const focusedPanel = findFocusedPanel();
@@ -4011,7 +3213,7 @@ function initializeCaptureUI() {
       }
     } else {
       // Stop recording
-      const pattern = patternCapture.stopCapture();
+      const pattern = patternCaptureRef.instance.stopCapture();
 
       // Update UI - remove recording class
       recordBtn.classList.remove('recording');

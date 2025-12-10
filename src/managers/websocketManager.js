@@ -15,10 +15,18 @@ export const MESSAGE_TYPES = {
   PANEL_PAUSE: 'panel.pause',
   PANEL_TOGGLE: 'panel.toggle',
   PANEL_UPDATE_CODE: 'panel.updateCode',
+  PANEL_SLIDER_CHANGE: 'panel.sliderChange',
   STOP_ALL: 'global.stopAll',
   UPDATE_ALL: 'global.updateAll',
   REQUEST_STATE: 'server.requestFullState',
   SLIDER_CHANGE: 'master.sliderChange',
+
+  // Incoming (API/server → main)
+  PANEL_CREATED_API: 'panel_created',
+  PANEL_DELETED_API: 'panel_deleted',
+  PANEL_UPDATED_API: 'panel_updated',
+  PLAYBACK_CHANGED_API: 'playback_changed',
+  FULL_STATE_INCOMING: 'full_state',
 
   // Outgoing (main → remote)
   PANEL_CREATED: 'panel_created',
@@ -28,6 +36,7 @@ export const MESSAGE_TYPES = {
   PANEL_SLIDERS: 'panel_sliders',
   MASTER_SLIDERS: 'master.sliders',
   STATE_SYNC: 'full_state',
+  STATE_UPDATE: 'state.update',
   CLIENT_REGISTER: 'client.register',
   CLIENT_SYNC_PANELS: 'client.syncPanels'
 };
@@ -108,14 +117,15 @@ export function connect(url) {
 
 /**
  * Handle incoming WebSocket message
+ * Emits events for all message types - main.js wires listeners
  * @private
  * @param {Object} message - Parsed WebSocket message
  * @returns {void}
  */
 function handleMessage(message) {
-  const { type, panel, data, panels, sliderId, value } = message;
+  const { type, panel, data, panelId, sliderId, value, code, title, position, size, playing, autoPlay } = message;
 
-  console.log('[WebSocket] Received:', type, panel ? `panel: ${panel}` : '');
+  console.log('[WebSocket] Received:', type, panel || panelId ? `panel: ${panel || panelId}` : '');
 
   switch (type) {
     case 'server.hello':
@@ -135,13 +145,13 @@ function handleMessage(message) {
 
     case MESSAGE_TYPES.PANEL_PLAY:
       if (panel) {
-        eventBus.emit('panel:play', panel);
+        eventBus.emit('panel:remotePlay', panel);
       }
       break;
 
     case MESSAGE_TYPES.PANEL_PAUSE:
       if (panel) {
-        eventBus.emit('panel:pause', panel);
+        eventBus.emit('panel:remotePause', panel);
       }
       break;
 
@@ -152,16 +162,72 @@ function handleMessage(message) {
       break;
 
     case MESSAGE_TYPES.STOP_ALL:
-      eventBus.emit('stopAll');
+      eventBus.emit('global:stopAll');
       break;
 
     case MESSAGE_TYPES.UPDATE_ALL:
-      eventBus.emit('updateAll');
+      eventBus.emit('global:updateAll');
       break;
 
     case MESSAGE_TYPES.SLIDER_CHANGE:
       if (sliderId !== undefined && value !== undefined) {
-        eventBus.emit('slider:remoteChange', { sliderId, value });
+        eventBus.emit('slider:masterRemoteChange', { sliderId, value });
+      }
+      break;
+
+    case MESSAGE_TYPES.PANEL_SLIDER_CHANGE:
+      if (panelId && sliderId !== undefined && value !== undefined) {
+        eventBus.emit('slider:panelRemoteChange', { panelId, sliderId, value });
+      }
+      break;
+
+    // API/Server initiated events
+    case MESSAGE_TYPES.PANEL_CREATED_API:
+      if (panelId || message.panelId) {
+        eventBus.emit('panel:apiCreated', {
+          panelId: panelId || message.panelId,
+          title: title || message.title,
+          code: code || message.code || '',
+          position: position || message.position,
+          size: size || message.size
+        });
+      }
+      break;
+
+    case MESSAGE_TYPES.PANEL_DELETED_API:
+      if (panelId || message.panelId) {
+        eventBus.emit('panel:apiDeleted', { panelId: panelId || message.panelId });
+      }
+      break;
+
+    case MESSAGE_TYPES.PANEL_UPDATED_API:
+      if (panelId || message.panelId) {
+        eventBus.emit('panel:apiUpdated', {
+          panelId: panelId || message.panelId,
+          code: code || message.code,
+          autoPlay: autoPlay || message.autoPlay || false
+        });
+      }
+      break;
+
+    case MESSAGE_TYPES.PLAYBACK_CHANGED_API:
+      if ((panelId || message.panelId) && (playing !== undefined || message.playing !== undefined)) {
+        eventBus.emit('panel:apiPlaybackChanged', {
+          panelId: panelId || message.panelId,
+          playing: playing !== undefined ? playing : message.playing
+        });
+      }
+      break;
+
+    case MESSAGE_TYPES.FULL_STATE_INCOMING:
+      // Main interface should ignore these (intended for remote clients)
+      console.log('[WebSocket] Ignoring full_state message (intended for remote clients)');
+      break;
+
+    case 'panel.update':
+      // Legacy: Remote code update
+      if (panel && data && data.code) {
+        eventBus.emit('panel:legacyUpdate', { panel, code: data.code });
       }
       break;
 
