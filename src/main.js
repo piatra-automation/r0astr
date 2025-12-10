@@ -2,7 +2,7 @@ import { repl, evalScope, ref } from '@strudel/core';
 import { getAudioContext, webaudioOutput, initAudioOnFirstClick, registerSynthSounds } from '@strudel/webaudio';
 import { transpiler } from '@strudel/transpiler';
 import { sliderWithID, sliderValues as cmSliderValues, highlightExtension, updateMiniLocations, highlightMiniLocations } from '@strudel/codemirror';
-import { createPanel, renderPanel, deletePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, animatePanelPosition, MASTER_PANEL_ID } from './managers/panelManager.js';
+import { createPanel, renderPanel, deletePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, animatePanelPosition, expandPanel, collapsePanel, togglePanel, isPanelExpanded, MASTER_PANEL_ID } from './managers/panelManager.js';
 import { initializeDragAndResize } from './ui/dragResize.js';
 import { loadSettings, getSettings, updateSetting } from './managers/settingsManager.js';
 import { moveEditorToScreen, removeEditorFromScreen, removeAllEditorsExcept, isEditorInScreen } from './managers/screenManager.js';
@@ -72,6 +72,14 @@ const createSlider = (id, initialValue) => {
 
 // State is now imported from state.js:
 // cardStates, editorViews, fontSizeCompartments, panelMiniLocations
+
+/**
+ * Check if the UI is using tree layout (vs legacy grid layout)
+ * @returns {boolean} True if tree layout is active
+ */
+function isTreeLayout() {
+  return document.querySelector('.panel-tree') !== null;
+}
 
 /**
  * Get the original code-editor container for a panel
@@ -272,7 +280,64 @@ function evaluateMasterCode(reRenderSliders = true) {
 
 // Render master sliders
 function renderMasterSliders(widgets) {
+  if (isTreeLayout()) {
+    // Tree layout: render as leaf nodes
+    renderMasterSlidersTree(widgets);
+  } else {
+    // Legacy layout: render in master-sliders container
+    renderMasterSlidersLegacy(widgets);
+  }
+
+  // Broadcast slider metadata to remote clients
+  broadcastSliders(widgets);
+
+  // Render automatic tempo control if enabled
+  renderTempoControl();
+}
+
+// Render master sliders for tree layout
+function renderMasterSlidersTree(widgets) {
+  const masterPanel = document.querySelector(`[data-panel-id="${MASTER_PANEL_ID}"]`) ||
+                      document.getElementById(MASTER_PANEL_ID);
+  if (!masterPanel) return;
+
+  const panelChildren = masterPanel.querySelector('.panel-children');
+  if (!panelChildren) return;
+
+  // Remove existing master slider leaves (keep editor leaf)
+  const existingSliderLeaves = panelChildren.querySelectorAll('.leaf-slider.master-slider');
+  existingSliderLeaves.forEach(leaf => leaf.remove());
+
+  widgets.forEach((widget) => {
+    const { varName, value, min, max, sliderId } = widget;
+
+    const leafSlider = document.createElement('li');
+    leafSlider.className = 'leaf-node leaf-slider master-slider';
+    leafSlider.innerHTML = `
+      <label>${varName}</label>
+      <input type="range"
+        min="${min}"
+        max="${max}"
+        step="${(max - min) / 1000}"
+        value="${value}"
+        data-slider-id="${sliderId}">
+      <span class="slider-value" data-slider="${sliderId}">${value}</span>
+    `;
+
+    const input = leafSlider.querySelector('input');
+    input.addEventListener('input', (e) => {
+      const newValue = parseFloat(e.target.value);
+      updateSliderValue(sliderId, newValue);
+    });
+
+    panelChildren.appendChild(leafSlider);
+  });
+}
+
+// Render master sliders for legacy layout
+function renderMasterSlidersLegacy(widgets) {
   const slidersContainer = document.getElementById('master-sliders');
+  if (!slidersContainer) return;
   slidersContainer.innerHTML = '';
 
   widgets.forEach((widget) => {
@@ -302,22 +367,16 @@ function renderMasterSliders(widgets) {
 
     slidersContainer.appendChild(sliderControl);
   });
-
-  // Broadcast slider metadata to remote clients
-  broadcastSliders(widgets);
-
-  // Render automatic tempo control if enabled
-  renderTempoControl();
 }
 
 /**
  * Render automatic TEMPO control based on settings
+ * Supports both legacy and tree layouts
  */
 function renderTempoControl() {
   const settings = getSettings();
-  const slidersContainer = document.getElementById('master-sliders');
 
-  if (!slidersContainer || !settings.advanced || !settings.advanced.show_tempo_knob) {
+  if (!settings.advanced || !settings.advanced.show_tempo_knob) {
     // Remove tempo control if it exists but is disabled
     const existingTempo = document.getElementById('tempo-control');
     if (existingTempo) {
@@ -325,6 +384,66 @@ function renderTempoControl() {
     }
     return;
   }
+
+  // Get current tempo value (default 30 CPM = 120 BPM)
+  const currentCpm = window.TEMPO_CPM_VALUE || 30;
+  const showCpm = settings.advanced.show_cpm;
+  const displayValue = showCpm ? currentCpm : currentCpm * 4; // BPM = CPM * 4
+  const displayUnit = showCpm ? 'CPM' : 'BPM';
+
+  if (isTreeLayout()) {
+    // Tree layout: render as leaf node
+    renderTempoControlTree(currentCpm, displayValue, displayUnit, showCpm);
+  } else {
+    // Legacy layout: render in master-sliders container
+    renderTempoControlLegacy(currentCpm, displayValue, displayUnit, showCpm);
+  }
+
+  // Initialize scheduler on first render
+  if (scheduler && !window.TEMPO_INITIALIZED) {
+    const cps = currentCpm / 60;
+    strudelCore.scheduler.setCps(cps);
+    window.TEMPO_INITIALIZED = true;
+    console.log(`🎵 Auto Tempo initialized: ${currentCpm} CPM (${(currentCpm * 4).toFixed(0)} BPM)`);
+  }
+}
+
+function renderTempoControlTree(currentCpm, displayValue, displayUnit, showCpm) {
+  const masterPanel = document.querySelector(`[data-panel-id="${MASTER_PANEL_ID}"]`) ||
+                      document.getElementById(MASTER_PANEL_ID);
+  if (!masterPanel) return;
+
+  const panelChildren = masterPanel.querySelector('.panel-children');
+  if (!panelChildren) return;
+
+  // Check if tempo control already exists
+  let tempoControl = document.getElementById('tempo-control');
+
+  if (!tempoControl) {
+    // Create tempo control as leaf node
+    tempoControl = document.createElement('li');
+    tempoControl.id = 'tempo-control';
+    tempoControl.className = 'leaf-node leaf-slider tempo-control';
+    panelChildren.appendChild(tempoControl);
+  }
+
+  tempoControl.innerHTML = `
+    <label>TEMPO</label>
+    <input type="range"
+      id="tempo-slider"
+      min="15"
+      max="45"
+      step="0.1"
+      value="${currentCpm}">
+    <span class="slider-value" id="tempo-value">${displayValue.toFixed(0)} ${displayUnit}</span>
+  `;
+
+  attachTempoInputListener(tempoControl, showCpm, displayUnit);
+}
+
+function renderTempoControlLegacy(currentCpm, displayValue, displayUnit, showCpm) {
+  const slidersContainer = document.getElementById('master-sliders');
+  if (!slidersContainer) return;
 
   // Check if tempo control already exists
   let tempoControl = document.getElementById('tempo-control');
@@ -336,12 +455,6 @@ function renderTempoControl() {
     tempoControl.className = 'slider-control tempo-control';
     slidersContainer.appendChild(tempoControl);
   }
-
-  // Get current tempo value (default 30 CPM = 120 BPM)
-  const currentCpm = window.TEMPO_CPM_VALUE || 30;
-  const showCpm = settings.advanced.show_cpm;
-  const displayValue = showCpm ? currentCpm : currentCpm * 4; // BPM = CPM * 4
-  const displayUnit = showCpm ? 'CPM' : 'BPM';
 
   tempoControl.innerHTML = `
     <label>
@@ -356,6 +469,10 @@ function renderTempoControl() {
       value="${currentCpm}">
   `;
 
+  attachTempoInputListener(tempoControl, showCpm, displayUnit);
+}
+
+function attachTempoInputListener(tempoControl, showCpm, displayUnit) {
   const input = tempoControl.querySelector('#tempo-slider');
   input.addEventListener('input', (e) => {
     const cpm = parseFloat(e.target.value);
@@ -375,14 +492,6 @@ function renderTempoControl() {
       console.log(`🎵 Tempo: ${cpm.toFixed(1)} CPM (${(cpm * 4).toFixed(0)} BPM, ${cps.toFixed(3)} CPS)`);
     }
   });
-
-  // Initialize scheduler on first render
-  if (scheduler && !window.TEMPO_INITIALIZED) {
-    const cps = currentCpm / 60;
-    strudelCore.scheduler.setCps(cps);
-    window.TEMPO_INITIALIZED = true;
-    console.log(`🎵 Auto Tempo initialized: ${currentCpm} CPM (${(currentCpm * 4).toFixed(0)} BPM)`);
-  }
 }
 
 /**
@@ -497,8 +606,10 @@ function restorePanels() {
         console.log(`[RESTORE] CodeMirror initialized for: ${panelId}`);
       }
 
-      // Initialize drag and resize functionality
-      initializeDragAndResize(panelElement);
+      // Initialize drag and resize functionality (legacy layout only)
+      if (!isTreeLayout()) {
+        initializeDragAndResize(panelElement);
+      }
 
       // Initialize visual state (Story 6.3)
       updateVisualIndicators(panelId);
@@ -607,14 +718,16 @@ function initializeCards() {
     });
   }
 
-  // Attach master panel listeners
+  // Attach master panel listeners (legacy button - may not exist in tree layout)
   const masterModeBtn = document.getElementById('master-mode');
   if (masterModeBtn) {
     masterModeBtn.addEventListener('click', toggleMasterMode);
   }
 
   // Initialize master panel CodeMirror
-  const masterCodeContainer = document.getElementById('master-code');
+  // Tree layout uses editor-panel-0, legacy uses master-code
+  const masterCodeContainer = document.getElementById('editor-panel-0') ||
+                              document.getElementById('master-code');
   let masterCodeTimer;
   if (masterCodeContainer) {
     console.log('[Init] Initializing master panel CodeMirror');
@@ -651,13 +764,26 @@ function initializeCards() {
     editorViews.set(MASTER_PANEL_ID, masterView);
     console.log('[Init] Master panel CodeMirror initialized with', masterCode ? 'restored' : 'default', 'code');
 
-    // Apply restored compact state to DOM
-    const panel = document.getElementById(MASTER_PANEL_ID);
+    // Apply restored compact state to DOM (tree layout uses details open/closed)
+    const panel = document.querySelector(`[data-panel-id="${MASTER_PANEL_ID}"]`) ||
+                  document.getElementById(MASTER_PANEL_ID);
     if (panel) {
-      if (appState.masterPanelCompact) {
-        panel.classList.add('compact');
+      // For tree layout, expanded state is controlled by details element
+      const details = panel.querySelector('details');
+      if (details) {
+        // In tree layout, "compact" means collapsed
+        if (appState.masterPanelCompact) {
+          details.removeAttribute('open');
+        } else {
+          details.setAttribute('open', '');
+        }
       } else {
-        panel.classList.remove('compact');
+        // Legacy layout
+        if (appState.masterPanelCompact) {
+          panel.classList.add('compact');
+        } else {
+          panel.classList.remove('compact');
+        }
       }
       console.log(`[Init] Master panel compact state restored: ${appState.masterPanelCompact}`);
     }
@@ -713,8 +839,10 @@ function initializeCards() {
         }, 10);
       }
 
-      // Initialize drag and resize functionality
-      initializeDragAndResize(panelElement);
+      // Initialize drag and resize functionality (legacy layout only)
+      if (!isTreeLayout()) {
+        initializeDragAndResize(panelElement);
+      }
 
       // Initialize visual state (Story 6.3)
       updateVisualIndicators(panelId);
@@ -735,33 +863,107 @@ function initializeCards() {
     });
   }
 
-  // Story 6.2: Use event delegation for PAUSE button clicks (supports dynamic panels)
+  // Story 6.2: Use event delegation for PAUSE/STOP button clicks (supports dynamic panels)
+  // Supports both legacy (.pause-btn) and tree layout (.btn-stop)
   document.addEventListener('click', (e) => {
-    const pauseBtn = e.target.closest('.pause-btn');
-    if (pauseBtn && pauseBtn.dataset.card) {
-      const panelId = pauseBtn.dataset.card;
-      pausePanel(panelId);
+    const pauseBtn = e.target.closest('.pause-btn, .btn-stop');
+    if (pauseBtn) {
+      // Try legacy data-card, then find from tree parent
+      let panelId = pauseBtn.dataset.card;
+      if (!panelId) {
+        const levelPanel = pauseBtn.closest('.level-panel');
+        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
+      }
+      if (panelId) {
+        pausePanel(panelId);
+      }
     }
   });
 
-  // Story 6.2: Use event delegation for ACTIVATE button clicks (supports dynamic panels)
+  // Story 6.2: Use event delegation for ACTIVATE/PLAY button clicks (supports dynamic panels)
+  // Supports both legacy (.activate-btn) and tree layout (.btn-play)
   document.addEventListener('click', (e) => {
-    const activateBtn = e.target.closest('.activate-btn');
-    if (activateBtn && activateBtn.dataset.card) {
-      const panelId = activateBtn.dataset.card;
-      activatePanel(panelId);
+    const activateBtn = e.target.closest('.activate-btn, .btn-play');
+    if (activateBtn) {
+      // Try legacy data-card, then find from tree parent
+      let panelId = activateBtn.dataset.card;
+      if (!panelId) {
+        const levelPanel = activateBtn.closest('.level-panel');
+        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
+      }
+      if (panelId) {
+        activatePanel(panelId);
+      }
     }
   });
+
+  // Tree layout: Use event delegation for DELETE button clicks
+  document.addEventListener('click', (e) => {
+    const deleteBtn = e.target.closest('.btn-delete, .delete-btn');
+    if (deleteBtn) {
+      // Try legacy data-card/data-panel, then find from tree parent
+      let panelId = deleteBtn.dataset.panel || deleteBtn.dataset.card;
+      if (!panelId) {
+        const levelPanel = deleteBtn.closest('.level-panel');
+        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
+      }
+      if (panelId && panelId !== MASTER_PANEL_ID) {
+        deletePanel(panelId, null, cardStates);
+      }
+    }
+  });
+
+  // Tree layout: Accordion mode - collapse other panels when one is expanded
+  // Listen for toggle events on details elements (use capture since toggle doesn't bubble)
+  document.addEventListener('toggle', (e) => {
+    // Only handle details elements
+    if (e.target.tagName !== 'DETAILS') return;
+
+    const details = e.target;
+
+    // Only handle opening (not closing)
+    if (!details.open) return;
+
+    // Check if accordion mode is enabled
+    const settings = getSettings();
+    if (!settings.collapseOnBlur) return;
+
+    // Find the panel that was just opened
+    const levelPanel = details.closest('.level-panel');
+    if (!levelPanel) return;
+
+    const openedPanelId = levelPanel.dataset?.panelId || levelPanel.id;
+
+    // Collapse all other panels
+    const allPanels = document.querySelectorAll('.level-panel');
+    let collapsedCount = 0;
+    allPanels.forEach(panel => {
+      const panelId = panel.dataset?.panelId || panel.id;
+      if (panelId !== openedPanelId) {
+        const panelDetails = panel.querySelector('details');
+        if (panelDetails && panelDetails.open) {
+          panelDetails.open = false;
+          collapsedCount++;
+        }
+      }
+    });
+
+    if (collapsedCount > 0) {
+      console.log(`[Accordion] Collapsed ${collapsedCount} panels, keeping ${openedPanelId} open`);
+    }
+  }, true); // Use capture since toggle event doesn't bubble
 
   // Single click on panel title: focus panel (expand if collapsed)
   document.addEventListener('click', (e) => {
     const titleElement = e.target.closest('.panel-title');
     if (titleElement) {
-      const panelId = titleElement.dataset.panelId;
+      // Try legacy data-panel-id, then find from tree parent
+      let panelId = titleElement.dataset.panelId;
+      if (!panelId) {
+        const levelPanel = titleElement.closest('.level-panel');
+        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
+      }
       if (!panelId) return;
-
-      const panel = document.getElementById(panelId);
-      if (!panel) return;
 
       // Single click always just brings to focus (doesn't enable editing)
       bringPanelToFront(panelId);
@@ -789,7 +991,12 @@ function initializeCards() {
   document.addEventListener('blur', (e) => {
     const titleElement = e.target.closest('.panel-title');
     if (titleElement) {
-      const panelId = titleElement.dataset.panelId;
+      // Try legacy data-panel-id, then find from tree parent
+      let panelId = titleElement.dataset.panelId;
+      if (!panelId) {
+        const levelPanel = titleElement.closest('.level-panel');
+        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
+      }
       const newTitle = titleElement.textContent.trim();
       const panel = getPanel(panelId);
 
@@ -943,12 +1150,18 @@ function initializeCards() {
       return;
     }
 
-    const panel = e.target.closest('.card, #master-panel');
+    // Support both tree layout (.level-panel) and legacy (.card, #master-panel)
+    const panel = e.target.closest('.level-panel, .card, #master-panel');
     if (panel) {
-      const panelId = panel.id;
+      // Get panelId from data attribute (tree) or id (legacy)
+      const panelId = panel.dataset?.panelId || panel.id;
 
-      // Check if click was on interactive elements
-      const clickedInteractive = e.target.closest('.pause-btn, .activate-btn, .delete-btn, input[type="range"], .control-btn');
+      // Check if click was on interactive elements (both tree and legacy classes)
+      const clickedInteractive = e.target.closest(
+        '.pause-btn, .activate-btn, .delete-btn, .control-btn, ' +
+        '.btn-play, .btn-stop, .btn-delete, .panel-actions button, ' +
+        'input[type="range"], summary'
+      );
 
       if (clickedInteractive) {
         // For collapsed panels, allow button interaction without expanding
@@ -973,7 +1186,7 @@ function initializeCards() {
           console.log(`[Click] Removed panel ${panelId} from screen`);
         } else {
           // Add to screen (toggle on)
-          if (settings.collapse_on_blur) {
+          if (settings.collapseOnBlur) {
             // Remove other editors first, then show this one
             removeAllEditorsExcept(panelId, editorViews, getEditorContainer).then(() => {
               moveEditorToScreen(panelId, editorView, settings.default_w);
@@ -1049,8 +1262,11 @@ function isPanelStale(panelId) {
  */
 async function updateActivateButton(panelId) {
   const panel = cardStates[panelId];
+  // Support both legacy (.activate-btn) and tree (.btn-play) layouts
   const button = document.querySelector(`#${panelId} .activate-btn`) ||
-    document.querySelector(`.activate-btn[data-card="${panelId}"]`);
+    document.querySelector(`.activate-btn[data-card="${panelId}"]`) ||
+    document.querySelector(`[data-panel-id="${panelId}"] .btn-play`) ||
+    document.querySelector(`#${panelId} .btn-play`);
 
   if (!panel || !button) return;
 
@@ -1090,12 +1306,15 @@ async function updateActivateButton(panelId) {
  */
 function updatePauseButton(panelId) {
   const panel = cardStates[panelId];
+  // Support both legacy (.pause-btn) and tree (.btn-stop) layouts
   const button = document.querySelector(`#${panelId} .pause-btn`) ||
-    document.querySelector(`.pause-btn[data-card="${panelId}"]`);
+    document.querySelector(`.pause-btn[data-card="${panelId}"]`) ||
+    document.querySelector(`[data-panel-id="${panelId}"] .btn-stop`) ||
+    document.querySelector(`#${panelId} .btn-stop`);
 
   if (!panel || !button) return;
 
-  // PAUSE button only visible/enabled when playing
+  // PAUSE/STOP button only visible/enabled when playing
   button.disabled = !panel.playing;
   button.classList.toggle('hidden', !panel.playing);
 }
@@ -1398,23 +1617,36 @@ function createEditorView(container, options = {}) {
  */
 function updateVisualIndicators(panelId) {
   const panel = cardStates[panelId];
-  const panelElement = document.getElementById(panelId);
+  // Support both legacy (#panelId) and tree ([data-panel-id]) layouts
+  const panelElement = document.getElementById(panelId) ||
+    document.querySelector(`[data-panel-id="${panelId}"]`);
 
   if (!panel || !panelElement) return;
 
-  // Remove all state classes
-  panelElement.classList.remove('panel-paused', 'panel-playing', 'panel-stale');
+  // Check if this is a tree layout (.level-panel) or legacy layout
+  const isTreeLayout = panelElement.classList.contains('level-panel');
 
-  // Apply appropriate state class
-  if (panel.stale) {
-    // Stale (playing with modifications)
-    panelElement.classList.add('panel-stale');
-  } else if (panel.playing) {
-    // Playing (in sync)
-    panelElement.classList.add('panel-playing');
+  if (isTreeLayout) {
+    // Tree layout uses simpler class names: playing, stale, error
+    panelElement.classList.remove('playing', 'stale', 'error');
+
+    if (panel.stale) {
+      panelElement.classList.add('stale');
+    } else if (panel.playing) {
+      panelElement.classList.add('playing');
+    }
+    // No explicit 'paused' class needed in tree layout (default state)
   } else {
-    // Paused
-    panelElement.classList.add('panel-paused');
+    // Legacy layout uses panel- prefixed classes
+    panelElement.classList.remove('panel-paused', 'panel-playing', 'panel-stale');
+
+    if (panel.stale) {
+      panelElement.classList.add('panel-stale');
+    } else if (panel.playing) {
+      panelElement.classList.add('panel-playing');
+    } else {
+      panelElement.classList.add('panel-paused');
+    }
   }
 
   // Update button styling (from Story 6.2)
@@ -1713,6 +1945,12 @@ async function activatePanel(panelId) {
         // Show the container
         container.style.display = 'flex';
 
+        // Tree layout: also show the parent leaf-viz element
+        const leafViz = container.closest('.leaf-viz');
+        if (leafViz) {
+          leafViz.style.display = '';
+        }
+
         // Clear existing canvases
         container.innerHTML = '';
 
@@ -1751,6 +1989,12 @@ async function activatePanel(panelId) {
         // Hide container if no visualizations
         container.style.display = 'none';
         container.innerHTML = '';
+
+        // Tree layout: also hide the parent leaf-viz element
+        const leafViz = container.closest('.leaf-viz');
+        if (leafViz) {
+          leafViz.style.display = 'none';
+        }
       }
 
       if (hasLabeledStatements) {
@@ -2137,8 +2381,10 @@ function wireWebSocketEventListeners() {
     // Initialize state
     cardStates[newPanelId] = { playing: false, stale: false, lastEvaluatedCode: '' };
 
-    // Initialize drag/resize
-    initializeDragAndResize(panelElement);
+    // Initialize drag/resize (legacy layout only)
+    if (!isTreeLayout()) {
+      initializeDragAndResize(panelElement);
+    }
     updateVisualIndicators(newPanelId);
     attachValidationListener(newPanelId);
 
@@ -2426,8 +2672,10 @@ function createNewPanelAndFocus() {
     }, 10);
   }
 
-  // Initialize drag and resize functionality
-  initializeDragAndResize(panelElement);
+  // Initialize drag and resize functionality (legacy layout only)
+  if (!isTreeLayout()) {
+    initializeDragAndResize(panelElement);
+  }
 
   // Initialize visual state
   updateVisualIndicators(panelId);
@@ -2469,35 +2717,41 @@ function activatePanelByIndex(index) {
     const masterView = editorViews.get(MASTER_PANEL_ID);
 
     if (masterPanel && masterView) {
-      // Check if already focused AND expanded (master uses .compact class, not .panel-collapsed)
       const currentlyFocused = findFocusedPanel();
-      const isCompact = masterPanel.classList.contains('compact');
 
-      // console.log('[Keyboard DEBUG] Master panel state: focused=', currentlyFocused === MASTER_PANEL_ID, 'compact=', isCompact);
+      if (isTreeLayout()) {
+        // Tree layout: use details expand/collapse
+        const isExpanded = isPanelExpanded(MASTER_PANEL_ID);
 
-      if (currentlyFocused === MASTER_PANEL_ID && !isCompact) {
-        // Already focused and expanded - toggle to compact mode (keep focus)
-        toggleMasterMode();
-        console.log('[Keyboard] Toggled master panel to compact (kept focus)');
-        return;
+        if (currentlyFocused === MASTER_PANEL_ID && isExpanded) {
+          // Already focused and expanded - collapse
+          collapsePanel(MASTER_PANEL_ID);
+          console.log('[Keyboard] Collapsed master panel');
+          return;
+        }
+
+        // Expand and focus
+        bringPanelToFront(MASTER_PANEL_ID);
+        if (!isExpanded) {
+          expandPanel(MASTER_PANEL_ID);
+        }
+        setTimeout(() => masterView.focus(), 10);
+      } else {
+        // Legacy layout: use compact class
+        const isCompact = masterPanel.classList.contains('compact');
+
+        if (currentlyFocused === MASTER_PANEL_ID && !isCompact) {
+          toggleMasterMode();
+          console.log('[Keyboard] Toggled master panel to compact (kept focus)');
+          return;
+        }
+
+        bringPanelToFront(MASTER_PANEL_ID);
+        if (isCompact) {
+          toggleMasterMode();
+        }
+        setTimeout(() => masterView.focus(), 10);
       }
-
-      // Either not focused or compact - bring to front, expand, and focus
-      bringPanelToFront(MASTER_PANEL_ID);
-
-      // Expand if compact
-      if (isCompact) {
-        toggleMasterMode();
-        // console.log('[Keyboard] Expanded master panel from compact');
-      }
-
-      // Focus editor - use setTimeout to ensure panel is brought to front first
-      setTimeout(() => {
-        masterView.focus();
-        // console.log('[Keyboard] Focused master panel editor');
-      }, 10);
-
-      // console.log('[Keyboard] Activated master panel');
     }
     return;
   }
@@ -2510,38 +2764,69 @@ function activatePanelByIndex(index) {
     const view = editorViews.get(panel.id);
 
     if (panel && panelElement && view) {
-      // NEW SYSTEM: Check if already focused and in screen
       const currentlyFocused = findFocusedPanel();
-      const isInScreen = isEditorInScreen(panel.id);
       const settings = getSettings();
 
-      if (currentlyFocused === panel.id && isInScreen) {
-        // Already focused and in screen - toggle off (remove from screen)
-        view.contentDOM.blur();
-        removeEditorFromScreen(panel.id, getEditorContainer(panel.id));
-        console.log(`[Keyboard] Toggled off panel ${index} (removed from screen):`, panel.id);
-        return;
-      }
+      if (isTreeLayout()) {
+        // Tree layout: use details expand/collapse
+        const isExpanded = isPanelExpanded(panel.id);
 
-      // Not focused or not in screen - activate
-      bringPanelToFront(panel.id);
+        if (currentlyFocused === panel.id && isExpanded) {
+          // Already focused and expanded - collapse
+          collapsePanel(panel.id);
+          view.contentDOM.blur();
+          console.log(`[Keyboard] Collapsed panel ${index}:`, panel.id);
+          return;
+        }
 
-      // Move editor to screen
-      if (settings.collapse_on_blur) {
-        // Remove other editors first, then show this one
-        removeAllEditorsExcept(panel.id, editorViews, getEditorContainer).then(() => {
+        // Expand and focus
+        bringPanelToFront(panel.id);
+
+        if (settings.collapseOnBlur) {
+          // Accordion mode: collapse other panels first
+          panelArray.forEach(p => {
+            if (p.id !== panel.id && isPanelExpanded(p.id)) {
+              collapsePanel(p.id);
+            }
+          });
+          // Also collapse master if expanded
+          if (isPanelExpanded(MASTER_PANEL_ID)) {
+            collapsePanel(MASTER_PANEL_ID);
+          }
+        }
+
+        if (!isExpanded) {
+          expandPanel(panel.id);
+        }
+        setTimeout(() => view.focus(), 10);
+        console.log(`[Keyboard] Activated panel ${index}:`, panel.id, panel.title);
+      } else {
+        // Legacy layout: use screen system
+        const isInScreen = isEditorInScreen(panel.id);
+
+        if (currentlyFocused === panel.id && isInScreen) {
+          view.contentDOM.blur();
+          removeEditorFromScreen(panel.id, getEditorContainer(panel.id));
+          console.log(`[Keyboard] Toggled off panel ${index} (removed from screen):`, panel.id);
+          return;
+        }
+
+        bringPanelToFront(panel.id);
+
+        if (settings.collapseOnBlur) {
+          removeAllEditorsExcept(panel.id, editorViews, getEditorContainer).then(() => {
+            moveEditorToScreen(panel.id, view, settings.default_w).then(() => {
+              view.focus();
+            });
+          });
+        } else {
           moveEditorToScreen(panel.id, view, settings.default_w).then(() => {
             view.focus();
           });
-        });
-      } else {
-        // Add to screen (stacks with others)
-        moveEditorToScreen(panel.id, view, settings.default_w).then(() => {
-          view.focus();
-        });
-      }
+        }
 
-      console.log(`[Keyboard] Activated panel ${index}:`, panel.id, panel.title);
+        console.log(`[Keyboard] Activated panel ${index}:`, panel.id, panel.title);
+      }
     }
   } else {
     console.log(`[Keyboard] Panel ${index} does not exist (only ${panelArray.length} panels)`);
@@ -2702,9 +2987,15 @@ function initializeKeyboardShortcuts() {
           const panel = cardStates[focusedPanelP];
           if (panel) {
             if (panel.playing) {
-              pressedButton = document.querySelector(`#${focusedPanelP} .pause-btn`);
+              // Support both legacy (.pause-btn) and tree (.btn-stop) layouts
+              pressedButton = document.querySelector(`#${focusedPanelP} .pause-btn`) ||
+                              document.querySelector(`#${focusedPanelP} .btn-stop`) ||
+                              document.querySelector(`[data-panel-id="${focusedPanelP}"] .btn-stop`);
             } else {
-              pressedButton = document.querySelector(`#${focusedPanelP} .activate-btn`);
+              // Support both legacy (.activate-btn) and tree (.btn-play) layouts
+              pressedButton = document.querySelector(`#${focusedPanelP} .activate-btn`) ||
+                              document.querySelector(`#${focusedPanelP} .btn-play`) ||
+                              document.querySelector(`[data-panel-id="${focusedPanelP}"] .btn-play`);
             }
             if (pressedButton) {
               animatePressStart(pressedButton);
@@ -2725,7 +3016,10 @@ function initializeKeyboardShortcuts() {
         e.preventDefault();
         const focusedPanelUp = findFocusedPanel();
         if (focusedPanelUp) {
-          pressedButton = document.querySelector(`#${focusedPanelUp} .activate-btn`);
+          // Support both legacy (.activate-btn) and tree (.btn-play) layouts
+          pressedButton = document.querySelector(`#${focusedPanelUp} .activate-btn`) ||
+                          document.querySelector(`#${focusedPanelUp} .btn-play`) ||
+                          document.querySelector(`[data-panel-id="${focusedPanelUp}"] .btn-play`);
           if (pressedButton && !pressedButton.disabled) {
             animatePressStart(pressedButton);
             const btnToClick = pressedButton; // Capture in closure

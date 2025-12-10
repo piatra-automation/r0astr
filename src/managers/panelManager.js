@@ -7,8 +7,8 @@ import { getSettings } from './settingsManager.js';
 import { updatePanelOpacities } from './themeManager.js';
 import { eventBus } from '../utils/eventBus.js';
 
-// Master panel identifier constant
-export const MASTER_PANEL_ID = 'master-panel';
+// Master panel identifier constant (now panel-0 in tree structure)
+export const MASTER_PANEL_ID = 'panel-0';
 
 // Global panel state
 const panels = new Map();
@@ -158,31 +158,36 @@ export function setPanelPlaying(panelId, playing) {
 /**
  * Renumber all panels based on DOM order and update badges
  * Called after panel deletion to maintain hotkey mapping (Cmd+Opt+1-9)
+ * Tree structure: panel-0 is master, panels 1+ are instruments
  */
 export function renumberPanels() {
-  // Get all panel elements in DOM order
-  const container = document.querySelector('.container');
-  if (!container) return;
+  // Get all panel elements in DOM order (tree structure)
+  const panelTree = document.querySelector('.panel-tree');
+  if (!panelTree) return;
 
-  const panelElements = Array.from(container.querySelectorAll('.card:not(#master-panel)'));
+  const panelElements = Array.from(panelTree.querySelectorAll('.level-panel'));
 
-  // Update panel numbers in order
+  // Update panel numbers in order (0-based for tree)
   panelElements.forEach((element, index) => {
-    const panelId = element.id;
+    const panelId = element.dataset.panelId;
     const panel = panels.get(panelId);
-    if (panel) {
-      const newNumber = index + 1; // 1-based numbering
-      panel.number = newNumber;
 
-      // Update badge in DOM
-      const badge = element.querySelector('.panel-number-badge');
-      if (badge) {
-        badge.textContent = newNumber;
-      }
+    // Update data attribute
+    element.dataset.panelNumber = index;
+
+    // Update badge in DOM
+    const badge = element.querySelector('.panel-number-badge');
+    if (badge) {
+      badge.textContent = index;
+    }
+
+    // Update panel state
+    if (panel) {
+      panel.number = index;
     }
   });
 
-  console.log(`Renumbered ${panelElements.length} panels`);
+  console.log(`Renumbered ${panelElements.length} panels in tree`);
 }
 
 /**
@@ -310,7 +315,9 @@ export function deletePanel(panelId, scheduler = null, cardStates = null, skipCo
 
   // Remove DOM element (only in browser environment)
   if (typeof document !== 'undefined') {
-    const panelElement = document.getElementById(panelId);
+    // Try tree structure first (.level-panel), then legacy (.card)
+    const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`) ||
+                         document.getElementById(panelId);
     if (panelElement) {
       panelElement.remove();
       console.log(`Removed panel ${panelId} from DOM`);
@@ -344,10 +351,11 @@ export function initializePanels(existingPanels = []) {
 }
 
 /**
- * Render panel HTML and append to container
+ * Render panel HTML as tree node and append to panel-tree
+ * Uses native <details>/<summary> for expand/collapse
  * @param {string} panelId - Panel ID
  * @param {Object} options - Panel display options
- * @returns {HTMLElement} Created panel element
+ * @returns {HTMLElement} Created panel element (the <li>)
  */
 export function renderPanel(panelId, options = {}) {
   const panel = getPanel(panelId);
@@ -355,64 +363,53 @@ export function renderPanel(panelId, options = {}) {
     throw new Error(`Panel ${panelId} not found`);
   }
 
-  const panelElement = document.createElement('div');
-  panelElement.className = 'card panel-collapsed'; // Always collapsed in new system
+  // Create tree node (li.level-panel)
+  const panelElement = document.createElement('li');
+  panelElement.className = 'level-panel';
   panelElement.id = panelId;
+  panelElement.dataset.panelId = panelId;
+  panelElement.dataset.panelNumber = panel.number;
 
-  // NEW SYSTEM: All panels are always collapsed (fixed size/position)
-  // CodeMirror editors move to screen instead
-  const collapsedWidth = 450;
-  const collapsedHeight = 56;
-  const collapsedX = 20;
-  const collapsedY = 20 + (panel.number - 1) * (56 + 4); // Stack with 4px gap
+  // Hide delete button for master panel (panel-0)
+  const deleteButtonStyle = panelId === MASTER_PANEL_ID ? 'display: none;' : '';
 
-  panelElement.style.width = `${collapsedWidth}px`;
-  panelElement.style.height = `${collapsedHeight}px`;
-  panelElement.style.transform = `translate(${collapsedX}px, ${collapsedY}px)`;
-  panelElement.style.zIndex = panel.zIndex;
-
-  // Store position in dataset for interact.js
-  panelElement.dataset.x = collapsedX;
-  panelElement.dataset.y = collapsedY;
-
-  // Conditionally render delete button (skip for master panel)
-  const deleteButton = panelId === MASTER_PANEL_ID
-    ? ''
-    : `<button class="delete-btn" data-panel="${panelId}">×</button>`;
-
+  // Build tree structure with details/summary
   panelElement.innerHTML = `
-    <div class="card-header">
-      <span class="panel-number-badge">${panel.number}</span>
-      <h3 class="panel-title" data-panel-id="${panelId}" contenteditable="false" spellcheck="false">
-        ${panel.title}
-      </h3>
-      <div class="panel-controls">
-        <button class="control-btn action-play activate-btn" data-card="${panelId}">
-          <div class="control-btn-inner">
+    <details${options.expanded ? ' open' : ''}>
+      <summary>
+        <span class="panel-number-badge">${panel.number}</span>
+        <span class="panel-title" data-panel-id="${panelId}" contenteditable="true" spellcheck="false">${panel.title}</span>
+        <div class="panel-actions">
+          <button class="btn-play" data-card="${panelId}" title="Play">
             <span class="material-icons">play_arrow</span>
+          </button>
+          <button class="btn-stop" data-card="${panelId}" title="Stop">
+            <span class="material-icons">stop</span>
+          </button>
+          <button class="btn-delete" data-panel="${panelId}" title="Delete" style="${deleteButtonStyle}">
+            <span class="material-icons">delete</span>
+          </button>
+        </div>
+      </summary>
+      <ul class="panel-children">
+        <li class="leaf-node leaf-editor">
+          <div class="code-editor-wrapper">
+            <div class="code-editor" id="editor-${panelId}" data-card="${panelId}"></div>
           </div>
-        </button>
-        <button class="control-btn action-stop pause-btn hidden" data-card="${panelId}" disabled>
-          <div class="control-btn-inner">
-            <span class="material-icons">pause</span>
-          </div>
-        </button>
-      </div>
-      <div class="collapsed-sliders-container" id="collapsed-sliders-${panelId}"></div>
-      <div class="visualization-canvas-container" id="viz-container-${panelId}"></div>
-      ${deleteButton}
-    </div>
-    <div class="code-editor-wrapper">
-      <div class="code-editor" data-card="${panelId}"></div>
-    </div>
-    <div class="slider-container" id="sliders-${panelId}"></div>
-    <div class="error-message" data-card="${panelId}" style="display: none;"></div>
+          <div class="error-message" data-card="${panelId}" style="display: none;"></div>
+        </li>
+        <li class="leaf-node leaf-viz" style="display: none;">
+          <div id="viz-container-${panelId}" class="viz-container"></div>
+        </li>
+        <!-- Slider leaves will be added dynamically by sliderManager -->
+      </ul>
+    </details>
   `;
 
-  // Append to container
-  const container = document.querySelector('.container');
-  if (container) {
-    container.appendChild(panelElement);
+  // Append to panel-tree
+  const panelTree = document.querySelector('.panel-tree');
+  if (panelTree) {
+    panelTree.appendChild(panelElement);
   }
 
   return panelElement;
@@ -581,19 +578,22 @@ export function animatePanelPosition(panelId, collapse) {
 
 /**
  * Set active panel with visual indication
+ * Works with both tree structure and legacy
  * @param {string} panelId - Panel ID to make active
  */
 export function setActivePanel(panelId) {
   // Remove active and focused classes from previous panel
   if (activePanelId) {
-    const prevElement = document.getElementById(activePanelId);
+    const prevElement = document.querySelector(`[data-panel-id="${activePanelId}"]`) ||
+                        document.getElementById(activePanelId);
     if (prevElement) {
       prevElement.classList.remove('active', 'focused');
     }
   }
 
   // Add active and focused classes to new panel
-  const newElement = document.getElementById(panelId);
+  const newElement = document.querySelector(`[data-panel-id="${panelId}"]`) ||
+                     document.getElementById(panelId);
   if (newElement) {
     newElement.classList.add('active', 'focused');
   }
@@ -605,36 +605,108 @@ export function setActivePanel(panelId) {
 }
 
 /**
+ * Expand a panel in tree view
+ * @param {string} panelId - Panel ID to expand
+ */
+export function expandPanel(panelId) {
+  const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`);
+  if (!panelElement) return;
+
+  const details = panelElement.querySelector('details');
+  if (details) {
+    details.open = true;
+  }
+
+  // Update panel state
+  const panel = panels.get(panelId);
+  if (panel) {
+    panel.expanded = true;
+  }
+}
+
+/**
+ * Collapse a panel in tree view
+ * @param {string} panelId - Panel ID to collapse
+ */
+export function collapsePanel(panelId) {
+  const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`);
+  if (!panelElement) return;
+
+  const details = panelElement.querySelector('details');
+  if (details) {
+    details.open = false;
+  }
+
+  // Update panel state
+  const panel = panels.get(panelId);
+  if (panel) {
+    panel.expanded = false;
+  }
+}
+
+/**
+ * Toggle panel expand/collapse state
+ * @param {string} panelId - Panel ID to toggle
+ * @returns {boolean} New expanded state
+ */
+export function togglePanel(panelId) {
+  const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`);
+  if (!panelElement) return false;
+
+  const details = panelElement.querySelector('details');
+  if (!details) return false;
+
+  details.open = !details.open;
+
+  // Update panel state
+  const panel = panels.get(panelId);
+  if (panel) {
+    panel.expanded = details.open;
+  }
+
+  return details.open;
+}
+
+/**
+ * Check if panel is expanded
+ * @param {string} panelId - Panel ID
+ * @returns {boolean} True if expanded
+ */
+export function isPanelExpanded(panelId) {
+  const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`);
+  if (!panelElement) return false;
+
+  const details = panelElement.querySelector('details');
+  return details?.open || false;
+}
+
+/**
+ * Get active panel ID
+ * @returns {string|null} Active panel ID
+ */
+export function getActivePanel() {
+  return activePanelId;
+}
+
+/**
  * Normalize z-indices to prevent overflow
  * Re-assigns z-index values based on current order
+ * Note: In tree layout, z-index is less important since panels don't overlap
  */
 export function normalizeZIndices() {
-  // Get all panels (managed panels + master panel)
-  const allPanelElements = Array.from(document.querySelectorAll('.card, #master-panel'));
+  // Get all panels - try tree structure first, then legacy
+  let allPanelElements = Array.from(document.querySelectorAll('.level-panel'));
 
-  // Sort by current z-index
-  allPanelElements.sort((a, b) => {
-    const zIndexA = parseInt(a.style.zIndex) || 0;
-    const zIndexB = parseInt(b.style.zIndex) || 0;
-    return zIndexA - zIndexB;
-  });
+  // Fall back to legacy structure if tree not found
+  if (allPanelElements.length === 0) {
+    allPanelElements = Array.from(document.querySelectorAll('.card, #master-panel'));
+  }
 
-  // Reassign z-index values: 10, 20, 30...
-  allPanelElements.forEach((element, index) => {
-    const newZIndex = (index + 1) * 10;
-    element.style.zIndex = newZIndex;
-
-    // Update panel state if it's a managed panel
-    const panel = panels.get(element.id);
-    if (panel) {
-      panel.zIndex = newZIndex;
-    }
-  });
-
-  // Update max z-index tracker
+  // In tree layout, z-index is not really needed
+  // Just update the maxZIndex tracker
   maxZIndex = allPanelElements.length * 10;
 
-  console.log(`Z-indices normalized. New max: ${maxZIndex}`);
+  console.log(`Z-indices normalized. Panel count: ${allPanelElements.length}`);
 }
 
 /**
@@ -796,10 +868,16 @@ export function startAutoSaveTimer(interval) {
 
 /**
  * Story 7.6: Get editor container for CodeMirror initialization
+ * Supports both tree structure (editor-{panelId}) and legacy (data-card)
  * @param {string} panelId - Panel ID
  * @returns {HTMLElement|null} Editor container element
  */
 export function getPanelEditorContainer(panelId) {
+  // Try tree structure first (id="editor-{panelId}")
+  const treeEditor = document.getElementById(`editor-${panelId}`);
+  if (treeEditor) return treeEditor;
+
+  // Fall back to legacy selector
   return document.querySelector(`.code-editor[data-card="${panelId}"]`);
 }
 

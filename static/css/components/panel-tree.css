@@ -1,0 +1,394 @@
+/**
+ * Panel Tree Component
+ *
+ * Hierarchical tree view using native <details>/<summary> elements.
+ * Structure: panel-tree > level-panel > details > summary + panel-children
+ */
+
+/* === CSS Variables === */
+.panel-tree {
+  --tree-spacing: 1.5rem;
+  --tree-node-radius: 8px;
+  --tree-line-color: var(--panel-light-shadow, #b8b8b8);
+  --tree-line-width: 2px;
+  --tree-summary-height: 48px;
+  --tree-summary-padding: 12px;
+  --tree-badge-size: 24px;
+}
+
+/* === Base Tree Structure === */
+.panel-tree {
+  list-style: none;
+  margin: 0;
+  padding: 16px;
+  padding-left: calc(var(--tree-spacing) + 16px);
+  /* Position below hero section */
+  margin-top: calc(var(--hero-bar-height, 255px) + 20px);
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.panel-tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  padding-left: var(--tree-spacing);
+}
+
+/* === Tree Lines === */
+
+/* Vertical line from parent to children */
+.panel-tree .panel-children {
+  position: relative;
+  margin-left: calc(var(--tree-node-radius) + 4px);
+  padding-left: calc(var(--tree-spacing) - var(--tree-node-radius));
+  border-left: var(--tree-line-width) solid var(--tree-line-color);
+}
+
+/* Remove vertical line after last child */
+.panel-tree .panel-children > li:last-child {
+  position: relative;
+}
+
+/* Horizontal line from vertical to node */
+.panel-tree .panel-children > li {
+  position: relative;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.panel-tree .panel-children > li::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: calc(-1 * var(--tree-spacing) + var(--tree-node-radius));
+  width: calc(var(--tree-spacing) - var(--tree-node-radius) - 4px);
+  height: 0;
+  border-top: var(--tree-line-width) solid var(--tree-line-color);
+}
+
+/* === Level Panel (Branch Nodes) === */
+.level-panel {
+  position: relative;
+  margin-bottom: 4px;
+}
+
+/* === Summary Row (Clickable Header) === */
+.panel-tree summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tree-summary-height);
+  padding: var(--tree-summary-padding);
+  padding-left: calc(var(--tree-node-radius) * 2 + 12px);
+  margin-left: calc(-1 * var(--tree-node-radius) - 4px);
+  cursor: pointer;
+  user-select: none;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+  position: relative;
+}
+
+.panel-tree summary:hover {
+  background-color: var(--panel-row-hover-bg, rgba(0, 0, 0, 0.05));
+}
+
+/* Hide native marker */
+.panel-tree summary::marker,
+.panel-tree summary::-webkit-details-marker {
+  display: none;
+}
+
+/* === Expand/Collapse Indicator (+/-) === */
+.panel-tree summary::before {
+  content: '+';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: calc(var(--tree-node-radius) * 2);
+  height: calc(var(--tree-node-radius) * 2);
+  border-radius: 50%;
+  background: var(--btn-surface-bg, #d1d8e0);
+  border: var(--tree-line-width) solid var(--tree-line-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+  color: var(--darkness, #1a1a1a);
+  z-index: 1;
+}
+
+.panel-tree details[open] > summary::before {
+  content: '−';
+}
+
+/* === Panel Number Badge === */
+.panel-number-badge {
+  width: var(--tree-badge-size);
+  height: var(--tree-badge-size);
+  min-width: var(--tree-badge-size);
+  border-radius: 50%;
+  background: var(--darkness, #1a1a1a);
+  color: var(--pale-white, #d1d8e0);
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Master panel (panel-0) accent */
+.level-panel[data-panel-number="0"] > details > summary {
+  border-left: 3px solid var(--dark-green, #076443);
+  margin-left: calc(-1 * var(--tree-node-radius) - 7px);
+  padding-left: calc(var(--tree-node-radius) * 2 + 15px);
+}
+
+/* Hide delete button for master panel */
+.level-panel[data-panel-number="0"] .btn-delete {
+  display: none;
+}
+
+/* === Panel Title === */
+.panel-title {
+  flex: 1;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--darkness, #1a1a1a);
+  padding: 2px 4px;
+  border-radius: 2px;
+  min-width: 100px;
+}
+
+.panel-title:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 2px var(--dark-green, #076443);
+}
+
+/* === Panel Actions (Buttons) === */
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.panel-actions button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 4px;
+  background: var(--btn-surface-bg, #d1d8e0);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.panel-actions button:hover {
+  background: var(--panel-light-highlight, #e0e5ea);
+}
+
+.panel-actions button:active {
+  transform: scale(0.95);
+}
+
+/* Play button */
+.panel-actions .btn-play {
+  color: var(--dark-green, #076443);
+}
+
+/* Stop button */
+.panel-actions .btn-stop {
+  color: var(--burnt-red, #8b0000);
+}
+
+/* Delete button */
+.panel-actions .btn-delete {
+  color: var(--burnt-red, #8b0000);
+  opacity: 0.6;
+}
+
+.panel-actions .btn-delete:hover {
+  opacity: 1;
+  background: rgba(139, 0, 0, 0.1);
+}
+
+/* === Panel Children (Leaves) === */
+.panel-children {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease-out;
+  overflow: hidden;
+}
+
+details[open] > .panel-children {
+  grid-template-rows: 1fr;
+}
+
+.panel-children > * {
+  overflow: hidden;
+}
+
+/* === Leaf Nodes === */
+.leaf-node {
+  position: relative;
+  padding: 8px 0;
+}
+
+/* Leaf node marker (circle) */
+.leaf-node::after {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--tree-spacing) + var(--tree-node-radius) - 3px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tree-line-color);
+}
+
+/* === Editor Leaf === */
+.leaf-editor {
+  padding: 12px 0;
+}
+
+.leaf-editor .code-editor-wrapper {
+  width: 90%;
+  min-height: 100px;
+  max-height: 400px;
+  background: var(--panel-base-dark, #1a1a1a);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.leaf-editor .code-editor {
+  width: 100%;
+  height: 100%;
+  min-height: 100px;
+}
+
+/* === Slider Leaf === */
+.leaf-slider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  padding-left: 8px;
+}
+
+.leaf-slider label {
+  min-width: 80px;
+  font-size: 0.85rem;
+  color: var(--darkness, #1a1a1a);
+}
+
+.leaf-slider input[type="range"] {
+  flex: 1;
+  max-width: 300px;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--tree-line-color);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.leaf-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--dark-green, #076443);
+  cursor: pointer;
+}
+
+.leaf-slider .slider-value {
+  min-width: 50px;
+  text-align: right;
+  font-size: 0.85rem;
+  font-family: monospace;
+  color: var(--darkness, #1a1a1a);
+}
+
+/* === Visualization Leaf === */
+.leaf-viz {
+  padding: 12px 0;
+}
+
+.leaf-viz .viz-container {
+  display: flex;
+  gap: 8px;
+  width: 90%;
+  flex-wrap: wrap;
+}
+
+.leaf-viz canvas,
+.leaf-viz .visualization-canvas {
+  flex: 1;
+  min-width: 150px;
+  height: 60px;
+  background: var(--panel-base-dark, #1a1a1a);
+  border-radius: 4px;
+}
+
+/* === Playing State === */
+.level-panel.playing > details > summary {
+  background: rgba(7, 100, 67, 0.1);
+}
+
+.level-panel.playing .panel-number-badge {
+  background: var(--dark-green, #076443);
+  animation: pulse-badge 1.5s infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* === Stale State === */
+.level-panel.stale > details > summary {
+  background: rgba(200, 180, 0, 0.1);
+}
+
+.level-panel.stale .panel-number-badge {
+  background: var(--puke, #c8b400);
+}
+
+/* === Error State === */
+.level-panel.error > details > summary {
+  background: rgba(139, 0, 0, 0.1);
+}
+
+.level-panel.error .panel-number-badge {
+  background: var(--burnt-red, #8b0000);
+}
+
+/* === Touch Device Overrides === */
+@media (pointer: coarse) {
+  .panel-tree {
+    --tree-summary-height: 56px;
+    --tree-summary-padding: 16px;
+    --tree-badge-size: 28px;
+  }
+
+  .panel-actions button {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .leaf-slider input[type="range"]::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+  }
+}

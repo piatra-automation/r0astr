@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Piatra REPL - Dual Card Interface</title>
   <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/components/panel-tree.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap"
@@ -32,8 +33,8 @@
   <a href="/remote" class="top-bar-btn btn-green" id="remote-btn" target="_blank" rel="noopener noreferrer">REMOTE</a>
   <button class="top-bar-btn btn-orange" id="config-btn">CONFIG</button>
 
-  <!-- Screen area -->
-  <div class="screen"></div>
+  <!-- Screen area (removed for tree layout) -->
+  <!-- <div class="screen"></div> -->
 
   <!-- Hero section with banner -->
   <div class="hero-section">
@@ -495,27 +496,45 @@
     </div>
   </header>
 
-  <div class="master-panel compact" id="master-panel">
-    <div class="master-header">
-      <h3>Master Controls</h3>
-      <button class="btn-hole btn-hole-slim action-add" id="master-mode" title="Expand Master Panel">
-        <div class="btn-raised btn-raised-slim btn-dark-green">
-          MASTER
-        </div>
-      </button>
-    </div>
-    <div class="code-editor-wrapper master-code-wrapper">
-      <div class="code-editor master-code" id="master-code" data-card="master-panel"></div>
-    </div>
-    <div class="master-sliders" id="master-sliders"></div>
-  </div>
-
-  <div class="container">
+  <!-- Panel Tree Structure -->
+  <ul class="panel-tree" id="panel-tree">
+    <!-- Master Panel (panel-0) -->
+    <li class="level-panel" data-panel-id="panel-0" data-panel-number="0" id="panel-0">
+      <details open>
+        <summary>
+          <span class="panel-number-badge">0</span>
+          <span class="panel-title" contenteditable="true">Master</span>
+          <div class="panel-actions">
+            <button class="btn-play" title="Evaluate Master">
+              <span class="material-icons">play_arrow</span>
+            </button>
+            <button class="btn-stop" title="Stop All">
+              <span class="material-icons">stop</span>
+            </button>
+            <button class="btn-delete" title="Delete" style="display: none;">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+        </summary>
+        <ul class="panel-children">
+          <li class="leaf-node leaf-editor">
+            <div class="code-editor-wrapper">
+              <div class="code-editor" id="editor-panel-0" data-card="panel-0"></div>
+            </div>
+            <div class="error-message" data-card="panel-0" style="display: none;"></div>
+          </li>
+          <li class="leaf-node leaf-viz" style="display: none;">
+            <div id="viz-container-panel-0" class="viz-container"></div>
+          </li>
+          <!-- Slider leaves will be added dynamically -->
+        </ul>
+      </details>
+    </li>
     <!-- Dynamic panels created via [+] button will appear here -->
-  </div>
+  </ul>
 
   <div class="info">
-    Click [+] to create new instrument panels. Click "Play" to start each instrument.
+    Click [+] to create new instrument panels. Expand panels to edit code.
   </div>
 
   <script type="module" src="/src/main.js"></script>

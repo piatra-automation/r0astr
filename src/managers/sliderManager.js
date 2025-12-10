@@ -1,6 +1,7 @@
 /**
  * Slider Manager
  * Handles slider rendering, value updates, and event emission
+ * Supports both legacy grid layout and tree layout
  */
 
 import { eventBus } from '../utils/eventBus.js';
@@ -10,7 +11,16 @@ import { sliderValues } from '@strudel/codemirror';
 const panelSliders = {};
 
 /**
+ * Check if the UI is using tree layout (vs legacy grid layout)
+ * @returns {boolean} True if tree layout is active
+ */
+function isTreeLayout() {
+  return document.querySelector('.panel-tree') !== null;
+}
+
+/**
  * Render sliders for a panel based on transpiler widget metadata
+ * Supports both legacy grid layout and tree layout
  * @param {string} panelId - Panel identifier
  * @param {Array} widgets - Widget metadata from transpiler
  * @param {string} patternCode - Pattern code for label deduction
@@ -20,6 +30,105 @@ const panelSliders = {};
  * renderSliders('panel-1', widgets, 'note("c2").lpf(slider(800, 100, 5000))');
  */
 export function renderSliders(panelId, widgets, patternCode = '') {
+  // Filter for slider widgets
+  const sliderWidgets = widgets.filter(w => w.type === 'slider');
+  const sliderMetadata = [];
+
+  if (isTreeLayout()) {
+    // Tree layout: render sliders as leaf nodes inside panel-children
+    renderTreeSliders(panelId, sliderWidgets, patternCode, sliderMetadata);
+  } else {
+    // Legacy layout: render sliders in dedicated container
+    renderLegacySliders(panelId, sliderWidgets, patternCode, sliderMetadata);
+  }
+
+  // Store slider metadata for this panel
+  panelSliders[panelId] = sliderMetadata;
+
+  // Emit event with slider metadata
+  eventBus.emit('sliders:rendered', {
+    panelId,
+    sliders: sliderMetadata
+  });
+}
+
+/**
+ * Render sliders for tree layout as leaf nodes
+ * @param {string} panelId - Panel identifier
+ * @param {Array} sliderWidgets - Filtered slider widgets
+ * @param {string} patternCode - Pattern code for label deduction
+ * @param {Array} sliderMetadata - Array to populate with metadata
+ */
+function renderTreeSliders(panelId, sliderWidgets, patternCode, sliderMetadata) {
+  // Find panel-children container
+  const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`) ||
+                       document.getElementById(panelId);
+  if (!panelElement) {
+    console.warn(`Panel element not found for ${panelId}`);
+    return;
+  }
+
+  const panelChildren = panelElement.querySelector('.panel-children');
+  if (!panelChildren) {
+    console.warn(`Panel children container not found for ${panelId}`);
+    return;
+  }
+
+  // Remove existing slider leaves (keep editor leaf)
+  const existingSliderLeaves = panelChildren.querySelectorAll('.leaf-slider');
+  existingSliderLeaves.forEach(leaf => leaf.remove());
+
+  // Render each slider as a leaf node
+  sliderWidgets.forEach((widget, index) => {
+    const { value, min = 0, max = 1, step, from } = widget;
+    const sliderId = `slider_${from}`;
+
+    const rawValue = sliderValues[sliderId] ?? value ?? 0;
+    const currentValue = typeof rawValue === 'number' ? rawValue : parseFloat(rawValue) || 0;
+
+    const label = deduceSliderLabel(patternCode, index);
+
+    sliderMetadata.push({
+      sliderId,
+      label,
+      value: currentValue,
+      min,
+      max,
+      step: step ?? (max - min) / 1000
+    });
+
+    // Create leaf-slider element
+    const leafSlider = document.createElement('li');
+    leafSlider.className = 'leaf-node leaf-slider';
+    leafSlider.innerHTML = `
+      <label>${label}</label>
+      <input type="range"
+        min="${min}"
+        max="${max}"
+        step="${step ?? (max - min) / 1000}"
+        value="${currentValue}"
+        data-slider-id="${sliderId}">
+      <span class="slider-value" data-slider="${sliderId}">${currentValue.toFixed(2)}</span>
+    `;
+
+    const input = leafSlider.querySelector('input');
+    input.addEventListener('input', (e) => {
+      const newValue = parseFloat(e.target.value);
+      updateSliderValue(panelId, sliderId, newValue);
+    });
+
+    panelChildren.appendChild(leafSlider);
+  });
+}
+
+/**
+ * Render sliders for legacy grid layout
+ * @param {string} panelId - Panel identifier
+ * @param {Array} sliderWidgets - Filtered slider widgets
+ * @param {string} patternCode - Pattern code for label deduction
+ * @param {Array} sliderMetadata - Array to populate with metadata
+ */
+function renderLegacySliders(panelId, sliderWidgets, patternCode, sliderMetadata) {
   const slidersContainer = document.getElementById(`sliders-${panelId}`);
 
   if (!slidersContainer) {
@@ -30,27 +139,19 @@ export function renderSliders(panelId, widgets, patternCode = '') {
   // Clear existing sliders
   slidersContainer.innerHTML = '';
 
-  // Filter for slider widgets
-  const sliderWidgets = widgets.filter(w => w.type === 'slider');
-  const sliderMetadata = [];
-
   sliderWidgets.forEach((widget, index) => {
     const { value, min = 0, max = 1, step, from } = widget;
     const sliderId = `slider_${from}`;
 
-    // Get current value from sliderValues (widget.value might be undefined)
-    // Ensure value is numeric (parseFloat to handle string values from transpiler)
     const rawValue = sliderValues[sliderId] ?? value ?? 0;
     const currentValue = typeof rawValue === 'number' ? rawValue : parseFloat(rawValue) || 0;
 
-    // Deduce label from pattern code
     const label = deduceSliderLabel(patternCode, index);
 
-    // Track slider metadata for remote sync
     sliderMetadata.push({
       sliderId,
       label,
-      value: currentValue,  // Guaranteed to be numeric now
+      value: currentValue,
       min,
       max,
       step: step ?? (max - min) / 1000
@@ -81,17 +182,8 @@ export function renderSliders(panelId, widgets, patternCode = '') {
     slidersContainer.appendChild(sliderControl);
   });
 
-  // Store slider metadata for this panel
-  panelSliders[panelId] = sliderMetadata;
-
-  // Also render sliders in collapsed panel header (if panel exists)
+  // Also render sliders in collapsed panel header (legacy layout only)
   renderCollapsedSliders(panelId, sliderWidgets);
-
-  // Emit event with slider metadata
-  eventBus.emit('sliders:rendered', {
-    panelId,
-    sliders: sliderMetadata
-  });
 }
 
 /**
@@ -192,14 +284,25 @@ export function updateSliderValue(panelId, sliderId, newValue) {
  * @returns {void}
  */
 export function clearSliders(panelId) {
-  const slidersContainer = document.getElementById(`sliders-${panelId}`);
-  if (slidersContainer) {
-    slidersContainer.innerHTML = '';
-  }
+  if (isTreeLayout()) {
+    // Tree layout: remove slider leaf nodes
+    const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`) ||
+                         document.getElementById(panelId);
+    if (panelElement) {
+      const sliderLeaves = panelElement.querySelectorAll('.leaf-slider');
+      sliderLeaves.forEach(leaf => leaf.remove());
+    }
+  } else {
+    // Legacy layout: clear containers
+    const slidersContainer = document.getElementById(`sliders-${panelId}`);
+    if (slidersContainer) {
+      slidersContainer.innerHTML = '';
+    }
 
-  const collapsedSlidersContainer = document.getElementById(`collapsed-sliders-${panelId}`);
-  if (collapsedSlidersContainer) {
-    collapsedSlidersContainer.innerHTML = '';
+    const collapsedSlidersContainer = document.getElementById(`collapsed-sliders-${panelId}`);
+    if (collapsedSlidersContainer) {
+      collapsedSlidersContainer.innerHTML = '';
+    }
   }
 
   // Remove panel slider metadata
