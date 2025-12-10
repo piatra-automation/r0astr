@@ -200,14 +200,40 @@
   transform: scale(0.95);
 }
 
-/* Play button */
+/* Play button (legacy) */
 .panel-actions .btn-play {
   color: var(--dark-green, #076443);
 }
 
-/* Stop button */
+/* Stop button (legacy) */
 .panel-actions .btn-stop {
   color: var(--burnt-red, #8b0000);
+}
+
+/* Contextual playback button */
+.panel-actions .btn-playback {
+  color: var(--dark-green, #076443);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.panel-actions .btn-playback.playing {
+  color: var(--burnt-red, #8b0000);
+}
+
+.panel-actions .btn-playback.stale {
+  color: var(--puke, #c8b400);
+}
+
+.panel-actions .btn-playback:hover {
+  background: rgba(7, 100, 67, 0.1);
+}
+
+.panel-actions .btn-playback.playing:hover {
+  background: rgba(139, 0, 0, 0.1);
+}
+
+.panel-actions .btn-playback.stale:hover {
+  background: rgba(200, 180, 0, 0.1);
 }
 
 /* Delete button */

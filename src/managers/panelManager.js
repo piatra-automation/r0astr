@@ -380,11 +380,8 @@ export function renderPanel(panelId, options = {}) {
         <span class="panel-number-badge">${panel.number}</span>
         <span class="panel-title" data-panel-id="${panelId}" contenteditable="true" spellcheck="false">${panel.title}</span>
         <div class="panel-actions">
-          <button class="btn-play" data-card="${panelId}" title="Play">
+          <button class="btn-playback" data-card="${panelId}" title="Play">
             <span class="material-icons">play_arrow</span>
-          </button>
-          <button class="btn-stop" data-card="${panelId}" title="Stop">
-            <span class="material-icons">stop</span>
           </button>
           <button class="btn-delete" data-panel="${panelId}" title="Delete" style="${deleteButtonStyle}">
             <span class="material-icons">delete</span>

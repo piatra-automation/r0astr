@@ -897,6 +897,30 @@ function initializeCards() {
     }
   });
 
+  // Tree layout: Contextual playback button (.btn-playback) - toggles play/pause/update
+  document.addEventListener('click', (e) => {
+    const playbackBtn = e.target.closest('.btn-playback');
+    if (playbackBtn) {
+      let panelId = playbackBtn.dataset.card;
+      if (!panelId) {
+        const levelPanel = playbackBtn.closest('.level-panel');
+        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
+      }
+      if (panelId) {
+        const panel = cardStates[panelId];
+        if (panel) {
+          if (panel.playing && !panel.stale) {
+            // Playing and in sync -> Pause
+            pausePanel(panelId);
+          } else {
+            // Paused or stale -> Play/Update
+            activatePanel(panelId);
+          }
+        }
+      }
+    }
+  });
+
   // Tree layout: Use event delegation for DELETE button clicks
   document.addEventListener('click', (e) => {
     const deleteBtn = e.target.closest('.btn-delete, .delete-btn');
@@ -1320,13 +1344,52 @@ function updatePauseButton(panelId) {
 }
 
 /**
- * Update both PAUSE and ACTIVATE buttons
- * Story 6.2: Separate PAUSE and ACTIVATE Buttons
+ * Update contextual PLAYBACK button (tree layout)
+ * Shows play/stop/refresh icon based on panel state
+ * @param {string} panelId - Panel ID
+ */
+function updatePlaybackButton(panelId) {
+  const panel = cardStates[panelId];
+  const button = document.querySelector(`[data-panel-id="${panelId}"] .btn-playback`) ||
+    document.querySelector(`#${panelId} .btn-playback`);
+
+  if (!panel || !button) return;
+
+  const icon = button.querySelector('.material-icons');
+  if (!icon) return;
+
+  // Remove all state classes
+  button.classList.remove('playing', 'stale', 'paused');
+
+  if (panel.playing && !panel.stale) {
+    // Playing and in sync -> Show stop icon
+    icon.textContent = 'stop';
+    button.title = 'Stop';
+    button.classList.add('playing');
+  } else if (panel.stale) {
+    // Stale (playing with edits) -> Show refresh/update icon
+    icon.textContent = 'refresh';
+    button.title = 'Update';
+    button.classList.add('stale');
+  } else {
+    // Paused -> Show play icon
+    icon.textContent = 'play_arrow';
+    button.title = 'Play';
+    button.classList.add('paused');
+  }
+}
+
+/**
+ * Update all playback buttons for a panel
+ * Supports legacy (separate play/pause) and tree (contextual) layouts
  * @param {string} panelId - Panel ID
  */
 function updatePanelButtons(panelId) {
+  // Legacy layout buttons
   updateActivateButton(panelId);
   updatePauseButton(panelId);
+  // Tree layout contextual button
+  updatePlaybackButton(panelId);
 }
 
 /**
@@ -2986,17 +3049,23 @@ function initializeKeyboardShortcuts() {
         if (focusedPanelP) {
           const panel = cardStates[focusedPanelP];
           if (panel) {
-            if (panel.playing) {
-              // Support both legacy (.pause-btn) and tree (.btn-stop) layouts
-              pressedButton = document.querySelector(`#${focusedPanelP} .pause-btn`) ||
-                              document.querySelector(`#${focusedPanelP} .btn-stop`) ||
-                              document.querySelector(`[data-panel-id="${focusedPanelP}"] .btn-stop`);
-            } else {
-              // Support both legacy (.activate-btn) and tree (.btn-play) layouts
-              pressedButton = document.querySelector(`#${focusedPanelP} .activate-btn`) ||
-                              document.querySelector(`#${focusedPanelP} .btn-play`) ||
-                              document.querySelector(`[data-panel-id="${focusedPanelP}"] .btn-play`);
+            // Try contextual button first (.btn-playback), then legacy buttons
+            pressedButton = document.querySelector(`[data-panel-id="${focusedPanelP}"] .btn-playback`) ||
+                            document.querySelector(`#${focusedPanelP} .btn-playback`);
+
+            if (!pressedButton) {
+              // Fallback to legacy buttons
+              if (panel.playing) {
+                pressedButton = document.querySelector(`#${focusedPanelP} .pause-btn`) ||
+                                document.querySelector(`#${focusedPanelP} .btn-stop`) ||
+                                document.querySelector(`[data-panel-id="${focusedPanelP}"] .btn-stop`);
+              } else {
+                pressedButton = document.querySelector(`#${focusedPanelP} .activate-btn`) ||
+                                document.querySelector(`#${focusedPanelP} .btn-play`) ||
+                                document.querySelector(`[data-panel-id="${focusedPanelP}"] .btn-play`);
+              }
             }
+
             if (pressedButton) {
               animatePressStart(pressedButton);
               const btnToClick = pressedButton; // Capture in closure
@@ -3016,8 +3085,10 @@ function initializeKeyboardShortcuts() {
         e.preventDefault();
         const focusedPanelUp = findFocusedPanel();
         if (focusedPanelUp) {
-          // Support both legacy (.activate-btn) and tree (.btn-play) layouts
-          pressedButton = document.querySelector(`#${focusedPanelUp} .activate-btn`) ||
+          // Try contextual button first, then legacy
+          pressedButton = document.querySelector(`[data-panel-id="${focusedPanelUp}"] .btn-playback`) ||
+                          document.querySelector(`#${focusedPanelUp} .btn-playback`) ||
+                          document.querySelector(`#${focusedPanelUp} .activate-btn`) ||
                           document.querySelector(`#${focusedPanelUp} .btn-play`) ||
                           document.querySelector(`[data-panel-id="${focusedPanelUp}"] .btn-play`);
           if (pressedButton && !pressedButton.disabled) {
