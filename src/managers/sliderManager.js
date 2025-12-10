@@ -60,7 +60,7 @@ export function renderSliders(panelId, widgets, patternCode = '') {
  * @param {Array} sliderMetadata - Array to populate with metadata
  */
 function renderTreeSliders(panelId, sliderWidgets, patternCode, sliderMetadata) {
-  // Find panel-children container
+  // Find panel-controls-container (sibling of details, outside collapse)
   const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`) ||
                        document.getElementById(panelId);
   if (!panelElement) {
@@ -68,17 +68,17 @@ function renderTreeSliders(panelId, sliderWidgets, patternCode, sliderMetadata) 
     return;
   }
 
-  const panelChildren = panelElement.querySelector('.panel-children');
-  if (!panelChildren) {
-    console.warn(`Panel children container not found for ${panelId}`);
+  const controlsContainer = panelElement.querySelector('.panel-controls-container');
+  if (!controlsContainer) {
+    console.warn(`Panel controls container not found for ${panelId}`);
     return;
   }
 
-  // Remove existing slider leaves (keep editor leaf)
-  const existingSliderLeaves = panelChildren.querySelectorAll('.leaf-slider');
-  existingSliderLeaves.forEach(leaf => leaf.remove());
+  // Remove existing slider elements
+  const existingSliders = controlsContainer.querySelectorAll('.leaf-slider');
+  existingSliders.forEach(el => el.remove());
 
-  // Render each slider as a leaf node
+  // Render each slider
   sliderWidgets.forEach((widget, index) => {
     const { value, min = 0, max = 1, step, from } = widget;
     const sliderId = `slider_${from}`;
@@ -97,10 +97,10 @@ function renderTreeSliders(panelId, sliderWidgets, patternCode, sliderMetadata) 
       step: step ?? (max - min) / 1000
     });
 
-    // Create leaf-slider element
-    const leafSlider = document.createElement('li');
-    leafSlider.className = 'leaf-node leaf-slider';
-    leafSlider.innerHTML = `
+    // Create slider element (div, not li - not in a list)
+    const sliderEl = document.createElement('div');
+    sliderEl.className = 'leaf-slider';
+    sliderEl.innerHTML = `
       <label>${label}</label>
       <input type="range"
         min="${min}"
@@ -111,13 +111,13 @@ function renderTreeSliders(panelId, sliderWidgets, patternCode, sliderMetadata) 
       <span class="slider-value" data-slider="${sliderId}">${currentValue.toFixed(2)}</span>
     `;
 
-    const input = leafSlider.querySelector('input');
+    const input = sliderEl.querySelector('input');
     input.addEventListener('input', (e) => {
       const newValue = parseFloat(e.target.value);
       updateSliderValue(panelId, sliderId, newValue);
     });
 
-    panelChildren.appendChild(leafSlider);
+    controlsContainer.appendChild(sliderEl);
   });
 }
 

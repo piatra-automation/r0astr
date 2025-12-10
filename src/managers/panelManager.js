@@ -373,7 +373,7 @@ export function renderPanel(panelId, options = {}) {
   // Hide delete button for master panel (panel-0)
   const deleteButtonStyle = panelId === MASTER_PANEL_ID ? 'display: none;' : '';
 
-  // Build tree structure with details/summary
+  // Build tree structure: details (editor) + controls container (sliders/viz)
   panelElement.innerHTML = `
     <details${options.expanded ? ' open' : ''}>
       <summary>
@@ -388,19 +388,21 @@ export function renderPanel(panelId, options = {}) {
           </button>
         </div>
       </summary>
-      <ul class="panel-children">
-        <li class="leaf-node leaf-editor">
-          <div class="code-editor-wrapper">
-            <div class="code-editor" id="editor-${panelId}" data-card="${panelId}"></div>
-          </div>
-          <div class="error-message" data-card="${panelId}" style="display: none;"></div>
-        </li>
-        <li class="leaf-node leaf-viz" style="display: none;">
-          <div id="viz-container-${panelId}" class="viz-container"></div>
-        </li>
-        <!-- Slider leaves will be added dynamically by sliderManager -->
-      </ul>
+      <!-- Editor container - collapses with details -->
+      <div class="panel-editor-container">
+        <div class="code-editor-wrapper">
+          <div class="code-editor" id="editor-${panelId}" data-card="${panelId}"></div>
+        </div>
+        <div class="error-message" data-card="${panelId}" style="display: none;"></div>
+      </div>
     </details>
+    <!-- Controls container - outside details, visibility controlled by settings -->
+    <div class="panel-controls-container">
+      <div class="leaf-viz" style="display: none;">
+        <div id="viz-container-${panelId}" class="viz-container"></div>
+      </div>
+      <!-- Slider leaves will be added dynamically by sliderManager -->
+    </div>
   `;
 
   // Append to panel-tree

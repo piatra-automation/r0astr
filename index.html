@@ -197,6 +197,18 @@
             </p>
           </div>
 
+          <!-- Show Controls When Collapsed Toggle -->
+          <div class="setting-item">
+            <label class="toggle-label">
+              <input type="checkbox" id="show-controls-collapsed-toggle" class="toggle-input">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Show controls when panel collapsed</span>
+            </label>
+            <p class="setting-description">
+              When a playing panel is collapsed, keep sliders and visualizers visible. Only hides the code editor.
+            </p>
+          </div>
+
           <!-- Animation Speed Dropdown (AC: 4) -->
           <div class="setting-item">
             <label for="animation-speed-select">UI Animation Speed</label>
@@ -525,19 +537,21 @@
             </button>
           </div>
         </summary>
-        <ul class="panel-children">
-          <li class="leaf-node leaf-editor">
-            <div class="code-editor-wrapper">
-              <div class="code-editor" id="editor-panel-0" data-card="panel-0"></div>
-            </div>
-            <div class="error-message" data-card="panel-0" style="display: none;"></div>
-          </li>
-          <li class="leaf-node leaf-viz" style="display: none;">
-            <div id="viz-container-panel-0" class="viz-container"></div>
-          </li>
-          <!-- Slider leaves will be added dynamically -->
-        </ul>
+        <!-- Editor container - collapses with details -->
+        <div class="panel-editor-container">
+          <div class="code-editor-wrapper">
+            <div class="code-editor" id="editor-panel-0" data-card="panel-0"></div>
+          </div>
+          <div class="error-message" data-card="panel-0" style="display: none;"></div>
+        </div>
       </details>
+      <!-- Controls container - outside details, visibility controlled by settings -->
+      <div class="panel-controls-container">
+        <div class="leaf-viz" style="display: none;">
+          <div id="viz-container-panel-0" class="viz-container"></div>
+        </div>
+        <!-- Slider leaves will be added dynamically by sliderManager -->
+      </div>
     </li>
     <!-- Dynamic panels created via [+] button will appear here -->
   </ul>

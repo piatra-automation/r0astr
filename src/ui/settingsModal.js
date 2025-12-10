@@ -108,7 +108,13 @@ function loadSettingsIntoForm() {
   // Show Splash Toggle
   const showSplashToggle = document.getElementById('show-splash-toggle');
   if (showSplashToggle) {
-    showSplashToggle.checked = settings.showSplash || false;
+    showSplashToggle.checked = settings.showSplash !== false;
+  }
+
+  // Show Controls When Collapsed Toggle
+  const showControlsCollapsedToggle = document.getElementById('show-controls-collapsed-toggle');
+  if (showControlsCollapsedToggle) {
+    showControlsCollapsedToggle.checked = settings.showControlsWhenCollapsed !== false;
   }
 
   // Story 7.1: Wrap Lines Toggle
@@ -594,6 +600,27 @@ export function initializeSettingsModal() {
     saveSettings(settings);
 
     console.log(`Show splash ${showSplash ? 'enabled' : 'disabled'} (applies on next load)`);
+  });
+
+  // Show Controls When Collapsed - save and apply immediately
+  const showControlsCollapsedToggle = document.getElementById('show-controls-collapsed-toggle');
+  showControlsCollapsedToggle?.addEventListener('change', (e) => {
+    const showControls = e.target.checked;
+
+    const settings = getSettings();
+    settings.showControlsWhenCollapsed = showControls;
+    saveSettings(settings);
+
+    // Apply/remove class on all playing panels
+    document.querySelectorAll('.level-panel.playing').forEach(panel => {
+      if (showControls) {
+        panel.classList.add('show-controls-collapsed');
+      } else {
+        panel.classList.remove('show-controls-collapsed');
+      }
+    });
+
+    console.log(`Show controls when collapsed ${showControls ? 'enabled' : 'disabled'}`);
   });
 
   // Story 7.1: Wrap Lines - live preview + save

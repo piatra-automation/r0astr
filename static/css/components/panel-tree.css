@@ -366,6 +366,102 @@ details[open] > .panel-children {
   border-radius: 4px;
 }
 
+/* === Panel Editor Container (inside details - collapses) === */
+.panel-editor-container {
+  padding: 12px 0;
+  padding-left: calc(var(--tree-node-radius) * 2 + 12px);
+  margin-left: calc(-1 * var(--tree-node-radius) - 4px);
+}
+
+.panel-editor-container .code-editor-wrapper {
+  width: 90%;
+  min-height: 100px;
+  max-height: 400px;
+  background: var(--panel-base-dark, #1a1a1a);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.panel-editor-container .code-editor {
+  width: 100%;
+  height: 100%;
+  min-height: 100px;
+}
+
+/* === Panel Controls Container (outside details - always visible) === */
+.panel-controls-container {
+  padding-left: calc(var(--tree-node-radius) * 2 + 12px);
+  margin-left: calc(-1 * var(--tree-node-radius) - 4px);
+}
+
+/* Hide controls when panel not playing AND setting says hide */
+.level-panel:not(.playing) .panel-controls-container {
+  /* Controls visible by default, hidden via JS based on setting */
+}
+
+/* Slider styling in controls container */
+.panel-controls-container .leaf-slider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.panel-controls-container .leaf-slider label {
+  min-width: 80px;
+  font-size: 0.85rem;
+  color: var(--darkness, #1a1a1a);
+}
+
+.panel-controls-container .leaf-slider input[type="range"] {
+  flex: 1;
+  max-width: 300px;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--tree-line-color);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.panel-controls-container .leaf-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--dark-green, #076443);
+  cursor: pointer;
+}
+
+.panel-controls-container .slider-value {
+  min-width: 50px;
+  text-align: right;
+  font-size: 0.85rem;
+  font-family: monospace;
+  color: var(--darkness, #1a1a1a);
+}
+
+/* Viz styling in controls container */
+.panel-controls-container .leaf-viz {
+  padding: 12px 0;
+}
+
+.panel-controls-container .viz-container {
+  display: flex;
+  gap: 8px;
+  width: 90%;
+  flex-wrap: wrap;
+}
+
+.panel-controls-container .viz-container canvas,
+.panel-controls-container .visualization-canvas {
+  flex: 1;
+  min-width: 150px;
+  height: 60px;
+  background: var(--panel-base-dark, #1a1a1a);
+  border-radius: 4px;
+}
+
 /* === Playing State === */
 .level-panel.playing > details > summary {
   background: rgba(7, 100, 67, 0.1);

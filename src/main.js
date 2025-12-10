@@ -937,43 +937,45 @@ function initializeCards() {
     }
   });
 
-  // Tree layout: Accordion mode - collapse other panels when one is expanded
+  // Tree layout: Handle details toggle for accordion mode and controls visibility
   // Listen for toggle events on details elements (use capture since toggle doesn't bubble)
   document.addEventListener('toggle', (e) => {
     // Only handle details elements
     if (e.target.tagName !== 'DETAILS') return;
 
     const details = e.target;
-
-    // Only handle opening (not closing)
-    if (!details.open) return;
-
-    // Check if accordion mode is enabled
-    const settings = getSettings();
-    if (!settings.collapseOnBlur) return;
-
-    // Find the panel that was just opened
     const levelPanel = details.closest('.level-panel');
     if (!levelPanel) return;
 
-    const openedPanelId = levelPanel.dataset?.panelId || levelPanel.id;
+    const panelId = levelPanel.dataset?.panelId || levelPanel.id;
+    const settings = getSettings();
+    const panel = cardStates[panelId];
 
-    // Collapse all other panels
-    const allPanels = document.querySelectorAll('.level-panel');
-    let collapsedCount = 0;
-    allPanels.forEach(panel => {
-      const panelId = panel.dataset?.panelId || panel.id;
-      if (panelId !== openedPanelId) {
-        const panelDetails = panel.querySelector('details');
-        if (panelDetails && panelDetails.open) {
-          panelDetails.open = false;
-          collapsedCount++;
+    // Update controls container visibility when panel is toggled
+    const controlsContainer = levelPanel.querySelector('.panel-controls-container');
+    if (controlsContainer) {
+      const showControls = panel?.playing || details.open || settings.showControlsWhenCollapsed;
+      controlsContainer.style.display = showControls ? '' : 'none';
+    }
+
+    // Accordion mode: collapse other panels when one is opened
+    if (details.open && settings.collapseOnBlur) {
+      const allPanels = document.querySelectorAll('.level-panel');
+      let collapsedCount = 0;
+      allPanels.forEach(otherPanel => {
+        const otherPanelId = otherPanel.dataset?.panelId || otherPanel.id;
+        if (otherPanelId !== panelId) {
+          const otherDetails = otherPanel.querySelector('details');
+          if (otherDetails && otherDetails.open) {
+            otherDetails.open = false;
+            collapsedCount++;
+          }
         }
-      }
-    });
+      });
 
-    if (collapsedCount > 0) {
-      console.log(`[Accordion] Collapsed ${collapsedCount} panels, keeping ${openedPanelId} open`);
+      if (collapsedCount > 0) {
+        console.log(`[Accordion] Collapsed ${collapsedCount} panels, keeping ${panelId} open`);
+      }
     }
   }, true); // Use capture since toggle event doesn't bubble
 
@@ -1693,12 +1695,31 @@ function updateVisualIndicators(panelId) {
     // Tree layout uses simpler class names: playing, stale, error
     panelElement.classList.remove('playing', 'stale', 'error');
 
-    if (panel.stale) {
-      panelElement.classList.add('stale');
-    } else if (panel.playing) {
+    // Add playing class if panel is playing (stale panels are still playing)
+    if (panel.playing) {
       panelElement.classList.add('playing');
     }
+    // Add stale class on top if code changed
+    if (panel.stale) {
+      panelElement.classList.add('stale');
+    }
     // No explicit 'paused' class needed in tree layout (default state)
+
+    // Manage controls container visibility based on settings
+    const settings = getSettings();
+    const controlsContainer = panelElement.querySelector('.panel-controls-container');
+    const details = panelElement.querySelector('details');
+
+    if (controlsContainer) {
+      // Controls visible when:
+      // 1. Panel is playing (always show controls for playing panels)
+      // 2. OR details is open (expanded panel shows everything)
+      // 3. OR showControlsWhenCollapsed is true (keep controls visible even when collapsed)
+      const isExpanded = details?.open;
+      const showControls = panel.playing || isExpanded || settings.showControlsWhenCollapsed;
+      controlsContainer.style.display = showControls ? '' : 'none';
+    }
+
   } else {
     // Legacy layout uses panel- prefixed classes
     panelElement.classList.remove('panel-paused', 'panel-playing', 'panel-stale');
@@ -2739,6 +2760,15 @@ function createNewPanelAndFocus() {
     // Focus editor immediately after creation
     setTimeout(() => {
       bringPanelToFront(panelId);
+
+      // Expand details in tree layout
+      if (panelElement) {
+        const details = panelElement.querySelector('details');
+        if (details) {
+          details.open = true;
+        }
+      }
+
       setTimeout(() => {
         view.focus();
         console.log(`[Keyboard] New panel ${panelId} focused and ready for input`);
