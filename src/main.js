@@ -1364,9 +1364,9 @@ function updatePlaybackButton(panelId) {
   button.classList.remove('playing', 'stale', 'paused');
 
   if (panel.playing && !panel.stale) {
-    // Playing and in sync -> Show stop icon
-    icon.textContent = 'stop';
-    button.title = 'Stop';
+    // Playing and in sync -> Show pause icon
+    icon.textContent = 'pause';
+    button.title = 'Pause';
     button.classList.add('playing');
   } else if (panel.stale) {
     // Stale (playing with edits) -> Show refresh/update icon
