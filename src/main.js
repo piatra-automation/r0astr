@@ -18,7 +18,7 @@ import { PatternCapture } from './managers/patternCapture.js';
 import { connect as wsConnect, send as wsSend, isConnected as wsIsConnected, MESSAGE_TYPES, syncPanelState, sendFullState } from './managers/websocketManager.js';
 import { eventBus } from './utils/eventBus.js';
 import { renderSliders as smRenderSliders, renderCollapsedSliders as smRenderCollapsedSliders, updateSliderValue as smUpdateSliderValue, clearSliders as smClearSliders, getPanelSliders } from './managers/sliderManager.js';
-import { initializeWithSplash, dismissSplash, updateSplashProgress, prebake } from './managers/splash.js';
+import { initializeWithSplash, dismissSplash, updateSplashProgress, prebake, skipSplash } from './managers/splash.js';
 import { initializeMetronome, initializePatternHighlighting } from './managers/visualization.js';
 import {
   cardStates,
@@ -2581,12 +2581,23 @@ async function initializeStrudel() {
     btn.disabled = true;
   });
 
-  // Load modules and samples with splash timing coordination
+  // Load modules and samples
   const modulesLoading = loadModules();
   const snippetUrl = appSettings?.snippetLocation || '';
-  const samplesLoadingWithSplash = initializeWithSplash(snippetUrl);
 
-  await Promise.all([modulesLoading, samplesLoadingWithSplash]);
+  // Check splash setting
+  if (appSettings?.showSplash) {
+    // Show splash screen with progress during loading
+    const samplesLoadingWithSplash = initializeWithSplash(snippetUrl);
+    await Promise.all([modulesLoading, samplesLoadingWithSplash]);
+  } else {
+    // Skip splash - show UI immediately, load samples async
+    skipSplash();
+    // Fire off sample loading in background (don't await)
+    prebake(snippetUrl).catch(err => console.warn('Background sample loading error:', err));
+    // Only await modules (required for REPL)
+    await modulesLoading;
+  }
 
   // Create single repl instance shared by all cards
   const replInstance = repl({

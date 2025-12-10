@@ -105,6 +105,12 @@ function loadSettingsIntoForm() {
     collapseOnBlurToggle.checked = settings.collapseOnBlur || false;
   }
 
+  // Show Splash Toggle
+  const showSplashToggle = document.getElementById('show-splash-toggle');
+  if (showSplashToggle) {
+    showSplashToggle.checked = settings.showSplash || false;
+  }
+
   // Story 7.1: Wrap Lines Toggle
   const wrapLinesToggle = document.getElementById('wrap-lines-toggle');
   if (wrapLinesToggle) {
@@ -576,6 +582,18 @@ export function initializeSettingsModal() {
     updatePanelOpacities();
 
     console.log(`Collapse on blur ${collapse ? 'enabled' : 'disabled'}`);
+  });
+
+  // Show Splash - save (applies on next page load)
+  const showSplashToggle = document.getElementById('show-splash-toggle');
+  showSplashToggle?.addEventListener('change', (e) => {
+    const showSplash = e.target.checked;
+
+    const settings = getSettings();
+    settings.showSplash = showSplash;
+    saveSettings(settings);
+
+    console.log(`Show splash ${showSplash ? 'enabled' : 'disabled'} (applies on next load)`);
   });
 
   // Story 7.1: Wrap Lines - live preview + save

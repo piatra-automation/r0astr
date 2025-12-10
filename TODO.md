@@ -18,5 +18,5 @@ KEYBORD MAYBE USEFUL: https://codepen.io/evilpaper/pen/dyyZjLQ
 
 - [ ] remove the splash...
 - [ ] use pause icon not stop icon
-= [ ] have sliders and vis remain visible on panel collapse (just hide code window) if the panel is also playing
+- [ ] have sliders and vis remain visible on panel collapse (just hide code window) if the panel is also playing - provided new settings.alwaysShowControlElements (or similar) is set (default true)
 - [ ] CMD-opt-N creates a new panel (good) but should also focus that new panel (it doesnt)

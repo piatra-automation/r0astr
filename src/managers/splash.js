@@ -7,6 +7,32 @@ import { registerSynthSounds } from '@strudel/webaudio';
 import { loadSnippets } from './snippetManager.js';
 
 /**
+ * Skip splash screen entirely - immediately show all UI elements
+ * Used when showSplash setting is false
+ * @returns {void}
+ */
+export function skipSplash() {
+  const splash = document.getElementById('splash-modal');
+  const siteLogo = document.querySelector('.site-logo');
+  const heroSection = document.querySelector('.hero-section');
+  const bannerSubtitle = document.querySelector('.banner-subtitle');
+  const screen = document.querySelector('.screen');
+
+  // Immediately show all elements (no animation)
+  if (siteLogo) siteLogo.classList.add('visible');
+  if (heroSection) heroSection.classList.add('visible');
+  if (bannerSubtitle) bannerSubtitle.classList.add('visible');
+  if (screen) screen.classList.add('visible');
+  document.querySelectorAll('.top-bar-btn').forEach(btn => btn.classList.add('visible'));
+
+  // Remove splash immediately
+  if (splash) {
+    splash.style.display = 'none';
+    splash.remove();
+  }
+}
+
+/**
  * Dismiss splash screen with logo animation
  * @returns {void}
  */
