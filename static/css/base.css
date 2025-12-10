@@ -459,11 +459,6 @@
       max-height: var(--site-logo-height);
       z-index: var(--z-logo);
       pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.3s ease-in;
-    }
-
-    .site-logo.visible {
       opacity: 1;
     }
 
@@ -505,8 +500,7 @@
       align-items: center;
       padding-left: 130px;
       /* Logo width + offset */
-      opacity: 0;
-      transition: opacity 0.3s ease-in;
+      opacity: 1;
       border-radius: 3px;
 
       /* Borders: white+20% on top/left, gray+50% on bottom/right */
@@ -517,10 +511,6 @@
 
       /* Drop shadow on bottom edge only */
       box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .hero-section.visible {
-      opacity: 1;
     }
 
     .hero-banner {
@@ -551,11 +541,6 @@
       color: var(--mid-green);
       white-space: nowrap;
       z-index: var(--z-subtitle);
-      opacity: 0;
-      transition: opacity 0.3s ease-in;
-    }
-
-    .banner-subtitle.visible {
       opacity: 1;
     }
 
@@ -596,8 +581,7 @@
       border-top: 4px solid var(--screen-top);
       border-bottom: 4px solid var(--screen-bottom);
       z-index: var(--z-screen);
-      opacity: 0;
-      transition: opacity 0.3s ease-in;
+      opacity: 1;
       /* Green drop shadow on bottom edge only */
       box-shadow: 0px 16px 8px rgba(37, 158, 117, 0.6);
       clip-path: inset(0px 0px -100px -100px);
@@ -649,10 +633,6 @@
       /* background-blend-mode: normal; */
       pointer-events: none;
       z-index: var(--z-base);
-    }
-
-    .screen.visible {
-      opacity: 1;
     }
 
     /* CodeMirror editors inside screen */
@@ -862,8 +842,8 @@
       text-align: center;
       z-index: var(--z-topbar);
       cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.3s ease-in, font-weight 0.1s ease, letter-spacing 0.1s ease, border 0.1s ease;
+      opacity: 1;
+      transition: font-weight 0.1s ease, letter-spacing 0.1s ease, border 0.1s ease;
       border-radius: 1px;
 
       /* Borders: white+20% on top/left, gray+50% on bottom/right - 2px beveled effect */
@@ -881,10 +861,6 @@
         6px 6px 8px rgba(99, 99, 99, 0.5);
       overflow: visible;
       clip-path: inset(-100px -100px 0px 0px);
-    }
-
-    .top-bar-btn.visible {
-      opacity: 1;
     }
 
     /* Hover effect - reduce shadow by 25% */

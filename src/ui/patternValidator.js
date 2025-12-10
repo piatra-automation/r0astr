@@ -179,12 +179,11 @@ export function checkStaleness(panelId) {
   const view = getPanelEditor(panelId);
   if (!view) return false;
 
-  // Staleness only applies to playing panels
+  // Staleness detection: only update stale flag for playing panels
+  // Non-playing panels keep their stale flag (set when they were playing and code changed)
   if (!panel.playing) {
-    if (panel.stale) {
-      updatePanel(panelId, { stale: false }); // Sync to panelManager for persistence
-    }
-    return false;
+    // Don't modify stale flag - it was set when panel was playing and should persist
+    return panel.stale || false;
   }
 
   // Compare current code to last-evaluated code

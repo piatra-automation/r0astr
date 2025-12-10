@@ -37,6 +37,14 @@ export function getPanelEditor(panelId) {
 }
 
 /**
+ * Get all panel editors (for pattern highlighting)
+ * @returns {Map<string, EditorView>} Map of panel IDs to editor views
+ */
+export function getAllPanelEditors() {
+  return panelEditors;
+}
+
+/**
  * Destroy CodeMirror editor for a panel
  * @param {string} panelId - Panel identifier
  */
