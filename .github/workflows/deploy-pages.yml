@@ -5,15 +5,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'docs-source/**'
-      - 'mkdocs.yml'
-      - 'src/**'
-      - 'index.html'
-      - 'static/**'
-      - 'package.json'
-      - 'vite.config.lite.mjs'
-      - '.github/workflows/deploy-pages.yml'
 
   # Allow manual trigger
   workflow_dispatch:
