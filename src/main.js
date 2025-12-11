@@ -4,6 +4,7 @@ import { transpiler } from '@strudel/transpiler';
 import { sliderWithID, sliderValues as cmSliderValues, highlightExtension, updateMiniLocations, highlightMiniLocations } from '@strudel/codemirror';
 import { createPanel, renderPanel, deletePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, animatePanelPosition, expandPanel, collapsePanel, togglePanel, isPanelExpanded, MASTER_PANEL_ID } from './managers/panelManager.js';
 import { initializeDragAndResize } from './ui/dragResize.js';
+import { initializePanelReorder } from './ui/panelReorder.js';
 import { loadSettings, getSettings, updateSetting } from './managers/settingsManager.js';
 import { moveEditorToScreen, removeEditorFromScreen, removeAllEditorsExcept, isEditorInScreen } from './managers/screenManager.js';
 import { initializeSettingsModal, openSettingsModal } from './ui/settingsModal.js';
@@ -832,6 +833,15 @@ function initializeCards() {
         // Focus editor immediately after creation (same as hotkey behavior)
         setTimeout(() => {
           bringPanelToFront(panelId);
+
+          // Expand details in tree layout
+          if (panelElement) {
+            const details = panelElement.querySelector('details');
+            if (details) {
+              details.open = true;
+            }
+          }
+
           setTimeout(() => {
             view.focus();
             console.log(`[+Button] New panel ${panelId} focused and ready for input`);
@@ -3316,6 +3326,11 @@ setTimeout(() => {
 initializeCards();
 initializeSettingsModal();
 initializeKeyboardShortcuts();
+
+// Initialize drag-to-reorder for panel tree
+if (document.querySelector('.panel-tree')) {
+  initializePanelReorder();
+}
 
 /**
  * Pattern Capture Keyboard Handlers

@@ -377,8 +377,8 @@ export function renderPanel(panelId, options = {}) {
   panelElement.innerHTML = `
     <details${options.expanded ? ' open' : ''}>
       <summary>
-        <span class="panel-number-badge">${panel.number}</span>
-        <span class="panel-title" data-panel-id="${panelId}" contenteditable="true" spellcheck="false">${panel.title}</span>
+        <span class="panel-number-badge" draggable="true">${panel.number}</span>
+        <span class="panel-title" data-panel-id="${panelId}" contenteditable="false" spellcheck="false">${panel.title}</span>
         <div class="panel-actions">
           <button class="btn-playback" data-card="${panelId}" title="Play">
             <span class="material-icons">play_arrow</span>

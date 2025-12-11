@@ -139,6 +139,49 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: grab;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.panel-number-badge:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.panel-number-badge:active,
+.panel-number-badge.dragging {
+  cursor: grabbing;
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Drag-over states for drop targets */
+.level-panel.drag-over-above::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--dark-green, #076443);
+  border-radius: 2px;
+  z-index: 100;
+}
+
+.level-panel.drag-over-below::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--dark-green, #076443);
+  border-radius: 2px;
+  z-index: 100;
+}
+
+.level-panel.dragging {
+  opacity: 0.5;
 }
 
 /* Master panel (panel-0) accent */
