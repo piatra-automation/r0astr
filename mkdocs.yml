@@ -53,6 +53,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Try It: app/index.html
+  - Downloads: downloads.md
   - Getting Started: getting-started.md
   - Remote Control: remote-control.md
 

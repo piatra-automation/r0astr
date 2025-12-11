@@ -98,5 +98,10 @@
       }
     ]
   },
-  "publish": null
+  "publish": {
+    "provider": "github",
+    "owner": "piatra-automation",
+    "repo": "r0astr",
+    "releaseType": "release"
+  }
 }
