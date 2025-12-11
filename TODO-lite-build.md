@@ -1,5 +1,9 @@
 # r0astr Lite Build for GitHub Pages
 
+## Status: IMPLEMENTED
+
+See commits for full implementation.
+
 ## Goal
 Create a standalone, static build of r0astr that can be hosted on GitHub Pages without:
 - WebSocket server/client functionality
@@ -150,22 +154,22 @@ if (import.meta.env.LITE_MODE) {
 ## Implementation Tasks
 
 ### Phase 1: Build Configuration
-- [ ] Create `vite.config.lite.mjs` with GitHub Pages base path
-- [ ] Create `src/managers/websocketManager.lite.js` stub
-- [ ] Add `build:lite` script to package.json
-- [ ] Test local build with `npm run build:lite && npx serve dist-lite`
+- [x] Create `vite.config.lite.mjs` with GitHub Pages base path
+- [x] Create `src/managers/websocketManager.lite.js` stub
+- [x] Add `build:lite` script to package.json
+- [x] Test local build with `npm run build:lite`
 
 ### Phase 2: Code Modifications
-- [ ] Add conditional import or runtime check for websocketManager
-- [ ] Guard `wsConnect()` call at line 2366 with `LITE_MODE` check
-- [ ] Hide remote control settings in settings modal (optional)
-- [ ] Remove remote.html from lite build input
+- [x] Add conditional import via Vite resolve.alias (swaps module at build time)
+- [x] WebSocket stub makes connect() a no-op (no code changes needed in main.js)
+- [ ] Hide remote control settings in settings modal (optional - future)
+- [x] Remove remote.html from lite build input
 
 ### Phase 3: GitHub Pages Setup
-- [ ] Create `.github/workflows/deploy-lite.yml`
-- [ ] Configure GitHub repo settings for Pages (gh-pages branch)
+- [x] Create `.github/workflows/deploy-pages.yml` (combined docs + app)
+- [x] Disabled old `docs.yml` and `static.yml` workflows
+- [ ] Configure GitHub repo settings for Pages (needs manual setup)
 - [ ] Test deployment with manual workflow trigger
-- [ ] Add badge/link to README
 
 ### Phase 4: Polish
 - [ ] Add "Lite Mode" indicator in UI (optional)

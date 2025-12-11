@@ -16,5 +16,4 @@ KEYBORD MAYBE USEFUL: https://codepen.io/evilpaper/pen/dyyZjLQ
 
 - arrow icon in snippet menu says play not triangle font issue
 
-
-- [ ] use pause icon not stop icon
+- [ ] when I click using mouse on a panel it expands but is not "FOCUSSED" enough to allow me to enter text in the code panel OR EVEN close the panel with hotkey CMD-OPT-W!

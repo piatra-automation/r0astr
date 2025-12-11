@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:lite": "vite build --config vite.config.lite.mjs",
     "preview": "vite preview",
     "server": "node src/server/index.js",
     "electron:dev": "concurrently -k \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",

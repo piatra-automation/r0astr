@@ -1,0 +1,98 @@
+# Combined workflow: Build MkDocs + r0astr Lite and deploy to GitHub Pages
+name: Deploy Docs & App to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs-source/**'
+      - 'mkdocs.yml'
+      - 'src/**'
+      - 'index.html'
+      - 'static/**'
+      - 'package.json'
+      - 'vite.config.lite.mjs'
+      - '.github/workflows/deploy-pages.yml'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+# Sets permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Setup Node.js for r0astr lite build
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Setup Python for MkDocs
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # Install Node dependencies
+      - name: Install Node dependencies
+        run: npm ci
+
+      # Install Python dependencies
+      - name: Install MkDocs Material
+        run: pip install mkdocs-material
+
+      # Build r0astr lite
+      - name: Build r0astr Lite
+        run: npm run build:lite
+
+      # Build MkDocs
+      - name: Build MkDocs
+        run: mkdocs build --site-dir _site
+
+      # Copy r0astr lite into docs site under /app/
+      - name: Combine builds
+        run: |
+          mkdir -p _site/app
+          cp -r dist-lite/* _site/app/
+          echo "Combined site structure:"
+          ls -la _site/
+          ls -la _site/app/
+
+      # Upload combined artifact for Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+  # Deploy job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
