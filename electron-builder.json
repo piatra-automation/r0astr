@@ -36,7 +36,7 @@
         ]
       }
     ],
-    "icon": "build-resources/icon.icns",
+    "icon": "build-resources/icons/mac/icon.icns",
     "hardenedRuntime": true,
     "gatekeeperAssess": false,
     "entitlements": "build-resources/entitlements.mac.plist",
@@ -57,7 +57,7 @@
         ]
       }
     ],
-    "icon": "build-resources/icon.ico"
+    "icon": "build-resources/icons/win/icon.ico"
   },
   "linux": {
     "target": [
@@ -75,13 +75,13 @@
       }
     ],
     "category": "Audio",
-    "icon": "build-resources/icons"
+    "icon": "build-resources/icons/png"
   },
   "nsis": {
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
-    "installerIcon": "build-resources/icon.ico",
-    "uninstallerIcon": "build-resources/icon.ico",
+    "installerIcon": "build-resources/icons/win/icon.ico",
+    "uninstallerIcon": "build-resources/icons/win/icon.ico",
     "license": "LICENSE"
   },
   "dmg": {
