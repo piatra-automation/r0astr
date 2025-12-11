@@ -90,9 +90,11 @@
 .folder-icon,
 .snippet-icon {
   flex-shrink: 0;
-  width: 16px;
+  width: 20px;
   text-align: center;
-  font-size: 12px;
+  font-size: 18px;
+  line-height: 1;
+  vertical-align: middle;
 }
 
 .folder-label,

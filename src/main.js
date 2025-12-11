@@ -10,6 +10,7 @@ import { moveEditorToScreen, removeEditorFromScreen, removeAllEditorsExcept, isE
 import { initializeSettingsModal, openSettingsModal } from './ui/settingsModal.js';
 import { applyAllAppearanceSettings, updatePanelOpacities } from './managers/themeManager.js';
 import { openSnippetModal } from './ui/snippetModal.js';
+import { saveLayoutToFile, loadLayoutFromFile } from './ui/fileIO.js';
 import { loadSnippets } from './managers/snippetManager.js';
 import './ui/snippetModal.css';
 import * as prettier from 'prettier/standalone';
@@ -294,6 +295,9 @@ function renderMasterSliders(widgets) {
 
   // Render automatic tempo control if enabled
   renderTempoControl();
+
+  // Update master controls visibility after rendering
+  updateMasterControlsVisibility();
 }
 
 // Render master sliders for tree layout
@@ -302,18 +306,18 @@ function renderMasterSlidersTree(widgets) {
                       document.getElementById(MASTER_PANEL_ID);
   if (!masterPanel) return;
 
-  const panelChildren = masterPanel.querySelector('.panel-children');
-  if (!panelChildren) return;
+  const controlsContainer = masterPanel.querySelector('.panel-controls-container');
+  if (!controlsContainer) return;
 
-  // Remove existing master slider leaves (keep editor leaf)
-  const existingSliderLeaves = panelChildren.querySelectorAll('.leaf-slider.master-slider');
+  // Remove existing master slider leaves (keep viz leaf)
+  const existingSliderLeaves = controlsContainer.querySelectorAll('.leaf-slider.master-slider');
   existingSliderLeaves.forEach(leaf => leaf.remove());
 
   widgets.forEach((widget) => {
     const { varName, value, min, max, sliderId } = widget;
 
-    const leafSlider = document.createElement('li');
-    leafSlider.className = 'leaf-node leaf-slider master-slider';
+    const leafSlider = document.createElement('div');
+    leafSlider.className = 'leaf-slider master-slider';
     leafSlider.innerHTML = `
       <label>${varName}</label>
       <input type="range"
@@ -331,8 +335,13 @@ function renderMasterSlidersTree(widgets) {
       updateSliderValue(sliderId, newValue);
     });
 
-    panelChildren.appendChild(leafSlider);
+    controlsContainer.appendChild(leafSlider);
   });
+
+  // Ensure controls container is visible when sliders exist
+  if (widgets.length > 0) {
+    controlsContainer.style.display = '';
+  }
 }
 
 // Render master sliders for legacy layout
@@ -414,18 +423,19 @@ function renderTempoControlTree(currentCpm, displayValue, displayUnit, showCpm) 
                       document.getElementById(MASTER_PANEL_ID);
   if (!masterPanel) return;
 
-  const panelChildren = masterPanel.querySelector('.panel-children');
-  if (!panelChildren) return;
+  const controlsContainer = masterPanel.querySelector('.panel-controls-container');
+  if (!controlsContainer) return;
 
   // Check if tempo control already exists
   let tempoControl = document.getElementById('tempo-control');
 
   if (!tempoControl) {
-    // Create tempo control as leaf node
-    tempoControl = document.createElement('li');
+    // Create tempo control as leaf slider
+    tempoControl = document.createElement('div');
     tempoControl.id = 'tempo-control';
-    tempoControl.className = 'leaf-node leaf-slider tempo-control';
-    panelChildren.appendChild(tempoControl);
+    tempoControl.className = 'leaf-slider tempo-control';
+    // Insert at beginning so tempo is first
+    controlsContainer.insertBefore(tempoControl, controlsContainer.firstChild);
   }
 
   tempoControl.innerHTML = `
@@ -438,6 +448,9 @@ function renderTempoControlTree(currentCpm, displayValue, displayUnit, showCpm) 
       value="${currentCpm}">
     <span class="slider-value" id="tempo-value">${displayValue.toFixed(0)} ${displayUnit}</span>
   `;
+
+  // Ensure controls container is visible for tempo (always shown when enabled)
+  controlsContainer.style.display = '';
 
   attachTempoInputListener(tempoControl, showCpm, displayUnit);
 }
@@ -646,6 +659,106 @@ function restorePanels() {
   }
 }
 
+/**
+ * Restore layout from a loaded JSON file
+ * Clears existing panels and creates new ones from loaded state
+ * @param {Object} layout - Layout object from loadLayoutFromFile
+ */
+async function restoreLayoutFromFile(layout) {
+  console.log(`[FileIO] Restoring layout: ${layout.name || 'unnamed'} (${layout.panels.length} panels)`);
+
+  // 1. Stop all playing patterns first
+  stopAll();
+
+  // 2. Clear existing panels (except master)
+  const existingPanels = getAllPanels();
+  const panelIds = Array.from(existingPanels.keys());
+
+  for (const panelId of panelIds) {
+    if (panelId !== MASTER_PANEL_ID) {
+      // Clean up editor view
+      const view = editorViews.get(panelId);
+      if (view) {
+        view.destroy();
+        editorViews.delete(panelId);
+      }
+      // Clean up highlighting data
+      panelMiniLocations.delete(panelId);
+      // Delete panel from manager (skip confirmation)
+      deletePanel(panelId, null, cardStates, true);
+    }
+  }
+
+  // 3. Restore panels from layout
+  let masterPanelData = null;
+
+  for (const panelState of layout.panels) {
+    if (panelState.isMaster || panelState.id === MASTER_PANEL_ID) {
+      // Store master panel data for later
+      masterPanelData = panelState;
+    } else {
+      // Create regular panel
+      const panelId = createPanel({
+        id: panelState.id,
+        number: panelState.number,
+        title: panelState.title || `Instrument ${panelState.number || 1}`,
+        code: panelState.code || '',
+        playing: false
+      });
+
+      // Register in cardStates
+      cardStates[panelId] = {
+        playing: false,
+        stale: false,
+        lastEvaluatedCode: ''
+      };
+
+      // Render panel to DOM
+      const panelElement = renderPanel(panelId);
+
+      // Initialize CodeMirror
+      const container = getPanelEditorContainer(panelId);
+      if (container) {
+        const view = createEditorView(container, {
+          initialCode: panelState.code || '',
+          onChange: handleEditorChange,
+          panelId,
+        });
+        editorViews.set(panelId, view);
+      }
+
+      // Initialize drag/resize for legacy layout
+      if (!isTreeLayout() && panelElement) {
+        initializeDragAndResize(panelElement);
+      }
+
+      console.log(`[FileIO] Restored panel: ${panelId} (${panelState.title})`);
+    }
+  }
+
+  // 4. Restore master panel code
+  if (masterPanelData) {
+    const masterView = editorViews.get(MASTER_PANEL_ID);
+    if (masterView && masterPanelData.code) {
+      masterView.dispatch({
+        changes: { from: 0, to: masterView.state.doc.length, insert: masterPanelData.code }
+      });
+      // Update compact state
+      if (masterPanelData.compact !== undefined) {
+        appState.masterPanelCompact = masterPanelData.compact;
+      }
+      // Re-evaluate master code to register sliders
+      evaluateMasterCode();
+      console.log('[FileIO] Restored master panel code');
+    }
+  }
+
+  // 5. Save restored state to localStorage
+  savePanelStateNow();
+
+  console.log('✓ Layout restored from file');
+}
+
 // Initialize card UI
 function initializeCards() {
   // Check if we should restore panels from saved state
@@ -716,6 +829,25 @@ function initializeCards() {
   if (configBtn) {
     configBtn.addEventListener('click', () => {
       openSettingsModal();
+    });
+  }
+
+  // Attach SAVE button listener (save layout to file)
+  const saveBtn = document.getElementById('save-btn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      saveLayoutToFile(editorViews, appState);
+    });
+  }
+
+  // Attach LOAD button listener (load layout from file)
+  const loadBtn = document.getElementById('load-btn');
+  if (loadBtn) {
+    loadBtn.addEventListener('click', async () => {
+      const layout = await loadLayoutFromFile();
+      if (layout) {
+        await restoreLayoutFromFile(layout);
+      }
     });
   }
 
@@ -966,6 +1098,20 @@ function initializeCards() {
     if (controlsContainer) {
       const showControls = panel?.playing || details.open || settings.showControlsWhenCollapsed;
       controlsContainer.style.display = showControls ? '' : 'none';
+    }
+
+    // When panel is opened, bring it to front and focus the editor
+    if (details.open) {
+      bringPanelToFront(panelId);
+
+      // Focus the editor after a short delay to ensure DOM is ready
+      setTimeout(() => {
+        const view = editorViews.get(panelId);
+        if (view) {
+          view.focus();
+          console.log(`[Toggle] Panel ${panelId} expanded and editor focused`);
+        }
+      }, 10);
     }
 
     // Accordion mode: collapse other panels when one is opened
@@ -1745,6 +1891,50 @@ function updateVisualIndicators(panelId) {
 
   // Update button styling (from Story 6.2)
   updatePanelButtons(panelId);
+
+  // Update master panel controls visibility (depends on any panel playing)
+  updateMasterControlsVisibility();
+}
+
+/**
+ * Update master panel controls visibility
+ * Master sliders should show when ANY panel is playing (not just master)
+ * Tempo control should ALWAYS show if enabled in settings
+ */
+function updateMasterControlsVisibility() {
+  const masterPanel = document.querySelector(`[data-panel-id="${MASTER_PANEL_ID}"]`) ||
+                      document.getElementById(MASTER_PANEL_ID);
+  if (!masterPanel) return;
+
+  const controlsContainer = masterPanel.querySelector('.panel-controls-container');
+  if (!controlsContainer) return;
+
+  const settings = getSettings();
+  const details = masterPanel.querySelector('details');
+  const isExpanded = details?.open;
+
+  // Check if ANY panel is playing
+  const anyPanelPlaying = Object.values(cardStates).some(state => state.playing);
+
+  // Check if tempo control is enabled (should always show if enabled)
+  const tempoEnabled = settings.advanced?.show_tempo_knob;
+
+  // Check if master panel has sliders defined
+  const hasMasterSliders = currentMasterSliders.length > 0;
+
+  // Master controls visible when:
+  // 1. Any panel is playing (master sliders affect all panels)
+  // 2. OR master panel is expanded
+  // 3. OR showControlsWhenCollapsed is enabled
+  // 4. OR tempo control is enabled (tempo should always be visible)
+  const showControls = anyPanelPlaying || isExpanded || settings.showControlsWhenCollapsed || tempoEnabled;
+
+  controlsContainer.style.display = showControls ? '' : 'none';
+
+  // Log for debugging
+  if (showControls && (hasMasterSliders || tempoEnabled)) {
+    console.log(`[MasterControls] Visible: anyPlaying=${anyPanelPlaying}, expanded=${isExpanded}, sliders=${hasMasterSliders}, tempo=${tempoEnabled}`);
+  }
 }
 
 /**
@@ -2331,23 +2521,15 @@ function stopAll() {
     return;
   }
 
-  // Clear all patterns by setting to silence FIRST
-  // This removes them from memory before stopping scheduler
+  // Pause each panel individually to ensure proper cleanup
+  // (clears sliders, visualizations, highlighting, etc.)
   Object.keys(cardStates).forEach((cardId) => {
-    try {
-      strudelCore.evaluate(`silence.p('${cardId}')`, false, false);
-    } catch (e) {
-      console.warn(`Failed to silence ${cardId}:`, e);
+    if (cardStates[cardId].playing) {
+      pausePanel(cardId);
     }
-    cardStates[cardId].playing = false;
-    cardStates[cardId].stale = false; // Clear staleness when stopping (Story 6.1)
-    updatePanel(cardId, { stale: false }); // Sync to panelManager for persistence
-
-    // Story 6.3: Update visual indicators (includes buttons)
-    updateVisualIndicators(cardId);
   });
 
-  // Stop scheduler AFTER clearing patterns
+  // Stop scheduler after all panels are paused
   strudelCore.scheduler.stop();
 
   console.log('⏹ All patterns stopped');
@@ -2985,10 +3167,13 @@ function findFocusedPanel() {
 
   // Final fallback: check for .focused class (set by setActivePanel in panelManager)
   // This handles case where panel is expanded but CodeMirror doesn't have focus
-  const focusedPanel = document.querySelector('.card.focused');
+  // Check both tree layout (.level-panel) and legacy card layout (.card)
+  const focusedPanel = document.querySelector('.level-panel.focused, .card.focused');
   if (focusedPanel) {
-    // console.log('[Focus DEBUG] Found focused panel via .focused class:', focusedPanel.id);
-    return focusedPanel.id;
+    // For tree layout, get panel ID from data attribute; for cards, use element ID
+    const panelId = focusedPanel.dataset?.panelId || focusedPanel.id;
+    // console.log('[Focus DEBUG] Found focused panel via .focused class:', panelId);
+    return panelId;
   }
 
   console.warn('[Focus DEBUG] No focused panel found');
@@ -3703,6 +3888,7 @@ function updateAllEditorFontSizes() {
 window.addEventListener('settings-changed', () => {
   renderTempoControl();
   updateAllEditorFontSizes();
+  updateMasterControlsVisibility();
 });
 
 initializePatternCaptureKeys();

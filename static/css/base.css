@@ -1702,8 +1702,8 @@
           transparent);
     }
 
-    .card.active,
-    #master-panel.active {
+    /* Legacy card layout active state - tree layout uses .level-panel.focused in panel-tree.css */
+    .card.active {
       border-color: #4a9eff;
       box-shadow: 0 0 20px rgba(74, 158, 255, 0.5);
     }

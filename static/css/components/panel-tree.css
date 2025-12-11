@@ -14,6 +14,17 @@
   --tree-summary-height: 48px;
   --tree-summary-padding: 12px;
   --tree-badge-size: 24px;
+
+  /* Focus ring variables (skinnable) */
+  --panel-focus-color: var(--focus-ring-color, #4a9eff);
+  --panel-focus-width: 2px;
+  --panel-focus-offset: 2px;
+  --panel-focus-radius: 6px;
+  --panel-focus-glow: 0 0 8px rgba(74, 158, 255, 0.4);
+
+  /* Header focus accent (skinnable) */
+  --panel-header-focus-bg: rgba(74, 158, 255, 0.08);
+  --panel-header-focus-border: var(--panel-focus-color);
 }
 
 /* === Base Tree Structure === */
@@ -72,6 +83,39 @@
 .level-panel {
   position: relative;
   margin-bottom: 4px;
+  border-radius: var(--panel-focus-radius);
+  /* Prepare for focus outline */
+  outline: var(--panel-focus-width) solid transparent;
+  outline-offset: var(--panel-focus-offset);
+  transition: outline-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Focused/Active panel indicator - wraps entire panel */
+.level-panel.focused,
+.level-panel.active {
+  outline-color: var(--panel-focus-color);
+  box-shadow: var(--panel-focus-glow);
+}
+
+/* Header accent when focused (skinnable) - excludes master panel which has its own accent */
+.level-panel.focused:not([data-panel-number="0"]) > details > summary,
+.level-panel.active:not([data-panel-number="0"]) > details > summary {
+  background: var(--panel-header-focus-bg);
+  border-left: 3px solid var(--panel-header-focus-border);
+  margin-left: calc(-1 * var(--tree-node-radius) - 7px);
+  padding-left: calc(var(--tree-node-radius) * 2 + 15px);
+}
+
+/* Master panel header bg when focused (keeps green border) */
+.level-panel.focused[data-panel-number="0"] > details > summary,
+.level-panel.active[data-panel-number="0"] > details > summary {
+  background: var(--panel-header-focus-bg);
+}
+
+/* Expand/collapse indicator accent when focused */
+.level-panel.focused > details > summary::before,
+.level-panel.active > details > summary::before {
+  border-color: var(--panel-focus-color);
 }
 
 /* === Summary Row (Clickable Header) === */

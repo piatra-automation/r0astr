@@ -286,13 +286,13 @@ function renderMenuItems(items, container, depth) {
 
     if (item.type === 'folder') {
       itemEl.innerHTML = `
-        <span class="folder-icon">${isExpanded ? '▼' : '▶'}</span>
+        <span class="folder-icon material-icons">${isExpanded ? 'expand_more' : 'chevron_right'}</span>
         <span class="folder-label">${item.label}</span>
         <span class="item-count">(${item.children.length})</span>
       `;
     } else {
       itemEl.innerHTML = `
-        <span class="snippet-icon">📄</span>
+        <span class="snippet-icon material-icons">description</span>
         <span class="snippet-label">${item.label}</span>
       `;
     }

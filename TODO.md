@@ -16,4 +16,9 @@ KEYBORD MAYBE USEFUL: https://codepen.io/evilpaper/pen/dyyZjLQ
 
 - arrow icon in snippet menu says play not triangle font issue
 
-- [ ] when I click using mouse on a panel it expands but is not "FOCUSSED" enough to allow me to enter text in the code panel OR EVEN close the panel with hotkey CMD-OPT-W!
+- [ ] have topbar remote button only appear on the full electron app version and not the lite version.
+- [ ] have the css transitions for panel display use animations that make use of animation speed in settings. slide down like a drawer is nice...
+- [ ] have the code mirror pane be a snugger fit to the lines of code (but minimum 3 lines), but grow as code is added
+- [ ] have the main window be scrollable for overflow
+- [ ] top bar styling and master control panels in banner bar (target a specific container id)
+- can the blue focus highlight be around the entire container with controls and code rather than just the header. There should be CSS controls on the panel as well as the header (for skins to utilise)

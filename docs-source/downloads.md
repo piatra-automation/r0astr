@@ -20,9 +20,7 @@ Get the full r0astr desktop application with remote control and WebSocket featur
 
     For Intel and Apple Silicon Macs
 
-    - [Download DMG (Universal)](https://github.com/piatra-automation/r0astr/releases/latest/download/r0astr-mac-universal.dmg)
-    - [Download ZIP (Intel)](https://github.com/piatra-automation/r0astr/releases/latest/download/r0astr-mac-x64.zip)
-    - [Download ZIP (Apple Silicon)](https://github.com/piatra-automation/r0astr/releases/latest/download/r0astr-mac-arm64.zip)
+    [:octicons-arrow-right-24: View macOS Downloads](https://github.com/piatra-automation/r0astr/releases/latest)
 
 -   :fontawesome-brands-windows:{ .lg .middle } **Windows**
 
@@ -30,8 +28,7 @@ Get the full r0astr desktop application with remote control and WebSocket featur
 
     For Windows 10/11 (64-bit)
 
-    - [Download Installer (.exe)](https://github.com/piatra-automation/r0astr/releases/latest/download/r0astr-Setup.exe)
-    - [Download Portable (.exe)](https://github.com/piatra-automation/r0astr/releases/latest/download/r0astr-portable.exe)
+    [:octicons-arrow-right-24: View Windows Downloads](https://github.com/piatra-automation/r0astr/releases/latest)
 
 -   :fontawesome-brands-linux:{ .lg .middle } **Linux**
 
@@ -39,12 +36,20 @@ Get the full r0astr desktop application with remote control and WebSocket featur
 
     For Ubuntu, Debian, and other distributions
 
-    - [Download AppImage](https://github.com/piatra-automation/r0astr/releases/latest/download/r0astr.AppImage)
-    - [Download .deb](https://github.com/piatra-automation/r0astr/releases/latest/download/r0astr.deb)
+    [:octicons-arrow-right-24: View Linux Downloads](https://github.com/piatra-automation/r0astr/releases/latest)
 
 </div>
 
 </div>
+
+## Available Formats
+
+| Platform | Formats |
+|----------|---------|
+| macOS (Intel) | `.dmg`, `.zip` |
+| macOS (Apple Silicon) | `.dmg`, `.zip` |
+| Windows | `.exe` (installer), `.exe` (portable) |
+| Linux | `.AppImage`, `.deb` |
 
 ## System Requirements
 
@@ -69,7 +74,7 @@ See the [GitHub Releases](https://github.com/piatra-automation/r0astr/releases) 
 Don't want to install anything? [Try r0astr Lite](app/index.html) directly in your browser. The lite version works without installation but doesn't include remote control features.
 
 <script>
-// OS detection for recommended download
+// OS detection for recommended download - links to releases page
 document.addEventListener('DOMContentLoaded', function() {
   const container = document.getElementById('detected-os-download');
   if (!container) return;
@@ -78,33 +83,26 @@ document.addEventListener('DOMContentLoaded', function() {
   const userAgent = navigator.userAgent.toLowerCase();
 
   let os = 'unknown';
-  let downloadUrl = '';
-  let downloadText = '';
   let icon = '';
 
   if (platform.includes('mac') || platform.includes('iphone') || platform.includes('ipad')) {
     os = 'macOS';
-    downloadUrl = 'https://github.com/piatra-automation/r0astr/releases/latest/download/r0astr-mac-universal.dmg';
-    downloadText = 'Download for macOS';
     icon = '🍎';
   } else if (platform.includes('win')) {
     os = 'Windows';
-    downloadUrl = 'https://github.com/piatra-automation/r0astr/releases/latest/download/r0astr-Setup.exe';
-    downloadText = 'Download for Windows';
     icon = '🪟';
   } else if (platform.includes('linux') || userAgent.includes('linux')) {
     os = 'Linux';
-    downloadUrl = 'https://github.com/piatra-automation/r0astr/releases/latest/download/r0astr.AppImage';
-    downloadText = 'Download for Linux';
     icon = '🐧';
   }
 
   if (os !== 'unknown') {
     container.innerHTML = `
       <p style="margin-bottom: 1rem;">Detected: <strong>${os}</strong></p>
-      <a href="${downloadUrl}" class="md-button md-button--primary" style="font-size: 1.1rem; padding: 0.8rem 2rem;">
-        ${icon} ${downloadText}
+      <a href="https://github.com/piatra-automation/r0astr/releases/latest" class="md-button md-button--primary" style="font-size: 1.1rem; padding: 0.8rem 2rem;">
+        ${icon} Download for ${os}
       </a>
+      <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">Opens GitHub Releases page</p>
     `;
   } else {
     container.innerHTML = '<p>Please select your platform below.</p>';
