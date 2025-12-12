@@ -5,6 +5,58 @@ All notable changes to r0astr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2025-12-12
+
+### Added
+- **Semantic Release CI/CD**
+  - New GitHub workflow for commit-based releases
+  - Commit pattern `^^^ v1.2.3` triggers automatic tag creation
+  - Extracts SemVer from commit message and creates annotated git tag
+  - Triggers existing release workflow for Electron builds
+- **Electron Title Bar Overlay**
+  - Custom title bar matching banner color (#d9d8d4)
+  - macOS traffic lights positioned at (12, 12)
+  - Draggable window region in top bar
+- **Save/Load Layout System**
+  - Save button exports panel layouts as JSON files
+  - Load button imports layouts and restores panel state
+  - Version-stamped layout format with timestamps
+- **Enhanced Focus Indicators**
+  - Focus highlight wraps entire panel container (code + controls)
+  - CSS custom properties for skinnable focus styling
+  - `--panel-focus-color`, `--panel-focus-width`, `--panel-focus-glow` variables
+
+### Changed
+- Panel delete hotkey (Cmd+Opt+W) now works on collapsed/unfocused panels
+- CodeMirror editors auto-size to content (minimum 3 lines, grows as needed)
+- Main window scrollable for panel overflow
+
+### Removed
+- Animation settings and CSS transitions (all animations disabled)
+- `animationSpeed` from settings manager
+- `--transition-duration` CSS variable
+
+### Fixed
+- Box-shadow bug on first panel caused by legacy `#master-panel.active` CSS rule
+- `findFocusedPanel()` now checks both `.level-panel.focused` and `.card.focused`
+
+## [0.7.1] - 2025-12-10
+
+### Added
+- Play-pause-stale hybrid button for panel controls
+- Configurable splash screen on load
+- Panel focus state on creation
+- Draggable panel rows
+
+### Fixed
+- Pause icon display (was showing stop icon)
+- Electron builder icon paths
+- npm package-lock sync
+
+### Changed
+- Refactored main.js to use shared state module and extract managers
+- Updated Pages site with lite build
+
 ## [0.6.0] - 2025-11-18
 
 ### Added
@@ -274,6 +326,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Build Tool**: Vite 6.0.11
 - **License**: AGPL-3.0-or-later
 
+[0.8.0]: https://gitlab.com/piatra_eng/r0astr/-/tags/v0.8.0
+[0.7.1]: https://gitlab.com/piatra_eng/r0astr/-/tags/v0.7.1
+[0.6.0]: https://gitlab.com/piatra_eng/r0astr/-/tags/v0.6.0
 [0.5.0]: https://gitlab.com/piatra_eng/r0astr/-/tags/v0.5.0
 [0.4.1]: https://gitlab.com/piatra_eng/r0astr/-/tags/v0.4.1
 [0.4.0]: https://gitlab.com/piatra_eng/r0astr/-/tags/v0.4.0

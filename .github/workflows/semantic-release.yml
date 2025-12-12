@@ -1,0 +1,93 @@
+# Detect semantic commit messages and create release tags
+# Commit format: ^^^ v1.2.3 (optional description)
+# The ^^^ prefix signals a release commit, followed by SemVer version
+
+name: Semantic Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  check-and-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit message for release pattern
+        id: check
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MSG"
+
+          # Pattern: ^^^ followed by v and SemVer (v1.2.3, v0.8.0-beta, etc.)
+          # Regex breakdown:
+          #   ^\^\^\^ - Starts with three carets
+          #   \s+     - One or more whitespace
+          #   v       - Literal 'v'
+          #   ([0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?) - SemVer capture group
+
+          if echo "$COMMIT_MSG" | grep -qE '^\^\^\^\s+v([0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?)'; then
+            # Extract the version (with the v prefix)
+            VERSION=$(echo "$COMMIT_MSG" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?' | head -1)
+            echo "Detected release commit with version: $VERSION"
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "Not a release commit"
+            echo "is_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if tag already exists
+        if: steps.check.outputs.is_release == 'true'
+        id: tag_check
+        run: |
+          VERSION="${{ steps.check.outputs.version }}"
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists"
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag $VERSION does not exist, will create"
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create and push tag
+        if: steps.check.outputs.is_release == 'true' && steps.tag_check.outputs.tag_exists == 'false'
+        run: |
+          VERSION="${{ steps.check.outputs.version }}"
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+
+          # Extract description after version (if any)
+          DESCRIPTION=$(echo "$COMMIT_MSG" | sed -E 's/^\^\^\^\s+v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?\s*//')
+
+          if [ -z "$DESCRIPTION" ]; then
+            DESCRIPTION="Release $VERSION"
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          echo "Creating tag $VERSION with message: $DESCRIPTION"
+          git tag -a "$VERSION" -m "$DESCRIPTION"
+          git push origin "$VERSION"
+
+          echo "✅ Tag $VERSION created and pushed"
+          echo "📦 This will trigger the release workflow"
+
+      - name: Summary
+        if: steps.check.outputs.is_release == 'true'
+        run: |
+          VERSION="${{ steps.check.outputs.version }}"
+          if [ "${{ steps.tag_check.outputs.tag_exists }}" == "true" ]; then
+            echo "⚠️ Tag $VERSION already exists - skipping tag creation"
+          else
+            echo "✅ Created tag $VERSION"
+            echo "🚀 Release workflow will build and publish artifacts"
+          fi
