@@ -23,7 +23,6 @@ export const DEFAULT_SETTINGS = {
   collapseOnBlur: false,          // Collapse unfocused panels to mini-view (header only)
   showSplash: true,               // Show splash screen during sample loading (false = skip, show page immediately)
   showControlsWhenCollapsed: true, // Show sliders/viz when panel is collapsed but playing (hides only code editor)
-  animationSpeed: 'normal',       // UI animation speed: 'slow', 'normal', 'fast', 'disabled' - Story 4.5
   wrap_lines: false,              // Line wrapping in code panels (true = wrap, false = scroll) - Story 7.1
   auto_format: false,             // Auto-format code on PLAY/UPDATE (true = format, false = no format) - Story 7.4
   syntax_highlight: true,         // Enable syntax highlighting (true = CodeMirror, false = plain) - Story 7.6
@@ -103,13 +102,6 @@ function validateSettings(settings) {
   if (!allowedThemes.includes(valid.editor_theme)) {
     console.warn(`Invalid editor_theme: ${valid.editor_theme}, using default (atomone)`);
     valid.editor_theme = 'atomone';
-  }
-
-  // Validate animationSpeed
-  const allowedSpeeds = ['slow', 'normal', 'fast', 'disabled'];
-  if (!allowedSpeeds.includes(valid.animationSpeed)) {
-    console.warn(`Invalid animationSpeed: ${valid.animationSpeed}, using default (normal)`);
-    valid.animationSpeed = 'normal';
   }
 
   // Validate default_w (Story 7.2: width 300-2000px)

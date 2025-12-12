@@ -207,7 +207,15 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: 'r0astr',
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#d9d8d4',
+    // Custom title bar to match banner color
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#d9d8d4',
+      symbolColor: '#1a1a1a',
+      height: 42
+    },
+    trafficLightPosition: { x: 12, y: 12 },
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,

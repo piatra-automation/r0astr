@@ -5,7 +5,7 @@
 
 import { getSettings, saveSettings, updateSetting } from '../managers/settingsManager.js';
 import { startAutoSaveTimer } from '../managers/panelManager.js';
-import { applyColorScheme, applyFontSize, applyActivePanelOpacity, applyBackgroundPanelOpacity, applyAnimationSpeed, applyLineWrapping, updatePanelOpacities } from '../managers/themeManager.js';
+import { applyColorScheme, applyFontSize, applyActivePanelOpacity, applyBackgroundPanelOpacity, applyLineWrapping, updatePanelOpacities } from '../managers/themeManager.js';
 import { validateURL, validatePath } from '../utils/validation.js';
 import { loadSnippets, clearSnippets } from '../managers/snippetManager.js';
 
@@ -65,7 +65,6 @@ function loadSettingsIntoForm() {
   const activePanelOpacityValue = document.getElementById('active-panel-opacity-value');
   const backgroundPanelOpacitySlider = document.getElementById('background-panel-opacity-slider');
   const backgroundPanelOpacityValue = document.getElementById('background-panel-opacity-value');
-  const animationSpeedSelect = document.getElementById('animation-speed-select');
 
   if (colorSchemeSelect) {
     colorSchemeSelect.value = settings.colorScheme || 'dark';
@@ -95,9 +94,6 @@ function loadSettingsIntoForm() {
     }
   }
 
-  if (animationSpeedSelect) {
-    animationSpeedSelect.value = settings.animationSpeed || 'normal';
-  }
 
   // Collapse on Blur Toggle
   const collapseOnBlurToggle = document.getElementById('collapse-on-blur-toggle');
@@ -273,7 +269,6 @@ function collectSettingsFromForm() {
   const colorSchemeSelect = document.getElementById('color-scheme-select');
   const fontSizeSlider = document.getElementById('font-size-slider');
   const panelOpacitySlider = document.getElementById('panel-opacity-slider');
-  const animationSpeedSelect = document.getElementById('animation-speed-select');
 
   if (colorSchemeSelect) {
     settings.colorScheme = colorSchemeSelect.value;
@@ -285,10 +280,6 @@ function collectSettingsFromForm() {
 
   if (panelOpacitySlider) {
     settings.panelOpacity = parseInt(panelOpacitySlider.value, 10);
-  }
-
-  if (animationSpeedSelect) {
-    settings.animationSpeed = animationSpeedSelect.value;
   }
 
   // Story 7.1: Wrap Lines Toggle
@@ -511,7 +502,6 @@ export function initializeSettingsModal() {
   const activePanelOpacityValue = document.getElementById('active-panel-opacity-value');
   const backgroundPanelOpacitySlider = document.getElementById('background-panel-opacity-slider');
   const backgroundPanelOpacityValue = document.getElementById('background-panel-opacity-value');
-  const animationSpeedSelect = document.getElementById('animation-speed-select');
 
   // Color Scheme - live preview + save
   colorSchemeSelect?.addEventListener('change', (e) => {
@@ -559,16 +549,6 @@ export function initializeSettingsModal() {
 
     const settings = getSettings();
     settings.backgroundPanelOpacity = parseInt(opacity, 10);
-    saveSettings(settings);
-  });
-
-  // Animation Speed - live preview + save
-  animationSpeedSelect?.addEventListener('change', (e) => {
-    const speed = e.target.value;
-    applyAnimationSpeed(speed);
-
-    const settings = getSettings();
-    settings.animationSpeed = speed;
     saveSettings(settings);
   });
 

@@ -15,6 +15,9 @@
 </head>
 
 <body>
+  <!-- Electron: Draggable title bar region (no-op in browser) -->
+  <div class="electron-drag-region"></div>
+
   <!-- Fixed logo in corner -->
   <div class="site-logo">
     <img src="/static/images/banner.png" alt="r0astr Logo">
@@ -206,20 +209,6 @@
             </label>
             <p class="setting-description">
               When a playing panel is collapsed, keep sliders and visualizers visible. Only hides the code editor.
-            </p>
-          </div>
-
-          <!-- Animation Speed Dropdown (AC: 4) -->
-          <div class="setting-item">
-            <label for="animation-speed-select">UI Animation Speed</label>
-            <select id="animation-speed-select" class="setting-select">
-              <option value="slow">Slow (1.2s)</option>
-              <option value="normal">Normal (0.2s)</option>
-              <option value="fast">Fast (0.1s)</option>
-              <option value="disabled">Disabled</option>
-            </select>
-            <p class="setting-description">
-              Control speed of UI transitions and animations
             </p>
           </div>
 

@@ -131,33 +131,6 @@ export function applyPanelOpacity(opacity) {
 }
 
 /**
- * Apply UI animation speed
- * @param {string} speed - 'normal', 'fast', 'slow', or 'disabled'
- */
-export function applyAnimationSpeed(speed) {
-  const durations = {
-    'slow': '1.2s',
-    'normal': '0.2s',
-    'fast': '0.1s',
-    'disabled': '0s'
-  };
-
-  const duration = durations[speed] || '0.2s';
-  document.documentElement.style.setProperty('--transition-duration', duration);
-
-  // Verify it was set
-  const actualValue = getComputedStyle(document.documentElement).getPropertyValue('--transition-duration');
-  console.log('Animation speed applied:', speed, `(${duration})`, 'Actual value:', actualValue.trim());
-
-  // DEBUG: Check on an actual panel element
-  const testPanel = document.querySelector('.card .code-editor-wrapper');
-  if (testPanel) {
-    const panelTransition = getComputedStyle(testPanel).getPropertyValue('transition');
-    // console.log('[Animation DEBUG] Panel transition property:', panelTransition);
-  }
-}
-
-/**
  * Apply line wrapping setting to all textareas
  * Story 7.1: Line Wrapping Settings
  * @param {boolean} wrap - true = wrap lines (pre-wrap), false = horizontal scroll (pre)
@@ -195,10 +168,6 @@ export function applyAllAppearanceSettings(settings) {
 
   if (settings.backgroundPanelOpacity) {
     applyBackgroundPanelOpacity(settings.backgroundPanelOpacity);
-  }
-
-  if (settings.animationSpeed) {
-    applyAnimationSpeed(settings.animationSpeed);
   }
 
   if (settings.wrap_lines !== undefined) {

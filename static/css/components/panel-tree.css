@@ -33,6 +33,8 @@
   margin: 0;
   padding: 16px;
   padding-left: calc(var(--tree-spacing) + 16px);
+  /* Bottom padding for scroll breathing room */
+  padding-bottom: 100px;
   /* Position below hero section */
   margin-top: calc(var(--hero-bar-height, 255px) + 20px);
   max-width: 1200px;
@@ -336,18 +338,7 @@
 
 /* === Panel Children (Leaves) === */
 .panel-children {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 200ms ease-out;
-  overflow: hidden;
-}
-
-details[open] > .panel-children {
-  grid-template-rows: 1fr;
-}
-
-.panel-children > * {
-  overflow: hidden;
+  /* Animation handled by JavaScript for proper details element support */
 }
 
 /* === Leaf Nodes === */
@@ -462,17 +453,32 @@ details[open] > .panel-children {
 
 .panel-editor-container .code-editor-wrapper {
   width: 90%;
-  min-height: 100px;
-  max-height: 400px;
+  /* Min 3 lines (~60px at default line height) */
+  min-height: calc(3 * 1.4em + 16px);
+  /* No max-height - grows with content */
   background: var(--panel-base-dark, #1a1a1a);
   border-radius: 4px;
-  overflow: hidden;
 }
 
 .panel-editor-container .code-editor {
   width: 100%;
-  height: 100%;
-  min-height: 100px;
+  /* Auto height - fits to content */
+  height: auto;
+  min-height: calc(3 * 1.4em);
+}
+
+/* CodeMirror auto-sizing for tree layout */
+.panel-editor-container .cm-editor {
+  height: auto !important;
+}
+
+.panel-editor-container .cm-scroller {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+.panel-editor-container .cm-content {
+  min-height: calc(3 * 1.4em);
 }
 
 /* === Panel Controls Container (outside details - always visible) === */
