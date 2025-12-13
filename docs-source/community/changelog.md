@@ -19,16 +19,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [0.8.0] - 2024-12-XX
+## [0.8.0] - 2025-12-13
 
 ### Added
 - Major UI update with improved panel styling
 - Focused panel highlighting
 - Better visual feedback for playing/stopped states
+- Comprehensive documentation site
 
 ### Changed
 - Refined panel layout and spacing
 - Improved button styling and interactions
+- Removed animations for cleaner experience
 
 ### Fixed
 - Icon paths in Electron builder
