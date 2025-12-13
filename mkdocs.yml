@@ -30,9 +30,11 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - navigation.indexes
     - search.suggest
     - search.highlight
     - content.code.copy
+    - content.tabs.link
 
 plugins:
   - search
@@ -49,13 +51,43 @@ markdown_extensions:
   - md_in_html
   - toc:
       permalink: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 nav:
   - Home: index.md
   - Try It: app/index.html
-  - Downloads: downloads.md
   - Getting Started: getting-started.md
-  - Remote Control: remote-control.md
+  - Downloads: downloads.md
+  - Learn:
+    - learn/index.md
+    - Concepts: learn/concepts.md
+    - Pattern Syntax: learn/patterns.md
+    - Multi-Instrument: learn/multi-instrument.md
+    - Master Panel: learn/master-panel.md
+    - Pattern Library: learn/pattern-library.md
+  - Guides:
+    - Remote Control: remote-control.md
+    - Custom Samples: guides/samples.md
+    - SoundFonts: guides/soundfonts.md
+    - Troubleshooting: guides/troubleshooting.md
+  - Developers:
+    - developers/index.md
+    - API Reference: developers/api.md
+    - Plugin Development: developers/plugins.md
+    - Architecture: developers/architecture.md
+    - Contributing: developers/contributing.md
+  - Extend:
+    - Skins Overview: extend/skins.md
+    - Creating Skins: extend/creating-skins.md
+    - Skin Gallery: extend/skin-gallery.md
+  - Tools:
+    - Pattern Validator: tools/validator.md
+  - Community:
+    - Showcase: community/showcase.md
+    - FAQ: community/faq.md
+    - Changelog: community/changelog.md
 
 docs_dir: docs-source
 site_dir: docs
