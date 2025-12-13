@@ -9,13 +9,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
-- Comprehensive documentation site
+- *Nothing yet*
 
 ### Changed
 - *Nothing yet*
 
 ### Fixed
 - *Nothing yet*
+
+---
+
+## [0.8.1] - 2025-12-14
+
+### Added
+- Complete documentation for Epics 3-5 (12 stories)
+- Remote control comprehensive guide with setup instructions
+- Plugin development guide with Hello World example
+- Showcase page with featured creations and pattern examples
+- Skins system CSS variables reference
+- FAQ page with 15+ entries across 5 categories
+
+### Changed
+- Enhanced extend/skins.md with theme examples
+- Improved community/showcase.md with tabbed pattern examples
 
 ---
 
