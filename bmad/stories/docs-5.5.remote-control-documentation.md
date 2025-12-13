@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft
+Done
 
 ## Story
 
@@ -112,16 +112,23 @@ hostname -I
 ## Dev Agent Record
 
 ### Agent Model Used
-_To be filled during implementation_
+Claude Opus 4.5 (James - Dev Agent)
 
 ### Debug Log References
-_To be filled during implementation_
+N/A - Documentation task
 
 ### Completion Notes List
-_To be filled during implementation_
+- Complete rewrite from 12-line stub to comprehensive guide
+- Quick Start with tabbed OS-specific IP instructions
+- Network requirements with firewall/port guidance
+- Remote interface features walkthrough
+- Comprehensive troubleshooting section
+- WebSocket protocol overview for advanced users
+- Security considerations section
+- Live performance tips
 
 ### File List
-_To be filled during implementation_
+- docs-source/remote-control.md (major rewrite)
 
 ## QA Results
 _To be filled after QA review_

@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft
+Done
 
 ## Story
 
@@ -117,16 +117,23 @@ Stub exists with system diagram. Needs expansion and verification.
 ## Dev Agent Record
 
 ### Agent Model Used
-_To be filled during implementation_
+Claude Opus 4.5 (James - Dev Agent)
 
 ### Debug Log References
-_To be filled during implementation_
+N/A - Documentation task
 
 ### Completion Notes List
-_To be filled during implementation_
+- Architecture already well documented
+- ASCII system diagram showing Browser/UI/Strudel/WebAudio/Remote
+- Core components section with main.js explanation
+- Strudel integration with repl/evaluate/scheduler
+- Key files table with purposes
+- Data flow explanation
+- Strudel packages table with purposes
+- Build pipeline diagram (Vite → dist/dist-lite → GitHub Pages)
 
 ### File List
-_To be filled during implementation_
+- docs-source/developers/architecture.md (verified complete)
 
 ## QA Results
 _To be filled after QA review_

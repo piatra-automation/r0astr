@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft
+Done
 
 ## Story
 
@@ -107,16 +107,21 @@ Stub exists with version outline. Needs accurate dates and details.
 ## Dev Agent Record
 
 ### Agent Model Used
-_To be filled during implementation_
+Claude Opus 4.5 (James - Dev Agent)
 
 ### Debug Log References
-_To be filled during implementation_
+N/A - Documentation task
 
 ### Completion Notes List
-_To be filled during implementation_
+- Changelog follows Keep a Changelog format
+- v0.8.0 documented with Added/Changed/Fixed sections
+- Historical versions v0.7.0 through v0.1.0 documented
+- Unreleased section for upcoming changes
+- Link to GitHub releases page
+- Updated v0.8.0 date to current (2025-12-13)
 
 ### File List
-_To be filled during implementation_
+- docs-source/community/changelog.md (modified)
 
 ## QA Results
 _To be filled after QA review_
