@@ -731,51 +731,54 @@ input[type="checkbox"] {
 
 /* ============================================
    STEP SEQUENCER
-   16-step neon sequencer display
+   16-step neon sequencer bar spanning hero width
    ============================================ */
 
 .step-sequencer {
-  background: var(--surface-0) !important;
+  background: linear-gradient(180deg, var(--surface-1) 0%, var(--surface-0) 100%) !important;
   border: 1px solid var(--border-subtle) !important;
-  border-radius: 4px !important;
-  padding: 6px 8px !important;
+  border-radius: 3px !important;
+  padding: 3px 6px !important;
+  height: 14px !important;
 }
 
 .step-sequencer.active {
   border-color: var(--border-neon) !important;
-  box-shadow: var(--glow-soft) !important;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 .step-box {
-  background: var(--surface-1) !important;
+  background: var(--surface-2) !important;
   border: 1px solid var(--border-subtle) !important;
-  border-radius: 2px !important;
+  border-radius: 1px !important;
 }
 
-/* Downbeat markers (steps 0, 4, 8, 12) - subtle accent */
+/* Downbeat markers (steps 0, 4, 8, 12) - accent border */
 .step-box[data-step="0"],
 .step-box[data-step="4"],
 .step-box[data-step="8"],
 .step-box[data-step="12"] {
-  border-color: rgba(0, 229, 255, 0.2) !important;
+  border-color: rgba(0, 229, 255, 0.3) !important;
+  background: var(--surface-3) !important;
 }
 
 /* Active step - neon cyan glow */
 .step-box.active {
-  background: var(--neon-cyan) !important;
+  background: linear-gradient(180deg, var(--neon-cyan) 0%, #00b8d4 100%) !important;
   border-color: var(--neon-cyan) !important;
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.6), 0 0 24px rgba(0, 229, 255, 0.3) !important;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.7), 0 0 20px rgba(0, 229, 255, 0.4), 0 0 30px rgba(0, 229, 255, 0.2) !important;
 }
 
 /* Beat flash - bright white burst */
 .step-box.beat {
-  background: #ffffff !important;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(0, 229, 255, 0.5) !important;
+  background: linear-gradient(180deg, #ffffff 0%, var(--neon-cyan) 100%) !important;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.9), 0 0 30px rgba(0, 229, 255, 0.6) !important;
 }
 
-/* Downbeat emphasis - pulse the whole sequencer */
+/* Downbeat emphasis - subtle pulse on whole bar */
 .step-sequencer.downbeat {
-  box-shadow: 0 0 30px rgba(0, 229, 255, 0.2), var(--glow-soft) !important;
+  border-color: rgba(0, 229, 255, 0.5) !important;
+  box-shadow: 0 0 25px rgba(0, 229, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
 /* ============================================

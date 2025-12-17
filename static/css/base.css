@@ -1034,20 +1034,21 @@
       }
     }
 
-    /* Step Sequencer (16 steps per cycle) */
+    /* Step Sequencer (16 steps per cycle) - horizontal bar at bottom of hero */
     .step-sequencer {
       display: flex;
-      gap: 3px;
+      gap: 4px;
       position: absolute;
-      left: 500px;
-      top: 50%;
-      transform: translateY(-50%);
+      left: 20px;
+      right: 20px;
+      bottom: 8px;
+      height: 12px;
       opacity: 0.4;
       transition: opacity 0.3s ease;
       z-index: var(--z-hero);
-      padding: 4px 6px;
+      padding: 2px 4px;
       background: rgba(0, 0, 0, 0.3);
-      border-radius: 4px;
+      border-radius: 3px;
     }
 
     .step-sequencer.active {
@@ -1055,8 +1056,8 @@
     }
 
     .step-box {
-      width: 10px;
-      height: 20px;
+      flex: 1;
+      height: 100%;
       border-radius: 2px;
       background: var(--panel-base-cool);
       border: 1px solid rgba(0, 0, 0, 0.3);
@@ -1068,8 +1069,8 @@
     .step-box[data-step="4"],
     .step-box[data-step="8"],
     .step-box[data-step="12"] {
-      height: 24px;
       margin-top: -2px;
+      height: calc(100% + 4px);
     }
 
     /* Active step */
@@ -1081,7 +1082,7 @@
     /* Beat flash (momentary bright flash) */
     .step-box.beat {
       background: #fff;
-      transform: scaleY(1.1);
+      transform: scaleX(1.05);
     }
 
     /* Downbeat emphasis on container */
