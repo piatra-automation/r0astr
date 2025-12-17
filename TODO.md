@@ -11,7 +11,7 @@ KEYBORD MAYBE USEFUL: https://codepen.io/evilpaper/pen/dyyZjLQ
 
 
 - [ ] expanding collapsed window seems to reset stored collapse state to small size (default) even when viz+sliders are present. or the collapsed window was resized to account for controls. any expansion of the panel seems to reset collapsed position and size
-- [ ] trigger buttons on hotkey release not hotkey press for CMD-OPT hotkeys (only - NOT record mode plain keystrokes).
+- [ ] trigger buttons on hotkey release not hotkey press for CMD-OPT hotkeys.
 
 
 - arrow icon in snippet menu says play not triangle font issue

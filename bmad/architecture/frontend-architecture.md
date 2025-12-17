@@ -78,8 +78,7 @@ r0astr/
 │   │   ├── panelManager.js         # Panel CRUD, state management
 │   │   ├── settingsManager.js      # Settings persistence (localStorage)
 │   │   ├── sliderManager.js        # Dynamic slider rendering
-│   │   ├── websocketManager.js     # Remote control sync
-│   │   └── recordingManager.js     # Pattern recording (MIDI input)
+│   │   └── websocketManager.js     # Remote control sync
 │   ├── server/
 │   │   └── index.js                # Express WebSocket server
 │   └── utils/

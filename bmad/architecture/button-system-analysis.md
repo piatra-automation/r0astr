@@ -7,7 +7,7 @@
 ## Button Types Overview
 
 ### 1. Hero Buttons (Square, Nested)
-**Location:** Hero bar controls (Play/Stop/Record/Add/Update)
+**Location:** Hero bar controls (Play/Stop/Add/Update)
 **Pattern:** Button-in-hole (nested structure)
 
 ```css

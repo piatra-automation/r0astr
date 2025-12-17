@@ -28,13 +28,14 @@
     <a href="https://strudel.cc" target="_blank" rel="noopener noreferrer">STRUDEL</a> SYNTH API | ORCHESTRATOR
   </div>
 
-  <!-- Top bar buttons -->
-  <button class="top-bar-btn btn-white" id="save-btn">SAVE</button>
-  <button class="top-bar-btn btn-orange" id="load-btn">LOAD</button>
-  <button class="top-bar-btn btn-green" id="osc-btn">OSC</button>
-  <button class="top-bar-btn btn-green" id="midi-btn">MIDI</button>
-  <a href="/remote" class="top-bar-btn btn-green" id="remote-btn" target="_blank" rel="noopener noreferrer">REMOTE</a>
-  <button class="top-bar-btn btn-orange" id="config-btn">CONFIG</button>
+  <!-- Top Menu Bar: Button container positioned per-skin in CSS -->
+  <!-- Skins can override .top-menu-bar positioning in their stylesheets -->
+  <nav class="top-menu-bar" id="top-menu-bar" aria-label="Main menu">
+    <button class="top-bar-btn btn-white" id="save-btn">SAVE</button>
+    <button class="top-bar-btn btn-orange" id="load-btn">LOAD</button>
+    <a href="/remote" class="top-bar-btn btn-green" id="remote-btn" target="_blank" rel="noopener noreferrer">REMOTE</a>
+    <button class="top-bar-btn btn-orange" id="config-btn">CONFIG</button>
+  </nav>
 
   <!-- Screen area (removed for tree layout) -->
   <!-- <div class="screen"></div> -->
@@ -69,31 +70,6 @@
           <span class="material-icons">stop</span>
         </div>
       </button>
-
-      <button class="btn-hole btn-hole-square action-record" id="record-btn" title="Toggle pattern recording">
-        <div class="btn-raised btn-raised-square btn-burnt-red">
-          <span class="material-icons">fiber_manual_record</span>
-        </div>
-      </button>
-
-      <!-- Pattern Capture Controls -->
-      <div class="capture-controls">
-        <label for="cycle-length">Cycles:</label>
-        <select id="cycle-length" title="Pattern length in cycles (1-8)">
-          <option value="1">1</option>
-          <option value="2" selected>2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-        </select>
-        <label>
-          <input type="checkbox" id="duration-mode" title="Track note duration (hold keys)">
-          Duration
-        </label>
-      </div>
     </div>
   </div>
 

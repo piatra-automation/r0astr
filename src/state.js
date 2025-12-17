@@ -43,8 +43,3 @@ export const appState = {
   samplesReady: false,
   masterPanelCompact: true
 };
-
-// === PATTERN CAPTURE ===
-export const patternCaptureRef = {
-  instance: null
-};

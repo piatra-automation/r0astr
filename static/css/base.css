@@ -72,7 +72,7 @@
       --projection-margin-bottom: 0px;
       --projection-margin-left: 0px;
 
-      --site-logo-height: 100px;
+      --site-logo-height: 50px;
 
       /* Appearance settings (configurable) */
       --code-font-size: 14px;
@@ -80,7 +80,7 @@
 
       /* Dimension variables */
       --hole-size: 16px;
-      --corner-ring-size: 42px;
+      --corner-ring-size: 21px;
       --button-width: 87px;
       --button-height: 42px;
       --hero-button-padding: 12px;
@@ -89,7 +89,7 @@
       --panel-default-height: 300px;
       --panel-min-width: 300px;
       --panel-min-height: 200px;
-      --hero-bar-height: 255px;
+      --hero-bar-height: 127px;
       --speaker-width: 300px;
       --master-panel-compact-width: 220px;
       --top-bar-height: 42px;
@@ -452,9 +452,9 @@
     /* Fixed logo vertically centered in hero bar */
     .site-logo {
       position: fixed;
-      top: calc(var(--projection-margin-top) + 42px + 45px);
-      /* Projection margin + Banner bar top (42px) + offset from banner top (45px) */
-      left: calc(var(--projection-margin-left) + 40px);
+      top: calc(var(--projection-margin-top) + var(--top-bar-height) + 20px);
+      /* Projection margin + Top bar height + offset from banner top */
+      left: calc(var(--projection-margin-left) + 20px);
       height: var(--site-logo-height);
       max-height: var(--site-logo-height);
       z-index: var(--z-logo);
@@ -477,10 +477,10 @@
     /* Hero section spanning full width */
     .hero-section {
       position: fixed;
-      top: calc(var(--projection-margin-top) + 42px);
+      top: calc(var(--projection-margin-top) + var(--top-bar-height));
       left: var(--projection-margin-left);
-      right: calc(var(--projection-margin-right) + 300px);
-      height: 255px;
+      right: var(--projection-margin-right);
+      height: var(--hero-bar-height);
       background-image:
         url('/static/images/corner-ring.svg'),
         url('/static/images/corner-ring.svg'),
@@ -495,16 +495,16 @@
         center;
       background-repeat: no-repeat;
       background-size:
-        42px 42px,
-        42px 42px,
-        42px 42px,
-        42px 42px,
+        var(--corner-ring-size) var(--corner-ring-size),
+        var(--corner-ring-size) var(--corner-ring-size),
+        var(--corner-ring-size) var(--corner-ring-size),
+        var(--corner-ring-size) var(--corner-ring-size),
         cover;
       z-index: var(--z-panel);
       display: flex;
       align-items: center;
-      padding-left: 130px;
-      /* Logo width + offset */
+      padding-left: 80px;
+      /* Logo width (50px) + offset (30px) */
       opacity: 0;
       transition: opacity 0.3s ease-in;
       border-radius: 3px;
@@ -542,12 +542,12 @@
 
     .banner-subtitle {
       position: fixed;
-      top: calc(var(--projection-margin-top) + 42px + 255px - 13px - 18px);
-      /* Banner top (42px) + height (255px) - offset from bottom (13px) - font size (18px) */
-      left: calc(var(--projection-margin-left) + 40px);
-      font-size: 18px;
+      top: calc(var(--projection-margin-top) + var(--top-bar-height) + var(--hero-bar-height) - 6px - 12px);
+      /* Top bar + hero height - offset from bottom - font size */
+      left: calc(var(--projection-margin-left) + 20px);
+      font-size: 12px;
       font-weight: 600;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
       color: var(--mid-green);
       white-space: nowrap;
       z-index: var(--z-subtitle);
@@ -582,12 +582,12 @@
     /* Screen area below banner bar - CodeMirror container */
     .screen {
       position: fixed;
-      top: calc(42px + 255px);
+      top: calc(var(--top-bar-height) + var(--hero-bar-height));
       /* Below banner bar */
       left: 0;
       right: 0;
       min-height: 87px;
-      max-height: calc(100vh - 42px - 255px - 20px); /* viewport - top-bar - hero-bar - bottom margin */
+      max-height: calc(100vh - var(--top-bar-height) - var(--hero-bar-height) - 20px); /* viewport - top-bar - hero-bar - bottom margin */
       overflow-y: auto;
       overflow-x: hidden;
       background: var(--screen-bkg);
@@ -827,22 +827,8 @@
       color: var(--dark-green);
     }
 
-    .hero-btn.action-record .material-icons {
-      color: var(--burnt-red);
-    }
-
     .hero-btn.action-update .material-icons {
       color: var(--puke);
-    }
-
-    /* Recording state - swap background and icon colors */
-    .hero-btn.recording .hero-btn-inner {
-      background: var(--burnt-red);
-    }
-
-    .hero-btn.recording .material-icons {
-      color: var(--pale-white);
-      animation: pulse-record 1.5s infinite;
     }
 
     /* Top bar buttons - shared styles */
@@ -926,21 +912,30 @@
       color: var(--pale-white);
     }
 
-    /* Button positions */
+    /* Top Menu Bar Container
+       Skins can override this positioning by targeting .top-menu-bar
+       Position is set here for the default skin; each skin can customize */
+    .top-menu-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--top-bar-height);
+      z-index: var(--z-topbar);
+      pointer-events: none; /* Allow click-through except on buttons */
+    }
+
+    .top-menu-bar .top-bar-btn {
+      pointer-events: auto; /* Re-enable clicks on buttons */
+    }
+
+    /* Button positions within top menu bar */
     #save-btn {
       left: calc(var(--projection-margin-left) + 42px);
     }
 
     #load-btn {
-      left: calc(var(--projection-margin-left) + 215px);
-    }
-
-    #osc-btn {
-      left: calc(var(--projection-margin-left) + 345px);
-    }
-
-    #midi-btn {
-      left: calc(var(--projection-margin-left) + 474px);
+      left: calc(var(--projection-margin-left) + 172px);
     }
 
     #remote-btn {
@@ -953,8 +948,8 @@
 
     .container {
       position: fixed;
-      top: calc(var(--projection-margin-top) + 297px);
-      /* Projection + Below hero bar (42px + 255px) */
+      top: calc(var(--projection-margin-top) + var(--top-bar-height) + var(--hero-bar-height));
+      /* Projection + Below hero bar (top-bar + hero) */
       left: var(--projection-margin-left);
       right: var(--projection-margin-right);
       bottom: var(--projection-margin-bottom);
@@ -1109,26 +1104,6 @@
     .add-panel-btn:hover {
       background: #1565C0;
       border-color: #0D47A1;
-    }
-
-    .capture-controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    @keyframes pulse-record {
-
-      0%,
-      100% {
-        opacity: 1;
-        box-shadow: 0 0 0 0 rgba(240, 62, 62, 0.7);
-      }
-
-      50% {
-        opacity: 0.9;
-        box-shadow: 0 0 0 10px rgba(240, 62, 62, 0);
-      }
     }
 
     .master-panel {
@@ -2383,9 +2358,9 @@
     /* Animation to shrink and move logo to hero center */
     .splash-logo-image.animating {
       transition: all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
-      top: calc(var(--projection-margin-top) + 42px + 45px);
-      /* Projection margin + Banner bar top (42px) + offset from banner top (45px) */
-      left: calc(var(--projection-margin-left) + 40px);
+      top: calc(var(--projection-margin-top) + var(--top-bar-height) + 20px);
+      /* Projection margin + Top bar height + offset from banner top */
+      left: calc(var(--projection-margin-left) + 20px);
       height: var(--site-logo-height);
       max-height: var(--site-logo-height);
       width: auto;
@@ -2929,39 +2904,6 @@
     /* Utility class for hidden elements (initially) */
     .hidden {
       display: none;
-    }
-
-    /* Capture controls styling */
-    .capture-controls label {
-      color: #555;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    .capture-controls label:first-of-type {
-      margin-right: 5px;
-    }
-
-    .capture-controls label:last-of-type {
-      margin-left: 10px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .capture-controls select {
-      padding: 6px 8px;
-      border-radius: 3px;
-      border: 1px solid #999;
-      background: var(--pale-white);
-      color: var(--darkness);
-      cursor: pointer;
-      font-family: var(--font-family-base);
-      font-size: 11px;
-    }
-
-    .capture-controls input[type="checkbox"] {
-      cursor: pointer;
     }
 
     /* Notice box icons */

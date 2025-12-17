@@ -42,7 +42,7 @@ All buttons (except top bar buttons) use a nested structure:
 #### `.btn-square-lg` - Large Square (Hero Buttons)
 - **Padding:** 12px
 - **Icon Size:** 32px
-- **Use Case:** Primary hero bar controls (Play, Stop, Record)
+- **Use Case:** Primary hero bar controls (Play, Stop)
 
 ```html
 <button class="btn-hole btn-square-lg">
@@ -158,11 +158,6 @@ All buttons (except top bar buttons) use a nested structure:
   color: var(--burnt-red);
 }
 
-/* Record button - red icon */
-.btn-action-record .material-icons {
-  color: var(--burnt-red);
-}
-
 /* Update button - yellow icon */
 .btn-action-update .material-icons {
   color: var(--puke);
@@ -176,20 +171,6 @@ All buttons (except top bar buttons) use a nested structure:
     <span class="material-icons">play_arrow</span>
   </div>
 </button>
-```
-
-### Recording State (inverted colors)
-
-```css
-/* Recording state - swap surface color with icon color */
-.btn-recording .btn-surface {
-  background: var(--burnt-red);
-}
-
-.btn-recording .material-icons {
-  color: var(--pale-white);
-  animation: pulse-record 1.5s infinite;
-}
 ```
 
 ---
