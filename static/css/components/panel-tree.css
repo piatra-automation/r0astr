@@ -35,8 +35,8 @@
   padding-left: calc(var(--tree-spacing) + 16px);
   /* Bottom padding for scroll breathing room */
   padding-bottom: 100px;
-  /* Position below hero section */
-  margin-top: calc(var(--hero-bar-height, 255px) + 20px);
+  /* Position below hero section with padding */
+  margin-top: calc(var(--hero-bar-height, 127px) + var(--top-bar-height, 42px) + 30px);
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
