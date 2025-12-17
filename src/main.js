@@ -849,6 +849,14 @@ function initializeCards() {
     });
   }
 
+  // Hide REMOTE button in lite mode (no WebSocket server available)
+  if (import.meta.env.LITE_MODE) {
+    const remoteBtn = document.getElementById('remote-btn');
+    if (remoteBtn) {
+      remoteBtn.style.display = 'none';
+    }
+  }
+
   // Attach master panel listeners (legacy button - may not exist in tree layout)
   const masterModeBtn = document.getElementById('master-mode');
   if (masterModeBtn) {
