@@ -730,14 +730,52 @@ input[type="checkbox"] {
 }
 
 /* ============================================
-   METRONOME INDICATOR
-   Cyan pulse
+   STEP SEQUENCER
+   16-step neon sequencer display
    ============================================ */
 
-.metronome-indicator,
-#metronome {
+.step-sequencer {
+  background: var(--surface-0) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 4px !important;
+  padding: 6px 8px !important;
+}
+
+.step-sequencer.active {
+  border-color: var(--border-neon) !important;
+  box-shadow: var(--glow-soft) !important;
+}
+
+.step-box {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 2px !important;
+}
+
+/* Downbeat markers (steps 0, 4, 8, 12) - subtle accent */
+.step-box[data-step="0"],
+.step-box[data-step="4"],
+.step-box[data-step="8"],
+.step-box[data-step="12"] {
+  border-color: rgba(0, 229, 255, 0.2) !important;
+}
+
+/* Active step - neon cyan glow */
+.step-box.active {
   background: var(--neon-cyan) !important;
-  box-shadow: var(--glow-cyan);
+  border-color: var(--neon-cyan) !important;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.6), 0 0 24px rgba(0, 229, 255, 0.3) !important;
+}
+
+/* Beat flash - bright white burst */
+.step-box.beat {
+  background: #ffffff !important;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(0, 229, 255, 0.5) !important;
+}
+
+/* Downbeat emphasis - pulse the whole sequencer */
+.step-sequencer.downbeat {
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.2), var(--glow-soft) !important;
 }
 
 /* ============================================

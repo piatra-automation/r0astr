@@ -9,17 +9,23 @@ import { highlightMiniLocations } from '@strudel/codemirror';
 import { MASTER_PANEL_ID } from './panelManager.js';
 
 /**
- * Initialize metronome beat indicator
- * Pulses on each cycle boundary when any panel is playing
+ * Initialize 16-step sequencer indicator
+ * Shows cycle position as 16 illuminated boxes (1/16th note resolution)
  */
 export function initializeMetronome() {
-  const metronome = document.getElementById('metronome');
-  if (!metronome) {
-    console.warn('Metronome element not found');
+  const sequencer = document.getElementById('metronome');
+  if (!sequencer) {
+    console.warn('Step sequencer element not found');
     return;
   }
 
-  let lastCycle = -1;
+  const stepBoxes = sequencer.querySelectorAll('.step-box');
+  if (stepBoxes.length !== 16) {
+    console.warn('Expected 16 step boxes, found', stepBoxes.length);
+    return;
+  }
+
+  let lastStep = -1;
   let isAnyPanelPlaying = false;
   let animationFrameId = null;
 
@@ -28,13 +34,15 @@ export function initializeMetronome() {
     isAnyPanelPlaying = Object.values(cardStates).some(state => state.playing);
 
     if (isAnyPanelPlaying) {
-      metronome.classList.add('active');
+      sequencer.classList.add('active');
       if (!animationFrameId) {
-        startMetronomeLoop();
+        startSequencerLoop();
       }
     } else {
-      metronome.classList.remove('active');
-      metronome.classList.remove('beat');
+      sequencer.classList.remove('active');
+      // Clear all active steps when stopped
+      stepBoxes.forEach(box => box.classList.remove('active', 'beat'));
+      lastStep = -1;
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
@@ -42,21 +50,40 @@ export function initializeMetronome() {
     }
   }
 
-  // Animation loop that checks for cycle changes
-  function startMetronomeLoop() {
+  // Animation loop that updates step position
+  function startSequencerLoop() {
     function loop() {
       if (!isAnyPanelPlaying) {
         animationFrameId = null;
         return;
       }
 
-      const currentCycle = Math.floor(strudelCore.scheduler.now());
+      const cyclePosition = strudelCore.scheduler.now();
+      // Get fractional part of cycle (0.0 to 1.0)
+      const fraction = cyclePosition - Math.floor(cyclePosition);
+      // Convert to step (0-15)
+      const currentStep = Math.floor(fraction * 16);
 
-      if (currentCycle !== lastCycle) {
-        // New cycle - trigger beat pulse
-        metronome.classList.add('beat');
-        setTimeout(() => metronome.classList.remove('beat'), 100);
-        lastCycle = currentCycle;
+      if (currentStep !== lastStep) {
+        // Update step boxes
+        stepBoxes.forEach((box, index) => {
+          if (index === currentStep) {
+            box.classList.add('active');
+            // Brief "beat" flash for emphasis
+            box.classList.add('beat');
+            setTimeout(() => box.classList.remove('beat'), 50);
+          } else {
+            box.classList.remove('active');
+          }
+        });
+
+        // Highlight downbeats (steps 0, 4, 8, 12) more prominently
+        if (currentStep % 4 === 0) {
+          sequencer.classList.add('downbeat');
+          setTimeout(() => sequencer.classList.remove('downbeat'), 80);
+        }
+
+        lastStep = currentStep;
       }
 
       animationFrameId = requestAnimationFrame(loop);
@@ -65,10 +92,10 @@ export function initializeMetronome() {
     loop();
   }
 
-  // Update metronome state when panels play/pause
+  // Update sequencer state when panels play/pause
   window.addEventListener('panel-state-changed', updatePlayingState);
 
-  console.log('✓ Metronome indicator initialized');
+  console.log('✓ Step sequencer initialized (16 steps per cycle)');
 }
 
 /**
