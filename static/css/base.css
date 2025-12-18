@@ -94,6 +94,13 @@
       --metronome-height: 24px;
       --master-buttons-height: 60px;
       --top-bar-hover-zone: 90px;
+
+      /* Logo positioning (used by banner-bar and splash animation) */
+      --logo-height: 36px;
+      --logo-left-offset: 20px;
+      /* Vertical center: projection-margin + (banner-height - logo-height) / 2 */
+      --logo-top: calc(var(--projection-margin-top) + (var(--banner-bar-height) - var(--logo-height)) / 2);
+      --logo-left: calc(var(--projection-margin-left) + var(--logo-left-offset));
       --speaker-width: 300px;
       --master-panel-compact-width: 220px;
       --top-bar-height: 42px;
@@ -488,16 +495,16 @@
       opacity: 1;
     }
 
-    /* Logo inside banner bar */
+    /* Logo inside banner bar - uses shared variables for splash animation sync */
     .banner-bar .site-logo {
-      height: 36px;
+      height: var(--logo-height);
       display: flex;
       align-items: center;
       pointer-events: none;
     }
 
     .banner-bar .site-logo img {
-      height: 36px;
+      height: var(--logo-height);
       width: auto;
       object-fit: contain;
     }
@@ -2372,14 +2379,14 @@
       object-fit: contain;
     }
 
-    /* Animation to shrink and move logo to hero center */
+    /* Animation to shrink and move logo to banner bar position
+       Uses same CSS variables as banner-bar .site-logo for exact match */
     .splash-logo-image.animating {
       transition: all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
-      top: calc(var(--projection-margin-top) + var(--top-bar-height) + 20px);
-      /* Projection margin + Top bar height + offset from banner top */
-      left: calc(var(--projection-margin-left) + 20px);
-      height: var(--site-logo-height);
-      max-height: var(--site-logo-height);
+      top: var(--logo-top);
+      left: var(--logo-left);
+      height: var(--logo-height);
+      max-height: var(--logo-height);
       width: auto;
       transform: translate(0, 0);
     }
