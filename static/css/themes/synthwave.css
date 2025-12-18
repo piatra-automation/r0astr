@@ -392,6 +392,35 @@ body::after {
 }
 
 /* ============================================
+   MASTER PANEL BUTTONS
+   Update All and Stop All in master panel row
+   ============================================ */
+
+.panel-actions .btn-update-all {
+  color: var(--neon-gold) !important;
+}
+
+.panel-actions .btn-update-all:hover {
+  background: rgba(251, 191, 36, 0.15) !important;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.3) !important;
+}
+
+.panel-actions .btn-update-all .count-badge {
+  background: var(--neon-gold) !important;
+  color: var(--surface-0) !important;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.5) !important;
+}
+
+.panel-actions .btn-stop-all {
+  color: var(--color-stop) !important;
+}
+
+.panel-actions .btn-stop-all:hover {
+  background: rgba(255, 68, 102, 0.15) !important;
+  box-shadow: 0 0 10px rgba(255, 68, 102, 0.3) !important;
+}
+
+/* ============================================
    BANNER BAR
    Dark header matching Electron frame
    ============================================ */
@@ -420,17 +449,7 @@ body::after {
   border-bottom: 1px solid var(--border-subtle) !important;
 }
 
-/* ============================================
-   MASTER BUTTON BLOCK
-   Elevated surface with neon border accents
-   ============================================ */
-
-.master-button-block {
-  background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface-1) 100%) !important;
-  border-top: 1px solid var(--border-subtle) !important;
-  border-bottom: 1px solid var(--border-neon) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 229, 255, 0.08) !important;
-}
+/* Master button block removed - buttons now in master panel row */
 
 /* ============================================
    PANELS

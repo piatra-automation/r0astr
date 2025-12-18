@@ -33,15 +33,10 @@
   margin: 0;
   padding: 16px;
   padding-left: calc(var(--tree-spacing) + 16px);
+  /* Top padding to clear fixed header (banner + metronome) */
+  padding-top: calc(var(--banner-bar-height, 50px) + var(--metronome-height, 24px) + 16px);
   /* Bottom padding for scroll breathing room */
   padding-bottom: 100px;
-  /* Position below new header sections: banner + metronome + master buttons */
-  margin-top: calc(
-    var(--banner-bar-height, 50px) +
-    var(--metronome-height, 24px) +
-    var(--master-buttons-height, 60px) +
-    20px
-  );
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
@@ -339,6 +334,45 @@
 .panel-actions .btn-delete:hover {
   opacity: 1;
   background: rgba(139, 0, 0, 0.1);
+}
+
+/* Update All button (master panel) */
+.panel-actions .btn-update-all {
+  color: var(--puke, #c8b400);
+  position: relative;
+}
+
+.panel-actions .btn-update-all:hover {
+  background: rgba(200, 180, 0, 0.15);
+}
+
+.panel-actions .btn-update-all .count-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  color: white;
+  background: var(--puke, #c8b400);
+  border-radius: 7px;
+}
+
+.panel-actions .btn-update-all .count-badge.hidden {
+  display: none;
+}
+
+/* Stop All button (master panel) */
+.panel-actions .btn-stop-all {
+  color: var(--burnt-red, #8b0000);
+}
+
+.panel-actions .btn-stop-all:hover {
+  background: rgba(139, 0, 0, 0.15);
 }
 
 /* === Panel Children (Leaves) === */

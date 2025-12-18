@@ -60,21 +60,7 @@
     </div>
   </div>
 
-  <!-- Master Button Block: Primary controls -->
-  <div class="master-button-block" id="master-button-block">
-    <button class="btn-hole btn-hole-square action-update" id="update-all-btn" title="Update all stale panels">
-      <div class="btn-raised btn-raised-square btn-pearl">
-        <span class="material-icons">eco</span>
-        <span class="count-badge hidden"></span>
-      </div>
-    </button>
-
-    <button class="btn-hole btn-hole-square action-stop" id="stop-all" title="Stop All">
-      <div class="btn-raised btn-raised-square btn-cream">
-        <span class="material-icons">stop</span>
-      </div>
-    </button>
-  </div>
+  <!-- Master Button Block: Removed - buttons now in master panel row -->
 
   <div id="splash-modal" class="splash-overlay" role="dialog" aria-modal="true" aria-label="Loading r0astr">
     <!-- Large animated logo -->
@@ -497,10 +483,15 @@
           <span class="panel-number-badge">0</span>
           <span class="panel-title" contenteditable="true">Master</span>
           <div class="panel-actions">
-            <!-- No play button for master panel - it's always the context window -->
-            <button class="btn-delete" title="Delete" style="display: none;">
-              <span class="material-icons">delete</span>
+            <!-- Master panel controls: Update All and Stop All -->
+            <button class="btn-update-all" id="update-all-btn" title="Update all stale panels">
+              <span class="material-icons">eco</span>
+              <span class="count-badge hidden"></span>
             </button>
+            <button class="btn-stop-all" id="stop-all" title="Stop All">
+              <span class="material-icons">stop</span>
+            </button>
+            <!-- No delete button for master panel -->
           </div>
         </summary>
         <!-- Editor container - collapses with details -->

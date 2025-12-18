@@ -553,37 +553,7 @@
       opacity: 1;
     }
 
-    /* ============================================
-       MASTER BUTTON BLOCK - Primary controls
-       ============================================ */
-
-    .master-button-block {
-      position: fixed;
-      top: calc(var(--projection-margin-top) + var(--banner-bar-height) + var(--metronome-height));
-      left: var(--projection-margin-left);
-      right: var(--projection-margin-right);
-      height: var(--master-buttons-height);
-      background: linear-gradient(to bottom right, var(--panel-cool-light), var(--panel-cool-dark));
-      z-index: var(--z-panel);
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding: 0 20px;
-      gap: 12px;
-      opacity: 0;
-      transition: opacity 0.3s ease-in;
-
-      /* Borders: white+20% on top/left, gray+50% on bottom/right */
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
-
-      /* Drop shadow on bottom edge only */
-      box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    .master-button-block.visible {
-      opacity: 1;
-    }
+    /* Master button block removed - buttons now in master panel row */
 
     /* Legacy hero-section - keep for backwards compatibility */
     .hero-section {

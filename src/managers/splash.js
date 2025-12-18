@@ -15,14 +15,12 @@ export function skipSplash() {
   const splash = document.getElementById('splash-modal');
   const bannerBar = document.querySelector('.banner-bar');
   const metronomeSection = document.querySelector('.metronome-section');
-  const masterButtonBlock = document.querySelector('.master-button-block');
   const screen = document.querySelector('.screen');
 
   // Immediately show all elements (no animation)
   // Note: top-bar-btn buttons are NOT shown by default - they appear on hover
   if (bannerBar) bannerBar.classList.add('visible');
   if (metronomeSection) metronomeSection.classList.add('visible');
-  if (masterButtonBlock) masterButtonBlock.classList.add('visible');
   if (screen) screen.classList.add('visible');
 
   // Remove splash immediately
@@ -42,7 +40,6 @@ export function dismissSplash() {
   const splashLogo = document.getElementById('splash-logo-animate');
   const bannerBar = document.querySelector('.banner-bar');
   const metronomeSection = document.querySelector('.metronome-section');
-  const masterButtonBlock = document.querySelector('.master-button-block');
 
   if (!splash) return;
 
@@ -67,9 +64,6 @@ export function dismissSplash() {
     }
     if (metronomeSection) {
       metronomeSection.classList.add('visible');
-    }
-    if (masterButtonBlock) {
-      masterButtonBlock.classList.add('visible');
     }
     // Show screen area
     const screen = document.querySelector('.screen');
