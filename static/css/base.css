@@ -89,7 +89,11 @@
       --panel-default-height: 300px;
       --panel-min-width: 300px;
       --panel-min-height: 200px;
-      --hero-bar-height: 127px;
+      --hero-bar-height: 127px;  /* Legacy - kept for compatibility */
+      --banner-bar-height: 50px;
+      --metronome-height: 24px;
+      --master-buttons-height: 60px;
+      --top-bar-hover-zone: 90px;
       --speaker-width: 300px;
       --master-panel-compact-width: 220px;
       --top-bar-height: 42px;
@@ -449,134 +453,138 @@
        End Panel Design Classes
        ============================================ */
 
-    /* Fixed logo vertically centered in hero bar */
-    .site-logo {
-      position: fixed;
-      top: calc(var(--projection-margin-top) + var(--top-bar-height) + 20px);
-      /* Projection margin + Top bar height + offset from banner top */
-      left: calc(var(--projection-margin-left) + 20px);
-      height: var(--site-logo-height);
-      max-height: var(--site-logo-height);
-      z-index: var(--z-logo);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.3s ease-in;
+    /* ============================================
+       TOP BAR HOVER ZONE (Legacy - not used)
+       ============================================ */
+
+    .top-bar-hover-zone {
+      display: none;
     }
 
-    .site-logo.visible {
+    /* ============================================
+       BANNER BAR - Narrow header at top
+       Matches Electron frame color
+       ============================================ */
+
+    .banner-bar {
+      position: fixed;
+      top: var(--projection-margin-top);
+      left: var(--projection-margin-left);
+      right: var(--projection-margin-right);
+      height: var(--banner-bar-height);
+      background: var(--darkness);
+      z-index: var(--z-panel);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      opacity: 0;
+      transition: opacity 0.3s ease-in;
+
+      /* Subtle bottom border */
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .banner-bar.visible {
       opacity: 1;
     }
 
-    .site-logo img {
-      height: var(--site-logo-height);
-      max-height: var(--site-logo-height);
+    /* Logo inside banner bar */
+    .banner-bar .site-logo {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .banner-bar .site-logo img {
+      height: 36px;
       width: auto;
       object-fit: contain;
     }
 
-    /* Hero section spanning full width */
-    .hero-section {
-      position: fixed;
-      top: calc(var(--projection-margin-top) + var(--top-bar-height));
-      left: var(--projection-margin-left);
-      right: var(--projection-margin-right);
-      height: var(--hero-bar-height);
-      background-image:
-        url('/static/images/corner-ring.svg'),
-        url('/static/images/corner-ring.svg'),
-        url('/static/images/corner-ring.svg'),
-        url('/static/images/corner-ring.svg'),
-        linear-gradient(to bottom right, var(--panel-cool-light), var(--panel-cool-dark));
-      background-position:
-        top left,
-        top right,
-        bottom left,
-        bottom right,
-        center;
-      background-repeat: no-repeat;
-      background-size:
-        var(--corner-ring-size) var(--corner-ring-size),
-        var(--corner-ring-size) var(--corner-ring-size),
-        var(--corner-ring-size) var(--corner-ring-size),
-        var(--corner-ring-size) var(--corner-ring-size),
-        cover;
-      z-index: var(--z-panel);
-      display: flex;
-      align-items: center;
-      padding-left: 80px;
-      /* Logo width (50px) + offset (30px) */
-      opacity: 0;
-      transition: opacity 0.3s ease-in;
-      border-radius: 3px;
-
-      /* Borders: white+20% on top/left, gray+50% on bottom/right */
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-      border-left: 1px solid rgba(255, 255, 255, 0.2);
-      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
-      border-right: 1px solid rgba(128, 128, 128, 0.5);
-
-      /* Drop shadow on bottom edge only */
-      box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .hero-section.visible {
-      opacity: 1;
-    }
-
-    .hero-banner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 20px;
-      padding-left: 0;
-    }
-
-    .hero-banner img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-
-    .banner-subtitle {
-      position: fixed;
-      top: calc(var(--projection-margin-top) + var(--top-bar-height) + var(--hero-bar-height) - 6px - 12px);
-      /* Top bar + hero height - offset from bottom - font size */
-      left: calc(var(--projection-margin-left) + 20px);
-      font-size: 12px;
+    /* Subtitle inside banner bar */
+    .banner-bar .banner-subtitle {
+      margin-left: 16px;
+      font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.3px;
-      color: var(--mid-green);
+      color: var(--pale-white);
       white-space: nowrap;
-      z-index: var(--z-subtitle);
-      opacity: 0;
-      transition: opacity 0.3s ease-in;
+      opacity: 0.7;
     }
 
-    .banner-subtitle.visible {
-      opacity: 1;
-    }
-
-    .banner-subtitle a {
+    .banner-bar .banner-subtitle a {
       color: inherit;
       text-decoration: none;
     }
 
-    .banner-subtitle a:hover {
+    .banner-bar .banner-subtitle a:hover {
       text-decoration: underline;
+      opacity: 1;
     }
 
-    /* Hero controls container */
-    .hero-controls {
-      position: absolute;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
+    /* ============================================
+       METRONOME SECTION - Step sequencer strip
+       ============================================ */
+
+    .metronome-section {
+      position: fixed;
+      top: calc(var(--projection-margin-top) + var(--banner-bar-height));
+      left: var(--projection-margin-left);
+      right: var(--projection-margin-right);
+      height: var(--metronome-height);
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.15));
+      z-index: var(--z-panel);
       display: flex;
-      gap: 12px;
       align-items: center;
+      padding: 0 20px;
+      opacity: 0;
+      transition: opacity 0.3s ease-in;
+    }
+
+    .metronome-section.visible {
+      opacity: 1;
+    }
+
+    /* ============================================
+       MASTER BUTTON BLOCK - Primary controls
+       ============================================ */
+
+    .master-button-block {
+      position: fixed;
+      top: calc(var(--projection-margin-top) + var(--banner-bar-height) + var(--metronome-height));
+      left: var(--projection-margin-left);
+      right: var(--projection-margin-right);
+      height: var(--master-buttons-height);
+      background: linear-gradient(to bottom right, var(--panel-cool-light), var(--panel-cool-dark));
+      z-index: var(--z-panel);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 20px;
+      gap: 12px;
+      opacity: 0;
+      transition: opacity 0.3s ease-in;
+
+      /* Borders: white+20% on top/left, gray+50% on bottom/right */
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+
+      /* Drop shadow on bottom edge only */
+      box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .master-button-block.visible {
+      opacity: 1;
+    }
+
+    /* Legacy hero-section - keep for backwards compatibility */
+    .hero-section {
+      display: none;
+    }
+
+    .hero-controls {
+      display: none;
     }
 
     /* Screen area below banner bar - CodeMirror container */
@@ -833,10 +841,10 @@
 
     /* Top bar buttons - shared styles */
     .top-bar-btn {
-      position: fixed;
-      top: var(--projection-margin-top);
+      /* No longer fixed - positioned in flexbox container */
+      position: relative;
       width: 87px;
-      height: 42px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -846,10 +854,8 @@
       text-decoration: none;
       letter-spacing: 2px;
       text-align: center;
-      z-index: var(--z-topbar);
       cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.3s ease-in, font-weight 0.1s ease, letter-spacing 0.1s ease, border 0.1s ease;
+      transition: font-weight 0.1s ease, letter-spacing 0.1s ease, border 0.1s ease;
       border-radius: 1px;
 
       /* Borders: white+20% on top/left, gray+50% on bottom/right - 2px beveled effect */
@@ -860,27 +866,15 @@
       border-bottom-color: rgba(128, 128, 128, 0.5);
       border-right-color: rgba(128, 128, 128, 0.5);
 
-      /* Directional drop shadow - bottom and right only, no overflow */
-      box-shadow:
-        2px 2px 3px rgba(99, 99, 99, 0.5),
-        4px 4px 6px rgba(99, 99, 99, 0.5),
-        6px 6px 8px rgba(99, 99, 99, 0.5);
-      overflow: visible;
-      clip-path: inset(-100px -100px 0px 0px);
+      /* Subtle shadow */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
-    .top-bar-btn.visible {
-      opacity: 1;
-    }
-
-    /* Hover effect - reduce shadow by 25% */
+    /* Hover effect */
     .top-bar-btn:hover {
       font-weight: 700;
-      letter-spacing: 5px;
-      box-shadow:
-        1.5px 1.5px 3px rgba(99, 99, 99, 0.5),
-        3px 3px 6px rgba(99, 99, 99, 0.5),
-        4.5px 4.5px 8px rgba(99, 99, 99, 0.5);
+      letter-spacing: 3px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     }
 
     /* Button press animation - invert borders and remove shadow */
@@ -913,43 +907,48 @@
     }
 
     /* Top Menu Bar Container
-       Skins can override this positioning by targeting .top-menu-bar
-       Position is set here for the default skin; each skin can customize */
+       Auto-hiding top menu bar - slides down from top when hovering banner bar
+       Hidden by default, shown when banner-bar:hover or top-menu-bar:hover */
     .top-menu-bar {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: var(--projection-margin-top);
+      left: var(--projection-margin-left);
+      right: var(--projection-margin-right);
       height: var(--top-bar-height);
-      z-index: var(--z-topbar);
-      pointer-events: none; /* Allow click-through except on buttons */
+      background: var(--darkness);
+      z-index: 10100;  /* Above all other fixed elements */
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+
+      /* Hidden by default - slides up off screen */
+      transform: translateY(-100%);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    /* Show top menu when hovering banner bar or the menu itself */
+    .banner-bar:hover ~ .top-menu-bar,
+    .top-menu-bar:hover,
+    .top-menu-bar.visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .top-menu-bar .top-bar-btn {
-      pointer-events: auto; /* Re-enable clicks on buttons */
+      pointer-events: auto;
     }
 
-    /* Button positions within top menu bar */
-    #save-btn {
-      left: calc(var(--projection-margin-left) + 42px);
-    }
-
-    #load-btn {
-      left: calc(var(--projection-margin-left) + 172px);
-    }
-
-    #remote-btn {
-      right: calc(var(--projection-margin-right) + 170px + var(--button-width) + var(--channel-gap));
-    }
-
-    #config-btn {
-      right: calc(var(--projection-margin-right) + 170px);
-    }
+    /* Button positions - now using flexbox, no fixed positioning needed */
+    /* Buttons are centered in top menu bar with gap */
 
     .container {
       position: fixed;
-      top: calc(var(--projection-margin-top) + var(--top-bar-height) + var(--hero-bar-height));
-      /* Projection + Below hero bar (top-bar + hero) */
+      top: calc(var(--projection-margin-top) + var(--banner-bar-height) + var(--metronome-height) + var(--master-buttons-height));
+      /* Below banner + metronome + master buttons */
       left: var(--projection-margin-left);
       right: var(--projection-margin-right);
       bottom: var(--projection-margin-bottom);
@@ -1035,20 +1034,17 @@
     }
 
     /* Step Sequencer (16 steps per cycle) - horizontal bar at bottom of hero */
+    /* Step sequencer - now positioned inside metronome-section */
     .step-sequencer {
       display: flex;
-      gap: 4px;
-      position: absolute;
-      left: 20px;
-      right: 20px;
-      bottom: 8px;
-      height: 12px;
-      opacity: 0.4;
+      gap: 3px;
+      flex: 1;
+      height: 16px;
+      opacity: 0.5;
       transition: opacity 0.3s ease;
-      z-index: var(--z-hero);
       padding: 2px 4px;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 3px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 2px;
     }
 
     .step-sequencer.active {
@@ -1059,8 +1055,8 @@
       flex: 1;
       height: 100%;
       border-radius: 2px;
-      background: var(--panel-base-cool);
-      border: 1px solid rgba(0, 0, 0, 0.3);
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(0, 0, 0, 0.2);
       transition: background 0.05s ease, transform 0.05s ease, box-shadow 0.05s ease;
     }
 
@@ -1071,6 +1067,7 @@
     .step-box[data-step="12"] {
       margin-top: -2px;
       height: calc(100% + 4px);
+      background: rgba(255, 255, 255, 0.25);
     }
 
     /* Active step */
@@ -1087,7 +1084,7 @@
 
     /* Downbeat emphasis on container */
     .step-sequencer.downbeat {
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.3);
     }
 
     /* Flash animation for panels being updated (Story 6.4) */
@@ -2938,13 +2935,14 @@
     }
 
     /* === Electron App Styles === */
-    /* Draggable title bar region for Electron with hidden title bar */
+    /* Draggable title bar region for Electron with hidden title bar
+       Covers the banner bar area for window dragging */
     .electron-drag-region {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      height: 42px;
+      height: var(--banner-bar-height, 50px);
       -webkit-app-region: drag;
       z-index: 9998;
       pointer-events: none;
@@ -2958,5 +2956,10 @@
 
     /* Site logo should not be draggable */
     .site-logo {
+      -webkit-app-region: no-drag;
+    }
+
+    /* Banner bar should not be draggable (allows clicks) */
+    .banner-bar {
       -webkit-app-region: no-drag;
     }

@@ -13,17 +13,17 @@ import { loadSnippets } from './snippetManager.js';
  */
 export function skipSplash() {
   const splash = document.getElementById('splash-modal');
-  const siteLogo = document.querySelector('.site-logo');
-  const heroSection = document.querySelector('.hero-section');
-  const bannerSubtitle = document.querySelector('.banner-subtitle');
+  const bannerBar = document.querySelector('.banner-bar');
+  const metronomeSection = document.querySelector('.metronome-section');
+  const masterButtonBlock = document.querySelector('.master-button-block');
   const screen = document.querySelector('.screen');
 
   // Immediately show all elements (no animation)
-  if (siteLogo) siteLogo.classList.add('visible');
-  if (heroSection) heroSection.classList.add('visible');
-  if (bannerSubtitle) bannerSubtitle.classList.add('visible');
+  // Note: top-bar-btn buttons are NOT shown by default - they appear on hover
+  if (bannerBar) bannerBar.classList.add('visible');
+  if (metronomeSection) metronomeSection.classList.add('visible');
+  if (masterButtonBlock) masterButtonBlock.classList.add('visible');
   if (screen) screen.classList.add('visible');
-  document.querySelectorAll('.top-bar-btn').forEach(btn => btn.classList.add('visible'));
 
   // Remove splash immediately
   if (splash) {
@@ -40,8 +40,9 @@ export function dismissSplash() {
   const splash = document.getElementById('splash-modal');
   const splashContent = document.querySelector('.splash-content');
   const splashLogo = document.getElementById('splash-logo-animate');
-  const siteLogo = document.querySelector('.site-logo');
-  const heroSection = document.querySelector('.hero-section');
+  const bannerBar = document.querySelector('.banner-bar');
+  const metronomeSection = document.querySelector('.metronome-section');
+  const masterButtonBlock = document.querySelector('.master-button-block');
 
   if (!splash) return;
 
@@ -58,28 +59,23 @@ export function dismissSplash() {
     splash.classList.add('fade-out');
   }, 200);
 
-  // Step 3: After animation completes (0.6s), show fixed logo, hero, and load button
+  // Step 3: After animation completes (0.6s), show main UI elements
+  // Note: top-bar-btn buttons are NOT shown by default - they appear on hover
   setTimeout(() => {
-    if (siteLogo) {
-      siteLogo.classList.add('visible');
+    if (bannerBar) {
+      bannerBar.classList.add('visible');
     }
-    if (heroSection) {
-      heroSection.classList.add('visible');
+    if (metronomeSection) {
+      metronomeSection.classList.add('visible');
     }
-    // Show banner subtitle
-    const bannerSubtitle = document.querySelector('.banner-subtitle');
-    if (bannerSubtitle) {
-      bannerSubtitle.classList.add('visible');
+    if (masterButtonBlock) {
+      masterButtonBlock.classList.add('visible');
     }
     // Show screen area
     const screen = document.querySelector('.screen');
     if (screen) {
       screen.classList.add('visible');
     }
-    // Show all top bar buttons
-    document.querySelectorAll('.top-bar-btn').forEach(btn => {
-      btn.classList.add('visible');
-    });
   }, 600);
 
   // Step 4: Clean up splash after all animations (1s total)

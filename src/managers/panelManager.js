@@ -405,10 +405,15 @@ export function renderPanel(panelId, options = {}) {
     </div>
   `;
 
-  // Append to panel-tree
+  // Insert into panel-tree (before add-panel-row to keep it at end)
   const panelTree = document.querySelector('.panel-tree');
+  const addPanelRow = document.getElementById('add-panel-row');
   if (panelTree) {
-    panelTree.appendChild(panelElement);
+    if (addPanelRow) {
+      panelTree.insertBefore(panelElement, addPanelRow);
+    } else {
+      panelTree.appendChild(panelElement);
+    }
   }
 
   return panelElement;

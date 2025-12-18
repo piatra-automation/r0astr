@@ -35,8 +35,13 @@
   padding-left: calc(var(--tree-spacing) + 16px);
   /* Bottom padding for scroll breathing room */
   padding-bottom: 100px;
-  /* Position below hero section with padding */
-  margin-top: calc(var(--hero-bar-height, 127px) + var(--top-bar-height, 42px) + 30px);
+  /* Position below new header sections: banner + metronome + master buttons */
+  margin-top: calc(
+    var(--banner-bar-height, 50px) +
+    var(--metronome-height, 24px) +
+    var(--master-buttons-height, 60px) +
+    20px
+  );
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
@@ -606,4 +611,82 @@
     width: 24px;
     height: 24px;
   }
+}
+
+/* === Add Panel Row === */
+/* Styled to match instrument panels but as a ghost/placeholder */
+
+.add-panel-row {
+  margin-top: 8px;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.add-panel-row:hover {
+  opacity: 1;
+}
+
+/* Match the summary row styling from level-panel */
+.add-panel-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--tree-summary-height);
+  padding: var(--tree-summary-padding);
+  padding-left: calc(var(--tree-node-radius) + 16px);
+  background: rgba(128, 128, 128, 0.05);
+  border: 2px dashed rgba(128, 128, 128, 0.25);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  font-size: inherit;
+  position: relative;
+}
+
+.add-panel-trigger:hover {
+  background: rgba(128, 128, 128, 0.12);
+  border-color: var(--dark-green, #01614f);
+  border-style: solid;
+}
+
+.add-panel-trigger:active {
+  transform: scale(0.99);
+}
+
+/* The + badge - matches panel-number-badge */
+.add-panel-trigger .add-badge {
+  width: var(--tree-badge-size);
+  height: var(--tree-badge-size);
+  min-width: var(--tree-badge-size);
+  background: rgba(128, 128, 128, 0.25);
+  color: rgba(128, 128, 128, 0.7);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.add-panel-trigger:hover .add-badge {
+  background: var(--dark-green, #01614f);
+  color: white;
+  box-shadow: 0 0 8px rgba(1, 97, 79, 0.4);
+}
+
+/* Text label - matches panel-title */
+.add-panel-text {
+  color: rgba(128, 128, 128, 0.5);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: color 0.2s ease;
+}
+
+.add-panel-trigger:hover .add-panel-text {
+  color: var(--text-color, #333);
 }

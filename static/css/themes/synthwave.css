@@ -339,6 +339,100 @@ body::after {
 }
 
 /* ============================================
+   TOP MENU BAR (AUTO-HIDING DRAWER)
+   Slides down from top with neon glow
+   ============================================ */
+
+.top-menu-bar {
+  background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface-1) 100%) !important;
+  border-bottom: 1px solid var(--border-neon) !important;
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.15), 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Visible state styling */
+.banner-bar:hover ~ .top-menu-bar,
+.top-menu-bar:hover,
+.top-menu-bar.visible {
+  box-shadow: 0 0 40px rgba(0, 229, 255, 0.25), 0 6px 30px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ============================================
+   ADD PANEL ROW
+   Ghost panel with neon hover effect
+   ============================================ */
+
+.add-panel-trigger {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.add-panel-trigger:hover {
+  background: rgba(0, 229, 255, 0.05) !important;
+  border-color: var(--neon-cyan) !important;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.15) !important;
+}
+
+.add-panel-trigger .add-badge {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-low) !important;
+}
+
+.add-panel-trigger:hover .add-badge {
+  background: var(--neon-cyan) !important;
+  color: var(--surface-0) !important;
+  box-shadow: var(--glow-cyan) !important;
+}
+
+.add-panel-text {
+  color: var(--text-low) !important;
+}
+
+.add-panel-trigger:hover .add-panel-text {
+  color: var(--text-high) !important;
+}
+
+/* ============================================
+   BANNER BAR
+   Dark header matching Electron frame
+   ============================================ */
+
+.banner-bar {
+  background: linear-gradient(180deg, var(--surface-1) 0%, var(--surface-0) 100%) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+.banner-bar .banner-subtitle {
+  color: var(--text-medium) !important;
+}
+
+.banner-bar .banner-subtitle a:hover {
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+/* ============================================
+   METRONOME SECTION
+   Dark strip with subtle neon accent
+   ============================================ */
+
+.metronome-section {
+  background: linear-gradient(180deg, var(--surface-0) 0%, rgba(0, 229, 255, 0.02) 100%) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+/* ============================================
+   MASTER BUTTON BLOCK
+   Elevated surface with neon border accents
+   ============================================ */
+
+.master-button-block {
+  background: linear-gradient(180deg, var(--surface-2) 0%, var(--surface-1) 100%) !important;
+  border-top: 1px solid var(--border-subtle) !important;
+  border-bottom: 1px solid var(--border-neon) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 229, 255, 0.08) !important;
+}
+
+/* ============================================
    PANELS
    Dark surfaces with subtle neon borders
    ============================================ */

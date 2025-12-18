@@ -14,11 +14,38 @@ KEYBORD MAYBE USEFUL: https://codepen.io/evilpaper/pen/dyyZjLQ
 - [ ] trigger buttons on hotkey release not hotkey press for CMD-OPT hotkeys.
 
 
-- arrow icon in snippet menu says play not triangle font issue
 
-- [ ] have topbar remote button only appear on the full electron app version and not the lite version.
 - [ ] have the css transitions for panel display use animations that make use of animation speed in settings. slide down like a drawer is nice...
 - [ ] have the code mirror pane be a snugger fit to the lines of code (but minimum 3 lines), but grow as code is added
-- [ ] have the main window be scrollable for overflow
+
 - [ ] top bar styling and master control panels in banner bar (target a specific container id)
-- can the blue focus highlight be around the entire container with controls and code rather than just the header. There should be CSS controls on the panel as well as the header (for skins to utilise)
+
+
+
+UI STYLING REQUESTS
+there is a top-bar list of buttons.  I would like the entire top-bar to only appear when the mouse is within 90px of the top of the page. Otherwise it is hidden. the top-bar shouldbe positioned absolute top of screen and animate up and down like a drawer from the top of the screen.
+
+the BANNER bar itself should be aligned at the top of the screen too, and the topbar displays over the top of the banner bar as it appear.
+I would like there to be a much narrower banner bar perhaps as little as 50px tall. I would like the colour of the banner bar and the top window fram in electron to be the same.
+I would like a distinct area in the html for the top level master buttons.... this should be immediately under the banner-bar
+Something like
+[----disappearing top-bar----]
+[----banner bar----]
+[----metronome----]
+[----master button block----]
+all these positioned at the top of the page and then 
+[-------panel tree view
+
+   ---contains master Panel
+   --- extra added intrument panels
+-------]
+
+
+
+
+
+why is base.css so large? can it be split? which parts of the UI are described there?
+can we make a refactor for skins?
+
+
+failures loading snippets or samples should NOT break the loading process...

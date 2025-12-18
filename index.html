@@ -19,18 +19,18 @@
   <!-- Electron: Draggable title bar region (no-op in browser) -->
   <div class="electron-drag-region"></div>
 
-  <!-- Fixed logo in corner -->
-  <div class="site-logo">
-    <img src="/static/images/banner.png" alt="r0astr Logo">
+  <!-- Banner Bar: Narrow header with logo and subtitle
+       MUST come before top-menu-bar for CSS sibling hover selector to work -->
+  <div class="banner-bar" id="banner-bar">
+    <div class="site-logo">
+      <img src="/static/images/banner.png" alt="r0astr Logo">
+    </div>
+    <div class="banner-subtitle">
+      <a href="https://strudel.cc" target="_blank" rel="noopener noreferrer">STRUDEL</a> SYNTH API | ORCHESTRATOR
+    </div>
   </div>
 
-  <!-- Subtitle positioned independently from logo -->
-  <div class="banner-subtitle">
-    <a href="https://strudel.cc" target="_blank" rel="noopener noreferrer">STRUDEL</a> SYNTH API | ORCHESTRATOR
-  </div>
-
-  <!-- Top Menu Bar: Button container positioned per-skin in CSS -->
-  <!-- Skins can override .top-menu-bar positioning in their stylesheets -->
+  <!-- Top Menu Bar: Auto-hiding drawer from top (slides down on banner hover) -->
   <nav class="top-menu-bar" id="top-menu-bar" aria-label="Main menu">
     <button class="top-bar-btn btn-white" id="save-btn">SAVE</button>
     <button class="top-bar-btn btn-orange" id="load-btn">LOAD</button>
@@ -38,15 +38,8 @@
     <button class="top-bar-btn btn-orange" id="config-btn">CONFIG</button>
   </nav>
 
-  <!-- Screen area (removed for tree layout) -->
-  <!-- <div class="screen"></div> -->
-
-  <!-- Hero section with banner -->
-  <div class="hero-section">
-    <div class="hero-banner">
-    </div>
-
-    <!-- Step sequencer indicator (16 steps per cycle) -->
+  <!-- Metronome Section: Step sequencer indicator (16 steps per cycle) -->
+  <div class="metronome-section" id="metronome-section">
     <div class="step-sequencer" id="metronome" title="Cycle position (1/16th steps)">
       <div class="step-box" data-step="0"></div>
       <div class="step-box" data-step="1"></div>
@@ -65,28 +58,22 @@
       <div class="step-box" data-step="14"></div>
       <div class="step-box" data-step="15"></div>
     </div>
+  </div>
 
-    <!-- Hero controls -->
-    <div class="hero-controls">
-      <button class="btn-hole btn-hole-slim action-add" id="add-panel-btn" title="Add New Panel">
-        <div class="btn-raised btn-raised-slim btn-dark-green">
-          <span class="material-icons">add</span>
-        </div>
-      </button>
+  <!-- Master Button Block: Primary controls -->
+  <div class="master-button-block" id="master-button-block">
+    <button class="btn-hole btn-hole-square action-update" id="update-all-btn" title="Update all stale panels">
+      <div class="btn-raised btn-raised-square btn-pearl">
+        <span class="material-icons">eco</span>
+        <span class="count-badge hidden"></span>
+      </div>
+    </button>
 
-      <button class="btn-hole btn-hole-square action-update" id="update-all-btn" title="Update all stale panels">
-        <div class="btn-raised btn-raised-square btn-pearl">
-          <span class="material-icons">eco</span>
-          <span class="count-badge hidden"></span>
-        </div>
-      </button>
-
-      <button class="btn-hole btn-hole-square action-stop" id="stop-all" title="Stop All">
-        <div class="btn-raised btn-raised-square btn-cream">
-          <span class="material-icons">stop</span>
-        </div>
-      </button>
-    </div>
+    <button class="btn-hole btn-hole-square action-stop" id="stop-all" title="Stop All">
+      <div class="btn-raised btn-raised-square btn-cream">
+        <span class="material-icons">stop</span>
+      </div>
+    </button>
   </div>
 
   <div id="splash-modal" class="splash-overlay" role="dialog" aria-modal="true" aria-label="Loading r0astr">
@@ -533,6 +520,14 @@
       </div>
     </li>
     <!-- Dynamic panels created via [+] button will appear here -->
+
+    <!-- Add Panel Row: Always at end of tree -->
+    <li class="add-panel-row" id="add-panel-row">
+      <button class="add-panel-trigger" id="add-panel-btn" title="Add New Panel">
+        <span class="panel-number-badge add-badge">+</span>
+        <span class="add-panel-text">Add New Panel</span>
+      </button>
+    </li>
   </ul>
 
   <div class="info">
