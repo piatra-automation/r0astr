@@ -1,0 +1,228 @@
+/**
+ * CSS Variables & Theme Configuration
+ *
+ * This file contains all CSS custom properties (variables) used throughout r0astr.
+ * Themes/skins override these variables to change the appearance.
+ *
+ * Structure:
+ * - Font definitions
+ * - Color palette
+ * - Panel colors
+ * - Dimensions & spacing
+ * - Button system variables
+ * - Typography
+ * - Z-index layers
+ */
+
+/* Supertone Font Family */
+@font-face {
+  font-family: 'Supertone';
+  src: url('/static/fonts/supertone-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Supertone';
+  src: url('/static/fonts/supertone-medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Supertone';
+  src: url('/static/fonts/supertone-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================
+   CSS Variables for Theming and Appearance
+   ============================================ */
+:root {
+  /* Base Color Palette (single source of truth) */
+  --pale-white: #d1d8e0;
+  --pearl: #dfddde;
+  --cream: #dad0bc;
+  --dark-green: #01614f;
+  --mid-green: #01614f;
+  --burnt-red: #f64c04;
+  --puke: #e3ad43;
+  --darkness: #0b0600;
+
+  /* Pattern Highlighting (Strudel) */
+  --foreground: #00ffff;         /* Bright cyan for pattern highlights */
+
+  /* Panel Base Colors */
+  --panel-base-warm: #dad0bc;        /* Warm beige for background */
+  --panel-base-cool: #d9d8d4;        /* Cool gray for hero/controls */
+  --panel-base-light: #d1d8e0;       /* Light panels (collapsed, master) */
+  --panel-base-dark: #1a1a1a;        /* Dark panels (expanded) */
+
+  /* Computed Color Variants (using color-mix) */
+  /* Warm panel gradients */
+  --panel-warm-light: color-mix(in srgb, var(--panel-base-warm) 85%, white 15%);
+  --panel-warm-dark: color-mix(in srgb, var(--panel-base-warm) 80%, black 20%);
+
+  /* Cool panel gradients */
+  --panel-cool-light: color-mix(in srgb, var(--panel-base-cool) 90%, white 10%);
+  --panel-cool-dark: var(--panel-base-cool);
+
+  /* Light panel highlights */
+  --panel-light-highlight: color-mix(in srgb, var(--panel-base-light) 95%, white 5%);
+  --panel-light-shadow: color-mix(in srgb, var(--panel-base-light) 85%, black 15%);
+
+  /* Screen colors (base) */
+  --screen-base: #076443;
+  --screen-bkg: var(--screen-base);
+
+  /* Computed screen variants */
+  --screen-edge: #514041;                                                      /* Brown edge (static) */
+  --screen-top: color-mix(in srgb, var(--screen-base) 50%, black 50%);        /* Darker top edge */
+  --screen-bottom: color-mix(in srgb, var(--screen-base) 70%, white 30%);     /* Lighter bottom edge */
+
+  /* Projection margins - default to 0, updated by themeManager.js */
+  --projection-margin-top: 0px;
+  --projection-margin-right: 0px;
+  --projection-margin-bottom: 0px;
+  --projection-margin-left: 0px;
+
+  --site-logo-height: 50px;
+
+  /* Appearance settings (configurable) */
+  --code-font-size: 14px;
+  --panel-opacity: 0.95;
+
+  /* Dimension variables */
+  --hole-size: 16px;
+  --corner-ring-size: 21px;
+  --button-width: 87px;
+  --button-height: 42px;
+  --hero-button-padding: 12px;
+  --panel-collapsed-height: 56px;
+  --panel-default-width: 400px;
+  --panel-default-height: 300px;
+  --panel-min-width: 300px;
+  --panel-min-height: 200px;
+  --hero-bar-height: 127px;  /* Legacy - kept for compatibility */
+  --banner-bar-height: 50px;
+  --metronome-height: 24px;
+  --master-buttons-height: 60px;
+  --top-bar-hover-zone: 90px;
+
+  /* Logo positioning (used by banner-bar and splash animation) */
+  --logo-height: 36px;
+  --logo-left-offset: 20px;
+  /* Vertical center: projection-margin + (banner-height - logo-height) / 2 */
+  --logo-top: calc(var(--projection-margin-top) + (var(--banner-bar-height) - var(--logo-height)) / 2);
+  --logo-left: calc(var(--projection-margin-left) + var(--logo-left-offset));
+  --speaker-width: 300px;
+  --master-panel-compact-width: 220px;
+  --top-bar-height: 42px;
+
+  /* Border radius sizes */
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+
+  /* Spacing */
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap-md: 12px;
+  --gap-lg: 20px;
+  --gap-xl: 24px;
+
+  /* Layout Spacing (Main Panel Grid) */
+  --side-gap: 43px;           /* Gap from edge of usable area to buttons (all sides) */
+  --channel-gap: 43px;        /* Spacing between rows and columns of buttons */
+
+  /* Button System: Button-in-Hole Pattern */
+  /* Outer container (the "hole") */
+  --btn-hole-bg: var(--darkness);
+  --btn-hole-radius: 2px;
+  --btn-hole-depth: 2px;
+  --btn-hole-depth-sm: 1.5px;
+
+  /* Inner button surface */
+  --btn-surface-bg: var(--pale-white);
+  --btn-surface-radius: 4px;
+  --btn-surface-radius-sm: 3px;
+
+  /* Button padding (determines button size) */
+  --btn-padding-square-lg: 12px;      /* Hero buttons (square, large) */
+  --btn-padding-square-md: 10px;      /* Expanded panel buttons (square, medium) */
+  --btn-padding-square-sm: 8.5px;     /* Collapsed panel buttons (square, small) */
+  --btn-padding-square-xs: 8px;       /* Master mode button (square, extra-small) */
+  --btn-padding-slim-lg: 12px 20px;   /* Future: slim buttons (large) */
+  --btn-padding-slim-md: 10px 16px;   /* Future: slim buttons (medium) */
+  --btn-padding-tiny: 6px;            /* Future: tiny icon buttons */
+
+  /* Icon sizes */
+  --btn-icon-lg: 32px;                /* Hero buttons */
+  --btn-icon-md: 28px;                /* Expanded panel buttons */
+  --btn-icon-sm: 24px;                /* Master mode, small buttons */
+  --btn-icon-xs: 23px;                /* Collapsed panel buttons */
+  --btn-icon-tiny: 18px;              /* Future: tiny buttons */
+
+  /* Button shadows */
+  --btn-shadow-normal: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --btn-shadow-normal-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --btn-shadow-pressed: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --btn-shadow-pressed-sm: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+
+  /* Bevel lighting (3D effect) */
+  --btn-bevel-light: rgba(255, 255, 255, 0.2);
+  --btn-bevel-dark: rgba(128, 128, 128, 0.5);
+
+  /* Press animation */
+  --btn-press-move: 1px;
+  --btn-press-move-sm: 0.5px;
+
+  /* Button hover states */
+  --btn-hole-hover-bg: #4a5a5f;
+
+  /* Typography */
+  --font-family-base: 'Supertone', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-monospace: monospace;
+  --font-family-icons: 'Material Icons';
+  --font-size-base: 14px;
+  --font-size-lg: 18px;
+  --font-size-sm: 12px;
+  --font-size-xs: 10px;
+
+  /* Z-index layers */
+  --z-behind: -1;
+  --z-base: 1;
+  --z-above-base: 2;
+  --z-screen: 999;
+  --z-topbar: 1000;
+  --z-master-panel: 9999;
+  --z-hero: 10000;
+  --z-panel: 10000;
+  --z-logo: 10001;
+  --z-subtitle: 10001;
+  --z-modal: 10001;
+  --z-splash: 10002;
+  --z-splash-content: 10003;
+
+  /* Theme colors (default dark) */
+  --bg-color: var(--cream);
+  --card-bg: #1a1a1a;
+  --text-color: #fff;
+  --border-color: #00ff00;
+  --header-color: #00ff00;
+}
+
+/* Light theme override */
+body.theme-light {
+  --bg-color: #f0f0f0;
+  --card-bg: #ffffff;
+  --text-color: #000000;
+  --border-color: #333333;
+  --header-color: #0066cc;
+}

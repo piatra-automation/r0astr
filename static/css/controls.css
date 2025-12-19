@@ -1,0 +1,407 @@
+/**
+ * Controls Styles
+ *
+ * This file contains form control styles for r0astr.
+ * Includes sliders, toggles, select dropdowns, and input fields.
+ *
+ * Structure:
+ * - Slider controls (panels)
+ * - Master panel sliders (compact and expanded)
+ * - Toggle switches
+ * - Select dropdowns
+ * - Text/number inputs
+ * - Validation messages
+ * - Setting sliders (appearance)
+ */
+
+/* ============================================
+   SLIDER CONTROLS (Panel Sliders)
+   ============================================ */
+
+.controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.slider-control {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 120px;
+}
+
+.slider-control label {
+  font-size: 12px;
+  color: #aaa;
+  display: flex;
+  justify-content: space-between;
+}
+
+.slider-control input[type="range"] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #444;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.slider-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+.slider-control input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+  border: none;
+}
+
+/* Slider container for dynamically generated sliders */
+.slider-container {
+  flex-shrink: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  padding-top: 10px;
+}
+
+/* ============================================
+   MASTER PANEL SLIDERS
+   ============================================ */
+
+/* Master panel compact sliders - horizontal sliders stacked vertically */
+.master-panel.compact .slider-control {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.master-panel.compact .slider-control label {
+  font-size: 10px;
+  color: var(--darkness);
+  font-weight: 600;
+  min-width: 50px;
+  flex-shrink: 0;
+}
+
+.master-panel.compact .slider-control input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 8px;
+  background: rgba(7, 84, 90, 0.2);
+  border-radius: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+  border-right: 1px solid rgba(128, 128, 128, 0.5);
+}
+
+.master-panel.compact .slider-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--mid-green);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--darkness);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.master-panel.compact .slider-control input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--mid-green);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--darkness);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.master-panel.compact .slider-control .slider-value {
+  font-size: 9px;
+  color: var(--darkness);
+  font-weight: 600;
+  min-width: 35px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Master panel expanded sliders */
+.master-panel:not(.compact) .slider-control {
+  margin-bottom: 12px;
+}
+
+.master-panel:not(.compact) .slider-control label {
+  color: var(--darkness);
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.master-panel:not(.compact) .slider-control input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: rgba(7, 84, 90, 0.2);
+  border-radius: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+  border-right: 1px solid rgba(128, 128, 128, 0.5);
+  outline: none;
+}
+
+.master-panel:not(.compact) .slider-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--mid-green);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--darkness);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.master-panel:not(.compact) .slider-control input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--mid-green);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--darkness);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.master-panel:not(.compact) .slider-control .slider-value {
+  font-size: 11px;
+  color: var(--darkness);
+  font-weight: 600;
+}
+
+/* ============================================
+   TOGGLE SWITCHES
+   ============================================ */
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 10px;
+}
+
+.toggle-input {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 50px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 12px;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 2px;
+  top: 2px;
+  background: rgba(128, 128, 128, 0.5);
+  border-radius: 50%;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.toggle-input:checked+.toggle-slider {
+  background: rgba(180, 66, 22, 0.2);
+  border-color: var(--burnt-red);
+}
+
+.toggle-input:checked+.toggle-slider::before {
+  transform: translateX(26px);
+  background: var(--burnt-red);
+}
+
+.toggle-text {
+  color: var(--darkness);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ============================================
+   SELECT DROPDOWNS
+   ============================================ */
+
+.setting-select {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  color: var(--darkness);
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.setting-select:focus {
+  outline: none;
+  border-color: var(--burnt-red);
+  box-shadow: 0 0 5px rgba(180, 66, 22, 0.3);
+}
+
+.setting-select option {
+  background: var(--pale-white);
+  color: var(--darkness);
+}
+
+/* ============================================
+   TEXT INPUTS
+   ============================================ */
+
+.setting-text-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  color: var(--darkness);
+  font-size: 14px;
+  border-radius: 4px;
+  font-family: var(--font-family-monospace);
+  margin-top: 4px;
+}
+
+.setting-text-input:focus {
+  outline: none;
+  border-color: var(--burnt-red);
+  box-shadow: 0 0 5px rgba(180, 66, 22, 0.3);
+}
+
+.setting-text-input::placeholder {
+  color: rgba(60, 76, 81, 0.4);
+}
+
+.setting-text-input.invalid {
+  border-color: #ff0000;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+/* ============================================
+   NUMBER INPUTS
+   ============================================ */
+
+.setting-number-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  color: var(--darkness);
+  font-size: 14px;
+  border-radius: 4px;
+  font-family: var(--font-family-monospace);
+  margin-top: 4px;
+}
+
+.setting-number-input:focus {
+  outline: none;
+  border-color: var(--burnt-red);
+  box-shadow: 0 0 5px rgba(180, 66, 22, 0.3);
+}
+
+.setting-number-input:invalid {
+  border-color: #ff0000;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+/* ============================================
+   VALIDATION MESSAGES
+   ============================================ */
+
+.validation-message {
+  display: inline-block;
+  font-size: 0.85em;
+  margin-left: 0.5em;
+  font-weight: 600;
+}
+
+.validation-message.valid {
+  color: #98c379;
+  /* Green */
+}
+
+.validation-message.invalid {
+  color: #e06c75;
+  /* Red */
+}
+
+/* ============================================
+   SETTING SLIDERS (Appearance)
+   ============================================ */
+
+.setting-slider {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+  margin-top: 8px;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.setting-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--burnt-red);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--darkness);
+}
+
+.setting-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--burnt-red);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--darkness);
+}
+
+.setting-slider:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 5px rgba(180, 66, 22, 0.5);
+}
+
+.setting-slider:hover::-moz-range-thumb {
+  box-shadow: 0 0 5px rgba(180, 66, 22, 0.5);
+}
+
+/* ============================================
+   RESIZE CURSORS (interact.js)
+   ============================================ */
+
+.resize-edge {
+  position: absolute;
+}

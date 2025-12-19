@@ -1,0 +1,1076 @@
+/**
+ * Button System Styles
+ *
+ * This file contains all button-related styles for r0astr.
+ * Includes the button-in-hole pattern, top-bar buttons, hero buttons,
+ * and panel control buttons.
+ *
+ * Structure:
+ * - Button-in-hole base system (.btn-hole, .btn-surface)
+ * - Button size variants (square, slim, tiny)
+ * - Hero buttons (legacy large buttons)
+ * - Top bar buttons
+ * - Panel control buttons (expanded and collapsed)
+ * - New button hole system (.btn-raised)
+ */
+
+/* ============================================
+   Button System: Button-in-Hole Pattern
+   ============================================ */
+
+/* Base button-in-hole structure (outer container - "the hole") */
+.btn-hole {
+  background: var(--btn-hole-bg);
+  border-radius: var(--btn-hole-radius);
+  padding: var(--btn-hole-depth);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-hole:hover {
+  background: var(--btn-hole-hover-bg);
+}
+
+.btn-hole:disabled {
+  cursor: not-allowed;
+  background: rgba(60, 76, 81, 0.1);
+}
+
+.btn-hole:disabled .btn-surface {
+  opacity: 0.5;
+}
+
+/* Small hole variant */
+.btn-hole-sm {
+  padding: var(--btn-hole-depth-sm);
+}
+
+/* Base button surface (inner button) */
+.btn-surface {
+  background: var(--btn-surface-bg);
+  border-radius: var(--btn-surface-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  /* 3D bevel lighting effect */
+  border-top: 1px solid var(--btn-bevel-light);
+  border-left: 1px solid var(--btn-bevel-light);
+  border-bottom: 1px solid var(--btn-bevel-dark);
+  border-right: 1px solid var(--btn-bevel-dark);
+
+  box-shadow: var(--btn-shadow-normal);
+  transform: translateY(0);
+  transition: all 0.1s ease;
+}
+
+/* Small surface variant */
+.btn-surface-sm {
+  border-radius: var(--btn-surface-radius-sm);
+  box-shadow: var(--btn-shadow-normal-sm);
+}
+
+/* Press animation - applies to all button-in-hole buttons */
+.btn-hole:active .btn-surface,
+.btn-hole.pressing .btn-surface {
+  /* Invert bevel lighting for pressed effect */
+  border-top: 1px solid var(--btn-bevel-dark);
+  border-left: 1px solid var(--btn-bevel-dark);
+  border-bottom: 1px solid var(--btn-bevel-light);
+  border-right: 1px solid var(--btn-bevel-light);
+
+  /* Flatten shadow and move down */
+  box-shadow: var(--btn-shadow-pressed);
+  transform: translateY(var(--btn-press-move));
+}
+
+/* Small button press animation */
+.btn-hole-sm:active .btn-surface-sm,
+.btn-hole-sm.pressing .btn-surface-sm {
+  box-shadow: var(--btn-shadow-pressed-sm);
+  transform: translateY(var(--btn-press-move-sm));
+}
+
+/* ============================================
+   Button Size Variants: SQUARE
+   ============================================ */
+
+/* Square Large (Hero buttons) */
+.btn-square-lg .btn-surface {
+  padding: var(--btn-padding-square-lg);
+}
+
+.btn-square-lg .material-icons {
+  font-size: var(--btn-icon-lg);
+}
+
+/* Square Medium (Expanded panel buttons) */
+.btn-square-md .btn-surface {
+  padding: var(--btn-padding-square-md);
+}
+
+.btn-square-md .material-icons {
+  font-size: var(--btn-icon-md);
+}
+
+/* Square Small (Collapsed panel buttons) */
+.btn-square-sm .btn-surface {
+  padding: var(--btn-padding-square-sm);
+}
+
+.btn-square-sm .material-icons {
+  font-size: var(--btn-icon-xs);
+}
+
+/* Square Extra-Small (Master mode button) */
+.btn-square-xs .btn-surface {
+  padding: var(--btn-padding-square-xs);
+}
+
+.btn-square-xs .material-icons {
+  font-size: var(--btn-icon-sm);
+}
+
+/* ============================================
+   Button Size Variants: SLIM (Future)
+   ============================================ */
+
+/* Slim Large (rectangular, wide) */
+.btn-slim-lg .btn-surface {
+  padding: var(--btn-padding-slim-lg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-slim-lg .material-icons {
+  font-size: var(--btn-icon-md);
+}
+
+/* Slim Medium */
+.btn-slim-md .btn-surface {
+  padding: var(--btn-padding-slim-md);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-slim-md .material-icons {
+  font-size: var(--btn-icon-sm);
+}
+
+/* ============================================
+   Button Size Variants: TINY (Future)
+   ============================================ */
+
+/* Tiny icon-only buttons */
+.btn-tiny .btn-surface {
+  padding: var(--btn-padding-tiny);
+}
+
+.btn-tiny .material-icons {
+  font-size: var(--btn-icon-tiny);
+}
+
+/* ============================================
+   Material Icons Base Styling
+   ============================================ */
+
+.btn-surface .material-icons {
+  font-family: var(--font-family-icons);
+  user-select: none;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   Hero Buttons (Legacy Large Buttons)
+   ============================================ */
+
+.hero-btn {
+  background: var(--darkness);
+  border-radius: 2px;
+  padding: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.hero-btn.action-add {
+  margin-right: 28px;
+}
+
+.hero-btn:hover {
+  background: #4a5a5f;
+}
+
+.hero-btn:disabled {
+  cursor: not-allowed;
+  background: rgba(60, 76, 81, 0.1);
+}
+
+.hero-btn:disabled .material-icons {
+  opacity: 0.4;
+}
+
+.hero-btn.updating .material-icons {
+  animation: spin-update 1s linear infinite;
+  opacity: 1;
+}
+
+@keyframes spin-update {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hero-btn-inner {
+  background: var(--pale-white);
+  border-radius: 4px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  /* Borders: white+20% on top/left, gray+50% on bottom/right */
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+  border-right: 1px solid rgba(128, 128, 128, 0.5);
+
+  /* Shadow for depth */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(0);
+  transition: all 0.1s ease;
+}
+
+/* Button press animation - invert borders and flatten */
+.hero-btn:active .hero-btn-inner,
+.hero-btn.pressing .hero-btn-inner {
+  /* Invert border lighting for pressed effect */
+  border-top: 1px solid rgba(128, 128, 128, 0.5);
+  border-left: 1px solid rgba(128, 128, 128, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+
+  /* Flatten shadow and push down slightly */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transform: translateY(1px);
+}
+
+.count-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--burnt-red);
+  color: var(--pale-white);
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px;
+  border: 2px solid var(--darkness);
+}
+
+.hero-btn .material-icons {
+  font-family: var(--font-family-icons);
+  font-size: 32px;
+  user-select: none;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Icon colors */
+.hero-btn.action-stop .material-icons {
+  color: var(--burnt-red);
+}
+
+.hero-btn.action-play .material-icons,
+.hero-btn.action-add .material-icons {
+  color: var(--dark-green);
+}
+
+.hero-btn.action-update .material-icons {
+  color: var(--puke);
+}
+
+/* ============================================
+   Top Bar Buttons
+   ============================================ */
+
+.top-bar-btn {
+  /* No longer fixed - positioned in flexbox container */
+  position: relative;
+  width: 87px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-base);
+  font-size: 13px;
+  font-weight: 400;
+  text-decoration: none;
+  letter-spacing: 2px;
+  text-align: center;
+  cursor: pointer;
+  transition: font-weight 0.1s ease, letter-spacing 0.1s ease, border 0.1s ease;
+  border-radius: 1px;
+
+  /* Borders: white+20% on top/left, gray+50% on bottom/right - 2px beveled effect */
+  border: 2px solid;
+  border-color: rgba(255, 255, 255, 0.2) rgba(128, 128, 128, 0.5) rgba(128, 128, 128, 0.5) rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.2);
+  border-left-color: rgba(255, 255, 255, 0.2);
+  border-bottom-color: rgba(128, 128, 128, 0.5);
+  border-right-color: rgba(128, 128, 128, 0.5);
+
+  /* Subtle shadow */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+
+  /* Electron app: not draggable */
+  -webkit-app-region: no-drag;
+  pointer-events: auto;
+}
+
+/* Hover effect */
+.top-bar-btn:hover {
+  font-weight: 700;
+  letter-spacing: 3px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Button press animation - invert borders and remove shadow */
+.top-bar-btn:active,
+.top-bar-btn.pressing {
+  border-top-color: rgba(128, 128, 128, 0.5);
+  border-left-color: rgba(128, 128, 128, 0.5);
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  border-right-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none !important;
+  transform: translateY(1px);
+}
+
+/* Button type: orange */
+.top-bar-btn.btn-orange {
+  background: var(--burnt-red);
+  color: var(--pale-white);
+}
+
+/* Button type: white */
+.top-bar-btn.btn-white {
+  background: var(--pale-white);
+  color: var(--dark-green);
+}
+
+/* Button type: green */
+.top-bar-btn.btn-green {
+  background: var(--mid-green);
+  color: var(--pale-white);
+}
+
+/* ============================================
+   Global Control Buttons
+   ============================================ */
+
+.global-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.stop-all-btn {
+  padding: 12px 24px;
+  border-radius: 6px;
+  border: 2px solid #d32f2f;
+  background: #c62828;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.stop-all-btn:hover {
+  background: #b71c1c;
+  border-color: #b71c1c;
+}
+
+.update-all-btn {
+  padding: 12px 24px;
+  border-radius: 6px;
+  border: 2px solid #ffa000;
+  background: #ffd43b;
+  color: #333;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 15px rgba(255, 212, 59, 0.3);
+}
+
+.update-all-btn:not(:disabled):hover {
+  background: #ffc107;
+  border-color: #ff8f00;
+  box-shadow: 0 0 20px rgba(255, 212, 59, 0.5);
+}
+
+.update-all-btn:not(:disabled) {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.update-all-btn:disabled {
+  background: #495057;
+  color: #adb5bd;
+  border-color: #495057;
+  cursor: not-allowed;
+  box-shadow: none;
+  animation: none;
+}
+
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.add-panel-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 2px solid #2196F3;
+  background: #1976D2;
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.add-panel-btn:hover {
+  background: #1565C0;
+  border-color: #0D47A1;
+}
+
+/* ============================================
+   Panel Control Buttons
+   ============================================ */
+
+/* Legacy - for backward compatibility */
+.control-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 2px solid #555;
+  background: #333;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.control-btn:hover {
+  background: #444;
+  border-color: #666;
+}
+
+.control-btn.playing {
+  background: #4CAF50;
+  border-color: #45a049;
+}
+
+.control-btn.playing:hover {
+  background: #45a049;
+}
+
+/* Expanded panel control buttons */
+.card:not(.panel-collapsed) .control-btn {
+  background: var(--darkness);
+  border-radius: 2px;
+  padding: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-width: 0;
+}
+
+.card:not(.panel-collapsed) .control-btn-inner {
+  background: var(--pale-white);
+  border-radius: 4px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+  border-right: 1px solid rgba(128, 128, 128, 0.5);
+
+  /* Shadow for depth */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(0);
+  transition: all 0.1s ease;
+}
+
+.card:not(.panel-collapsed) .control-btn .material-icons {
+  font-family: var(--font-family-icons);
+  font-size: 28px;
+  user-select: none;
+}
+
+.card:not(.panel-collapsed) .control-btn.action-play .material-icons {
+  color: var(--dark-green);
+}
+
+.card:not(.panel-collapsed) .control-btn.action-stop .material-icons {
+  color: var(--burnt-red);
+}
+
+.card:not(.panel-collapsed) .control-btn:hover {
+  background: #4a5a5f;
+}
+
+/* Expanded panel button press animation */
+.card:not(.panel-collapsed) .control-btn:active .control-btn-inner,
+.card:not(.panel-collapsed) .control-btn.pressing .control-btn-inner {
+  /* Invert border lighting for pressed effect */
+  border-top: 1px solid rgba(128, 128, 128, 0.5);
+  border-left: 1px solid rgba(128, 128, 128, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+
+  /* Flatten shadow and push down slightly */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transform: translateY(1px);
+}
+
+/* Collapsed panel buttons - 71% of hero button size */
+.card.panel-collapsed .control-btn {
+  background: var(--darkness);
+  border-radius: 2px;
+  padding: 1.5px;
+  /* 71% of 2px */
+  border: none;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.card.panel-collapsed .control-btn-inner {
+  background: var(--pale-white);
+  border-radius: 3px;
+  /* 71% of 4px */
+  padding: 8.5px;
+  /* 71% of 12px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+  border-right: 1px solid rgba(128, 128, 128, 0.5);
+
+  /* Shadow for depth */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transform: translateY(0);
+  transition: all 0.1s ease;
+}
+
+/* Panel button press animation */
+.card.panel-collapsed .control-btn:active .control-btn-inner,
+.card.panel-collapsed .control-btn.pressing .control-btn-inner {
+  /* Invert border lighting for pressed effect */
+  border-top: 1px solid rgba(128, 128, 128, 0.5);
+  border-left: 1px solid rgba(128, 128, 128, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+
+  /* Flatten shadow and push down slightly */
+  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+  transform: translateY(0.5px);
+}
+
+.card.panel-collapsed .control-btn .material-icons {
+  font-family: var(--font-family-icons);
+  font-size: 23px;
+  /* 71% of 32px */
+  user-select: none;
+}
+
+.card.panel-collapsed .control-btn.action-play .material-icons {
+  color: var(--dark-green);
+}
+
+.card.panel-collapsed .control-btn.action-stop .material-icons,
+.card.panel-collapsed .control-btn.pause-btn .material-icons {
+  color: var(--darkness);
+}
+
+/* Pause button icon color in all panels (collapsed and expanded) */
+.control-btn.pause-btn .material-icons,
+.pause-btn .material-icons,
+.control-btn-inner .material-icons {
+  color: var(--darkness) !important;
+}
+
+.card.panel-collapsed .control-btn:hover {
+  background: #4a5a5f;
+}
+
+/* ============================================
+   PAUSE & ACTIVATE Buttons
+   ============================================ */
+
+.pause-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 2px solid #d32f2f;
+  background: #c62828;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  min-width: 70px;
+}
+
+.pause-btn:hover:not(:disabled) {
+  background: #b71c1c;
+  border-color: #b71c1c;
+}
+
+.pause-btn:disabled,
+.pause-btn.hidden,
+.activate-btn.hidden {
+  display: none;
+}
+
+/* ACTIVATE button - Default (PLAY) */
+.activate-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 2px solid #388E3C;
+  background: #4CAF50;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  min-width: 70px;
+}
+
+.activate-btn:hover:not(:disabled) {
+  background: #45a049;
+  border-color: #2E7D32;
+}
+
+/* ACTIVATE button - UPDATE state (stale) */
+.activate-btn.update {
+  background: #ffd43b;
+  border-color: #ffa000;
+  color: #333;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ACTIVATE button - Disabled (playing, not stale) */
+.activate-btn:disabled {
+  background: #495057;
+  border-color: #343a40;
+  color: #adb5bd;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ACTIVATE button - Disabled class (invalid code) */
+.activate-btn.disabled {
+  background: #495057;
+  border-color: #343a40;
+  color: #adb5bd;
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: none;
+  animation: none;
+  /* Disable pulse animation when disabled */
+}
+
+/* ============================================
+   Delete Button
+   ============================================ */
+
+.delete-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 2px solid #d32f2f;
+  background: #c62828;
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  line-height: 1;
+  margin-left: 10px;
+}
+
+.delete-btn:hover {
+  background: #b71c1c;
+  border-color: #b71c1c;
+}
+
+/* Collapsed panel delete button - discrete top-right */
+.card.panel-collapsed .delete-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: transparent;
+  border: none;
+  color: rgba(180, 66, 22, 0.5);
+  font-size: 16px;
+  padding: 4px;
+  margin: 0;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  opacity: 0.3;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.card.panel-collapsed .delete-btn:hover {
+  opacity: 1;
+  color: var(--burnt-red);
+  background: transparent;
+}
+
+.card:not(.panel-collapsed) .delete-btn {
+  background: transparent;
+  border: none;
+  color: rgba(180, 66, 22, 0.6);
+  font-size: 20px;
+  padding: 6px;
+  margin-left: 8px;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.card:not(.panel-collapsed) .delete-btn:hover {
+  opacity: 1;
+  color: var(--burnt-red);
+  background: transparent;
+}
+
+/* ============================================
+   New Button Hole System (.btn-raised)
+   ============================================ */
+
+/* BUTTON HOLES - The dark recessed containers */
+.btn-hole {
+  background: var(--darkness);
+  border: 1px solid #ede4d5;
+  border-radius: 2.5px;
+  padding: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.btn-hole-slim {
+  width: 86px;
+  height: 42px;
+}
+
+.btn-hole-square {
+  width: 86px;
+  height: 86px;
+}
+
+/* INACTIVE BUTTON HOLES - Transparent background */
+.btn-hole.inactive,
+.btn-hole:disabled {
+  background: transparent;
+  cursor: not-allowed;
+}
+
+/* BUTTONS - The raised elements inside holes */
+.btn-raised {
+  box-sizing: border-box;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  transition: all 0.1s ease;
+  user-select: none;
+
+  /* Beveled border effect - light on top/left, dark on bottom/right */
+  border: 2px solid;
+  border-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.2) rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.2);
+  border-left-color: rgba(255, 255, 255, 0.2);
+  border-bottom-color: rgba(0, 0, 0, 0.2);
+  border-right-color: rgba(0, 0, 0, 0.2);
+
+  /* Diffuse blurred shadow effect - bottom and right edges only */
+  box-shadow:
+    4px 4px 6px rgba(99, 99, 99, 0.5),
+    8px 8px 12px rgba(99, 99, 99, 0.5),
+    12px 12px 16px rgba(99, 99, 99, 0.5),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.1),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.btn-raised-slim {
+  width: 80px;
+  min-width: 80px;
+  height: 35px;
+  min-height: 35px;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.btn-raised-square {
+  width: 80px;
+  min-width: 80px;
+  height: 80px;
+  min-height: 80px;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* Button color varieties */
+.btn-pearl {
+  background: var(--pearl);
+  color: var(--dark-green);
+}
+
+.btn-cream {
+  background: var(--cream);
+  color: var(--dark-green);
+}
+
+.btn-burnt-red {
+  background: var(--burnt-red);
+  color: white;
+}
+
+.btn-dark-green {
+  background: var(--dark-green);
+  color: white;
+}
+
+/* PRESSED STATE - Invert borders and remove drop-shadow completely */
+.btn-hole:active .btn-raised,
+.btn-hole.pressing .btn-raised {
+  border-top-color: rgba(0, 0, 0, 0.2);
+  border-left-color: rgba(0, 0, 0, 0.2);
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  border-right-color: rgba(255, 255, 255, 0.2);
+
+  box-shadow: none !important;
+
+  transform: translateY(1px);
+}
+
+/* Override hover state when pressing */
+.btn-hole:active:hover .btn-raised,
+.btn-hole.pressing:hover .btn-raised {
+  box-shadow: none !important;
+}
+
+/* HOVER STATE - Reduce shadow offset by 25% */
+.btn-hole:hover .btn-raised {
+  box-shadow:
+    3px 3px 6px rgba(99, 99, 99, 0.5),
+    6px 6px 12px rgba(99, 99, 99, 0.5),
+    9px 9px 16px rgba(99, 99, 99, 0.5),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.1),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+/* INACTIVE BUTTON STATE - Looks pressed with no shadow and inverted borders */
+.btn-hole.inactive .btn-raised,
+.btn-hole:disabled .btn-raised {
+  border-top-color: rgba(0, 0, 0, 0.2);
+  border-left-color: rgba(0, 0, 0, 0.2);
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  border-right-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none !important;
+  transform: translateY(1px);
+}
+
+/* Keep inactive appearance on hover */
+.btn-hole.inactive:hover .btn-raised,
+.btn-hole:disabled:hover .btn-raised {
+  border-top-color: rgba(0, 0, 0, 0.2);
+  border-left-color: rgba(0, 0, 0, 0.2);
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  border-right-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none !important;
+  transform: translateY(1px);
+}
+
+/* Keep inactive appearance when pressed */
+.btn-hole.inactive:active .btn-raised,
+.btn-hole.inactive.pressing .btn-raised,
+.btn-hole:disabled:active .btn-raised {
+  border-top-color: rgba(0, 0, 0, 0.2);
+  border-left-color: rgba(0, 0, 0, 0.2);
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  border-right-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none !important;
+  transform: translateY(1px);
+}
+
+/* Material Icons inside buttons */
+.btn-raised .material-icons {
+  font-size: 24px;
+}
+
+.btn-raised-square .material-icons {
+  font-size: 32px;
+}
+
+/* ============================================
+   Modal Buttons
+   ============================================ */
+
+.btn-primary {
+  background: #4CAF50;
+  color: #fff;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #45a049;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #888;
+  border: 1px solid #555;
+  padding: 10px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #333;
+  color: #fff;
+  border-color: #666;
+}
+
+/* Close button */
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--darkness);
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  opacity: 1;
+}
+
+/* Confirmation modal buttons */
+.confirm-modal-btn {
+  padding: 10px 20px;
+  border: 2px solid;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.confirm-modal-cancel {
+  border-color: #666;
+}
+
+.confirm-modal-cancel:hover {
+  background: #333;
+  border-color: #888;
+}
+
+.confirm-modal-confirm {
+  border-color: #ff4444;
+  color: #ff4444;
+}
+
+.confirm-modal-confirm:hover {
+  background: #ff4444;
+  color: #fff;
+}
+
+.confirm-modal-confirm:focus,
+.confirm-modal-cancel:focus {
+  outline: 2px solid var(--border-color);
+  outline-offset: 2px;
+}
