@@ -159,94 +159,96 @@ export async function prebake(snippetUrl = '') {
     updateSplashProgress((completed / total) * 100);
   };
 
-  // Create parallel loading tasks
+  // Helper to wrap loading tasks - failures don't break the loading process
+  const safeLoad = (name, loadFn) => {
+    return loadFn()
+      .then((result) => {
+        trackProgress();
+        console.log(`✓ ${name} loaded`);
+        return result;
+      })
+      .catch((error) => {
+        trackProgress(); // Still count as progress
+        console.warn(`⚠ ${name} failed to load (non-critical):`, error.message);
+        return null; // Continue despite failure
+      });
+  };
+
+  // Create parallel loading tasks - all wrapped to be non-blocking
   const loadingTasks = [
     // Register synth sounds (sawtooth, square, triangle, etc.)
-    Promise.resolve(registerSynthSounds()).then((result) => {
-      trackProgress();
-      return result;
-    }),
+    safeLoad('Synth sounds', () => Promise.resolve(registerSynthSounds())),
+
     // Register ZZFX sounds (chiptune-style synthesizer)
-    import('@strudel/webaudio').then(({ registerZZFXSounds }) =>
-      registerZZFXSounds()
-    ).then((result) => {
-      trackProgress();
-      return result;
+    safeLoad('ZZFX sounds', async () => {
+      const { registerZZFXSounds } = await import('@strudel/webaudio');
+      return registerZZFXSounds();
     }),
+
     // Load piano samples (Salamander Grand Piano)
-    import('@strudel/webaudio').then(({ samples }) =>
-      samples(`${baseCDN}/piano.json`, `${baseCDN}/piano/`, { prebake: true })
-    ).then((result) => {
-      trackProgress();
-      return result;
+    safeLoad('Piano samples', async () => {
+      const { samples } = await import('@strudel/webaudio');
+      return samples(`${baseCDN}/piano.json`, `${baseCDN}/piano/`, { prebake: true });
     }),
+
     // Load VCSL samples (strings, violin, cello, etc.)
-    import('@strudel/webaudio').then(({ samples }) =>
-      samples(`${baseCDN}/vcsl.json`, `${baseCDN}/VCSL/`, { prebake: true })
-    ).then((result) => {
-      trackProgress();
-      return result;
+    safeLoad('VCSL samples', async () => {
+      const { samples } = await import('@strudel/webaudio');
+      return samples(`${baseCDN}/vcsl.json`, `${baseCDN}/VCSL/`, { prebake: true });
     }),
+
     // Load tidal-drum-machines
-    import('@strudel/webaudio').then(({ samples }) =>
-      samples(`${baseCDN}/tidal-drum-machines.json`, `${baseCDN}/tidal-drum-machines/machines/`, {
+    safeLoad('Tidal drum machines', async () => {
+      const { samples } = await import('@strudel/webaudio');
+      return samples(`${baseCDN}/tidal-drum-machines.json`, `${baseCDN}/tidal-drum-machines/machines/`, {
         prebake: true,
         tag: 'drum-machines',
-      })
-    ).then((result) => {
-      trackProgress();
-      return result;
+      });
     }),
+
     // Load uzu-drumkit
-    import('@strudel/webaudio').then(({ samples }) =>
-      samples(`${baseCDN}/uzu-drumkit.json`, `${baseCDN}/uzu-drumkit/`, {
+    safeLoad('Uzu drumkit', async () => {
+      const { samples } = await import('@strudel/webaudio');
+      return samples(`${baseCDN}/uzu-drumkit.json`, `${baseCDN}/uzu-drumkit/`, {
         prebake: true,
         tag: 'drum-machines',
-      })
-    ).then((result) => {
-      trackProgress();
-      return result;
+      });
     }),
+
     // Load mridangam (Indian percussion)
-    import('@strudel/webaudio').then(({ samples }) =>
-      samples(`${baseCDN}/mridangam.json`, `${baseCDN}/mrid/`, {
+    safeLoad('Mridangam samples', async () => {
+      const { samples } = await import('@strudel/webaudio');
+      return samples(`${baseCDN}/mridangam.json`, `${baseCDN}/mrid/`, {
         prebake: true,
         tag: 'drum-machines'
-      })
-    ).then((result) => {
-      trackProgress();
-      return result;
+      });
     }),
+
     // Load dirt-samples (main TidalCycles library)
-    import('@strudel/webaudio').then(({ samples }) =>
-      samples('github:tidalcycles/dirt-samples')
-    ).then((result) => {
-      trackProgress();
-      return result;
+    safeLoad('Dirt samples', async () => {
+      const { samples } = await import('@strudel/webaudio');
+      return samples('github:tidalcycles/dirt-samples');
     }),
-    // Load snippets (non-blocking - errors handled gracefully)
-    (async () => {
+
+    // Load snippets
+    safeLoad('Snippets', async () => {
       if (snippetUrl) {
-        console.log('Loading snippets during splash:', snippetUrl);
-        try {
-          await loadSnippets(snippetUrl);
-          console.log('✓ Snippets loaded during splash');
-        } catch (error) {
-          console.warn('Snippet loading failed during splash (non-critical):', error.message);
-          // Gracefully continue - snippets are optional
-        }
-      } else {
-        console.log('No snippet URL configured - skipping snippet loading');
+        return loadSnippets(snippetUrl);
       }
-      trackProgress();
-    })(),
+      console.log('No snippet URL configured - skipping');
+      return null;
+    }),
   ];
 
   await Promise.all(loadingTasks);
 
   // Load drum machine aliases after samples are loaded
   // This provides convenient names like 'RolandTR909' instead of 'RolandTR909:0'
-  const { aliasBank } = await import('@strudel/webaudio');
-  await aliasBank(`${baseCDN}/tidal-drum-machines-alias.json`);
-  console.log('✓ Drum machine aliases loaded');
+  try {
+    const { aliasBank } = await import('@strudel/webaudio');
+    await aliasBank(`${baseCDN}/tidal-drum-machines-alias.json`);
+    console.log('✓ Drum machine aliases loaded');
+  } catch (error) {
+    console.warn('⚠ Drum machine aliases failed to load (non-critical):', error.message);
+  }
 }

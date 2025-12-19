@@ -2663,6 +2663,18 @@ function wireWebSocketEventListeners() {
     // Initialize state
     cardStates[newPanelId] = { playing: false, stale: false, lastEvaluatedCode: '' };
 
+    // Initialize CodeMirror editor (critical for API-created panels)
+    const container = getPanelEditorContainer(newPanelId);
+    if (container) {
+      const view = createEditorView(container, {
+        initialCode: code || '',
+        onChange: handleEditorChange,
+        panelId: newPanelId,
+      });
+      editorViews.set(newPanelId, view);
+      console.log(`[WebSocket] CodeMirror initialized for API panel: ${newPanelId}`);
+    }
+
     // Initialize drag/resize (legacy layout only)
     if (!isTreeLayout()) {
       initializeDragAndResize(panelElement);

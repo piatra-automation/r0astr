@@ -30,8 +30,8 @@ function isTreeLayout() {
  * renderSliders('panel-1', widgets, 'note("c2").lpf(slider(800, 100, 5000))');
  */
 export function renderSliders(panelId, widgets, patternCode = '') {
-  // Filter for slider widgets
-  const sliderWidgets = widgets.filter(w => w.type === 'slider');
+  // Filter for slider widgets (guard against undefined widgets)
+  const sliderWidgets = (widgets || []).filter(w => w.type === 'slider');
   const sliderMetadata = [];
 
   if (isTreeLayout()) {
