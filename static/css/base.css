@@ -109,7 +109,16 @@ h1 {
   pointer-events: none;
   transition: opacity 0.3s ease-in;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  -webkit-app-region: no-drag;
+  -webkit-app-region: drag; /* Draggable in Electron (hover target overrides in center) */
+  user-select: none; /* Prevent text selection while dragging */
+  -webkit-user-select: none;
+}
+
+/* Electron: Extra left padding for macOS traffic lights and make visible */
+.electron-app .banner-bar {
+  padding-left: 90px;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .banner-bar.visible {
@@ -122,7 +131,7 @@ h1 {
   display: flex;
   align-items: center;
   pointer-events: none;
-  -webkit-app-region: no-drag;
+  /* Logo is not interactive, inherits drag from parent */
 }
 
 .banner-bar .site-logo img {
@@ -144,6 +153,7 @@ h1 {
 .banner-bar .banner-subtitle a {
   color: inherit;
   text-decoration: none;
+  -webkit-app-region: no-drag; /* Link is clickable, not draggable */
 }
 
 .banner-bar .banner-subtitle a:hover {
@@ -159,7 +169,8 @@ h1 {
 .skin-hover-target {
   position: fixed;
   pointer-events: auto;
-  z-index: 10101; /* Above all UI elements (banner: 10000, menu: 10100) */
+  z-index: 10050; /* Below menu (10100) so buttons are clickable, above banner (10000) */
+  -webkit-app-region: no-drag; /* Interactive, not draggable */
   /* Position, size, and styling defined by skin CSS */
 }
 
@@ -438,6 +449,7 @@ h1 {
   -webkit-app-region: drag;
   z-index: 9998;
   pointer-events: none;
+  /* Fallback drag region (banner-bar at z-index 10000 handles primary dragging) */
 }
 
 /* ============================================

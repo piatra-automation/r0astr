@@ -2918,6 +2918,13 @@ function initializeKeyboardShortcuts() {
 
 // Initialize when DOM is ready
 async function init() {
+  // Detect Electron environment and add class to body
+  const isElectron = navigator.userAgent.toLowerCase().includes('electron');
+  if (isElectron) {
+    document.body.classList.add('electron-app');
+    console.log('✓ Electron environment detected');
+  }
+
   // Load settings first (before any other initialization)
   appSettings = loadSettings();
   console.log('✓ Settings loaded');
