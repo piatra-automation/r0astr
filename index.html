@@ -102,18 +102,6 @@
         <section class="settings-section" id="appearance-settings">
           <h3>Appearance</h3>
 
-          <!-- Color Scheme Dropdown (AC: 1) -->
-          <div class="setting-item">
-            <label for="color-scheme-select">Color Scheme</label>
-            <select id="color-scheme-select" class="setting-select">
-              <option value="dark">Dark (Default)</option>
-              <option value="light">Light</option>
-            </select>
-            <p class="setting-description">
-              Choose between dark and light themes
-            </p>
-          </div>
-
           <!-- Font Size Slider (AC: 2) -->
           <div class="setting-item">
             <label for="font-size-slider">
@@ -254,31 +242,6 @@
             </p>
           </div>
 
-          <!-- Default Panel Width (Story 7.2) -->
-          <div class="setting-item">
-            <label for="default-width">
-              Default Panel Width (px): <span id="default-width-value">600</span>
-            </label>
-            <input type="number" id="default-width" class="setting-number-input" min="300" max="2000" value="600"
-              step="10">
-            <span class="validation-message" id="width-validation"></span>
-            <p class="setting-description">
-              New panels will be created with this width (300-2000px)
-            </p>
-          </div>
-
-          <!-- Default Panel Height (Story 7.2) -->
-          <div class="setting-item">
-            <label for="default-height">
-              Default Panel Height (px): <span id="default-height-value">400</span>
-            </label>
-            <input type="number" id="default-height" class="setting-number-input" min="200" max="1500" value="400"
-              step="10">
-            <span class="validation-message" id="height-validation"></span>
-            <p class="setting-description">
-              New panels will be created with this height (200-1500px)
-            </p>
-          </div>
         </section>
 
         <!-- Behavior Section (Story 4.4) -->

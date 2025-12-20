@@ -15,7 +15,7 @@ const STORAGE_KEY = 'r0astr_settings';
 export const DEFAULT_SETTINGS = {
   version: 1,                     // Schema version for migration
   yolo: false,                    // Skip deletion confirmations
-  colorScheme: 'dark',            // Theme selection: 'dark', 'light'
+  colorScheme: 'dark',            // DEPRECATED: Theme selection no longer configurable (always dark)
   fontSize: 14,                   // Code editor font size (10-24px) - Story 4.5
   panelOpacity: 95,               // DEPRECATED: Use activePanelOpacity instead
   activePanelOpacity: 95,         // Active (focused) panel background opacity (50-100%)
@@ -28,8 +28,8 @@ export const DEFAULT_SETTINGS = {
   syntax_highlight: true,         // Enable syntax highlighting (true = CodeMirror, false = plain) - Story 7.6
   pattern_highlighting: true,     // Enable real-time pattern highlighting (true = highlight, false = no highlight)
   editor_theme: 'atomone',        // CodeMirror theme: 'atomone', 'abcdef', 'bespin', 'dracula', 'gruvboxDark', 'materialDark', 'nord', 'solarizedDark' - Story 7.6
-  default_w: 600,                 // Default panel width in px (300-2000) - Story 7.2
-  default_h: 400,                 // Default panel height in px (200-1500) - Story 7.2
+  default_w: 600,                 // DEPRECATED: Default panel width (tree view uses auto-sizing)
+  default_h: 400,                 // DEPRECATED: Default panel height (tree view uses auto-sizing)
   text: {                         // Text editor settings - Story 7.5
     colors: {
       functions: '#61afef',       // Blue (Atom One Dark theme)

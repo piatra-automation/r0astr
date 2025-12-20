@@ -178,10 +178,12 @@ h1 {
 .top-menu-bar {
   position: fixed;
   top: var(--projection-margin-top);
-  left: var(--projection-margin-left);
-  right: var(--projection-margin-right);
+  left: 50%;
   height: var(--top-bar-height);
+  width: fit-content;
+  padding: 0 20px;
   background: var(--darkness);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   z-index: 10100;  /* Above all other fixed elements */
   pointer-events: none;
   display: flex;
@@ -189,8 +191,8 @@ h1 {
   justify-content: center;
   gap: 20px;
 
-  /* Hidden by default - slides up off screen */
-  transform: translateY(-100%);
+  /* Hidden by default - slides up off screen, centered horizontally */
+  transform: translateX(-50%) translateY(-100%);
   opacity: 0;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
@@ -199,7 +201,7 @@ h1 {
 .banner-bar:hover ~ .top-menu-bar,
 .top-menu-bar:hover,
 .top-menu-bar.visible {
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
   opacity: 1;
   pointer-events: auto;
 }

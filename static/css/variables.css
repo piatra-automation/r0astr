@@ -218,11 +218,3 @@
   --header-color: #00ff00;
 }
 
-/* Light theme override */
-body.theme-light {
-  --bg-color: #f0f0f0;
-  --card-bg: #ffffff;
-  --text-color: #000000;
-  --border-color: #333333;
-  --header-color: #0066cc;
-}

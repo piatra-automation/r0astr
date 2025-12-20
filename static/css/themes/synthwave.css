@@ -459,8 +459,8 @@ body::after {
 .panel,
 .card,
 .panel-card,
-[class*="panel-"] {
-  background: var(--surface-1) !important;
+.level-panel {
+  background: hotpink !important;  /* DEBUG - this is what's controlling it */
   border: 1px solid var(--border-subtle) !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
 }
@@ -476,8 +476,8 @@ body::after {
 /* Panel title - cyan accent */
 .panel-title,
 .card-title,
-[class*="panel-"] h3,
-[class*="panel-"] h4 {
+.level-panel h3,
+.level-panel h4 {
   color: var(--neon-cyan) !important;
   text-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
 }
@@ -512,7 +512,8 @@ body::after {
 .cm-editor,
 .CodeMirror,
 textarea.code-input,
-[class*="editor"] {
+.code-editor,
+.code-editor-wrapper {
   background: var(--surface-0) !important;
   color: var(--text-high) !important;
   border: 1px solid var(--border-subtle) !important;
@@ -667,30 +668,45 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ============================================
-   PANEL TREE (Sidebar)
-   Dark with neon accents
+   PANEL TREE
+   Column layout with neon accents
    ============================================ */
 
-.panel-tree,
-.sidebar {
+/* Ensure panel tree content is above body::after grid */
+.panel-tree {
+  position: relative;
+  z-index: 1;
+}
+
+/* Panel rows inherit theme colors via CSS variables */
+.level-panel,
+.panel-row {
   background: var(--surface-1) !important;
-  border-right: 1px solid var(--border-subtle) !important;
+  border-color: var(--border-subtle) !important;
 }
 
-.panel-tree-item,
-.tree-item {
-  border-bottom: 1px solid var(--border-subtle) !important;
+.level-panel:hover,
+.panel-row:hover {
+  border-color: var(--neon-cyan) !important;
 }
 
-.panel-tree-item:hover,
-.tree-item:hover {
-  background: var(--surface-2) !important;
+.level-panel.focused,
+.level-panel.active,
+.panel-row.focused,
+.panel-row.active {
+  border-color: var(--neon-cyan) !important;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.4) !important;
 }
 
-.panel-tree-item.active,
-.tree-item.active {
-  background: rgba(0, 229, 255, 0.1) !important;
-  border-left: 3px solid var(--neon-cyan) !important;
+.level-panel.playing,
+.panel-row.playing {
+  border-color: var(--color-play) !important;
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.3) !important;
+}
+
+.level-panel.stale,
+.panel-row.stale {
+  border-color: var(--neon-gold) !important;
 }
 
 /* ============================================
@@ -780,7 +796,7 @@ input[type="checkbox"] {
 
 .count-badge,
 .badge,
-[class*="badge"] {
+.panel-number-badge:not(.add-badge) {
   background: var(--neon-magenta) !important;
   color: white !important;
   box-shadow: 0 0 10px rgba(255, 45, 146, 0.4);

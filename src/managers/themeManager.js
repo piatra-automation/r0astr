@@ -82,13 +82,16 @@ export function updatePanelOpacities() {
 
   // Import animatePanelPosition dynamically to avoid circular dependency
   import('../managers/panelManager.js').then(({ animatePanelPosition }) => {
-    // Update instrument panels (they use .card class)
-    const panels = document.querySelectorAll('.card');
-    // console.log('[Opacity DEBUG] Found panels:', panels.length);
+    // Update instrument panels - support both legacy (.card) and tree layout (.level-panel)
+    const isTreeLayout = document.querySelector('.panel-tree') !== null;
+    const panels = isTreeLayout
+      ? document.querySelectorAll('.level-panel')
+      : document.querySelectorAll('.card');
+    // console.log('[Opacity DEBUG] Found panels:', panels.length, 'tree:', isTreeLayout);
 
     let focusedCount = 0;
     panels.forEach(panel => {
-      const isFocused = panel.classList.contains('focused');
+      const isFocused = panel.classList.contains('focused') || panel.classList.contains('active');
       if (isFocused) focusedCount++;
       const targetOpacity = isFocused ? activePanelOpacity : backgroundPanelOpacity;
       panel.style.opacity = targetOpacity;

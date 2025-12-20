@@ -5,7 +5,7 @@
 
 import { getSettings, saveSettings, updateSetting } from '../managers/settingsManager.js';
 import { startAutoSaveTimer } from '../managers/panelManager.js';
-import { applyColorScheme, applyFontSize, applyActivePanelOpacity, applyBackgroundPanelOpacity, applyLineWrapping, updatePanelOpacities } from '../managers/themeManager.js';
+import { applyFontSize, applyActivePanelOpacity, applyBackgroundPanelOpacity, applyLineWrapping, updatePanelOpacities } from '../managers/themeManager.js';
 import { validateURL, validatePath } from '../utils/validation.js';
 import { loadSnippets, clearSnippets } from '../managers/snippetManager.js';
 
@@ -58,17 +58,12 @@ function loadSettingsIntoForm() {
   console.log('Loading settings into form:', settings);
 
   // Story 4.5: Appearance Settings Controls
-  const colorSchemeSelect = document.getElementById('color-scheme-select');
   const fontSizeSlider = document.getElementById('font-size-slider');
   const fontSizeValue = document.getElementById('font-size-value');
   const activePanelOpacitySlider = document.getElementById('active-panel-opacity-slider');
   const activePanelOpacityValue = document.getElementById('active-panel-opacity-value');
   const backgroundPanelOpacitySlider = document.getElementById('background-panel-opacity-slider');
   const backgroundPanelOpacityValue = document.getElementById('background-panel-opacity-value');
-
-  if (colorSchemeSelect) {
-    colorSchemeSelect.value = settings.colorScheme || 'dark';
-  }
 
   if (fontSizeSlider) {
     const fontSize = settings.fontSize || 14;
@@ -141,28 +136,6 @@ function loadSettingsIntoForm() {
   const editorThemeSelect = document.getElementById('editor-theme-select');
   if (editorThemeSelect) {
     editorThemeSelect.value = settings.editor_theme || 'atomone';
-  }
-
-  // Story 7.2: Default Panel Dimensions
-  const defaultWidthInput = document.getElementById('default-width');
-  const defaultWidthValue = document.getElementById('default-width-value');
-  const defaultHeightInput = document.getElementById('default-height');
-  const defaultHeightValue = document.getElementById('default-height-value');
-
-  if (defaultWidthInput) {
-    const width = settings.default_w || 600;
-    defaultWidthInput.value = width;
-    if (defaultWidthValue) {
-      defaultWidthValue.textContent = width;
-    }
-  }
-
-  if (defaultHeightInput) {
-    const height = settings.default_h || 400;
-    defaultHeightInput.value = height;
-    if (defaultHeightValue) {
-      defaultHeightValue.textContent = height;
-    }
   }
 
   // Story 4.4: Behavior Settings Controls
@@ -266,13 +239,8 @@ function collectSettingsFromForm() {
   console.log('Collecting settings from form');
 
   // Story 4.5: Appearance Settings Controls
-  const colorSchemeSelect = document.getElementById('color-scheme-select');
   const fontSizeSlider = document.getElementById('font-size-slider');
   const panelOpacitySlider = document.getElementById('panel-opacity-slider');
-
-  if (colorSchemeSelect) {
-    settings.colorScheme = colorSchemeSelect.value;
-  }
 
   if (fontSizeSlider) {
     settings.fontSize = parseInt(fontSizeSlider.value, 10);
@@ -309,18 +277,6 @@ function collectSettingsFromForm() {
   const editorThemeSelect = document.getElementById('editor-theme-select');
   if (editorThemeSelect) {
     settings.editor_theme = editorThemeSelect.value;
-  }
-
-  // Story 7.2: Default Panel Dimensions
-  const defaultWidthInput = document.getElementById('default-width');
-  const defaultHeightInput = document.getElementById('default-height');
-
-  if (defaultWidthInput) {
-    settings.default_w = parseInt(defaultWidthInput.value, 10);
-  }
-
-  if (defaultHeightInput) {
-    settings.default_h = parseInt(defaultHeightInput.value, 10);
   }
 
   // Story 4.4: Behavior Settings Controls
@@ -495,23 +451,12 @@ export function initializeSettingsModal() {
   // User must explicitly choose Save or Cancel
 
   // Story 4.5: Wire appearance settings with live preview
-  const colorSchemeSelect = document.getElementById('color-scheme-select');
   const fontSizeSlider = document.getElementById('font-size-slider');
   const fontSizeValue = document.getElementById('font-size-value');
   const activePanelOpacitySlider = document.getElementById('active-panel-opacity-slider');
   const activePanelOpacityValue = document.getElementById('active-panel-opacity-value');
   const backgroundPanelOpacitySlider = document.getElementById('background-panel-opacity-slider');
   const backgroundPanelOpacityValue = document.getElementById('background-panel-opacity-value');
-
-  // Color Scheme - live preview + save
-  colorSchemeSelect?.addEventListener('change', (e) => {
-    const scheme = e.target.value;
-    applyColorScheme(scheme);
-
-    const settings = getSettings();
-    settings.colorScheme = scheme;
-    saveSettings(settings);
-  });
 
   // Font Size - live preview + save
   fontSizeSlider?.addEventListener('input', (e) => {
@@ -665,74 +610,6 @@ export function initializeSettingsModal() {
 
     // Recreate all editors to apply theme change
     window.location.reload();
-  });
-
-  // Story 7.2: Default Panel Width - validation + save
-  const defaultWidthInput = document.getElementById('default-width');
-  const defaultWidthValue = document.getElementById('default-width-value');
-  const widthValidation = document.getElementById('width-validation');
-
-  defaultWidthInput?.addEventListener('input', (e) => {
-    const value = parseInt(e.target.value, 10);
-
-    // Update displayed value
-    if (defaultWidthValue) {
-      defaultWidthValue.textContent = value;
-    }
-
-    // Validate range
-    if (isNaN(value) || value < 300 || value > 2000) {
-      if (widthValidation) {
-        widthValidation.textContent = value < 300 ? 'Minimum: 300px' : value > 2000 ? 'Maximum: 2000px' : 'Invalid';
-        widthValidation.className = 'validation-message invalid';
-      }
-      e.target.setCustomValidity('Invalid width');
-    } else {
-      if (widthValidation) {
-        widthValidation.textContent = '✓';
-        widthValidation.className = 'validation-message valid';
-      }
-      e.target.setCustomValidity('');
-
-      // Save to settings (debounced via updateSetting)
-      const settings = getSettings();
-      settings.default_w = value;
-      saveSettings(settings);
-    }
-  });
-
-  // Story 7.2: Default Panel Height - validation + save
-  const defaultHeightInput = document.getElementById('default-height');
-  const defaultHeightValue = document.getElementById('default-height-value');
-  const heightValidation = document.getElementById('height-validation');
-
-  defaultHeightInput?.addEventListener('input', (e) => {
-    const value = parseInt(e.target.value, 10);
-
-    // Update displayed value
-    if (defaultHeightValue) {
-      defaultHeightValue.textContent = value;
-    }
-
-    // Validate range
-    if (isNaN(value) || value < 200 || value > 1500) {
-      if (heightValidation) {
-        heightValidation.textContent = value < 200 ? 'Minimum: 200px' : value > 1500 ? 'Maximum: 1500px' : 'Invalid';
-        heightValidation.className = 'validation-message invalid';
-      }
-      e.target.setCustomValidity('Invalid height');
-    } else {
-      if (heightValidation) {
-        heightValidation.textContent = '✓';
-        heightValidation.className = 'validation-message valid';
-      }
-      e.target.setCustomValidity('');
-
-      // Save to settings (debounced via updateSetting)
-      const settings = getSettings();
-      settings.default_h = value;
-      saveSettings(settings);
-    }
   });
 
   // Story 4.6: Integration Settings Event Handlers
