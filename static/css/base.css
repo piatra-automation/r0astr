@@ -106,6 +106,7 @@ h1 {
   align-items: center;
   padding: 0 20px;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.3s ease-in;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   -webkit-app-region: no-drag;
@@ -113,6 +114,7 @@ h1 {
 
 .banner-bar.visible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .banner-bar .site-logo {
@@ -153,10 +155,17 @@ h1 {
    TOP MENU BAR - Auto-hiding drawer
    ============================================ */
 
+/* Hover targets - positioned by skin CSS */
+.skin-hover-target {
+  position: fixed;
+  pointer-events: auto;
+  z-index: 10101; /* Above all UI elements (banner: 10000, menu: 10100) */
+  /* Position, size, and styling defined by skin CSS */
+}
+
 .top-menu-bar {
   position: fixed;
-  top: var(--projection-margin-top);
-  left: 50%;
+  /* Position defined by skin CSS */
   height: var(--top-bar-height);
   width: fit-content;
   padding: 0 20px;
@@ -168,15 +177,14 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 20px;
-  transform: translateX(-50%) translateY(-100%);
   opacity: 0;
   transition: transform 0.3s ease, opacity 0.3s ease;
+  /* Transform defined by skin CSS */
 }
 
-.banner-bar:hover ~ .top-menu-bar,
+/* Keep self-hover and .visible behavior */
 .top-menu-bar:hover,
 .top-menu-bar.visible {
-  transform: translateX(-50%) translateY(0);
   opacity: 1;
   pointer-events: auto;
 }
@@ -201,11 +209,13 @@ h1 {
   align-items: center;
   padding: 0 20px;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.3s ease-in;
 }
 
 .metronome-section.visible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .step-sequencer {

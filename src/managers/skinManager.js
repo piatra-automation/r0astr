@@ -67,6 +67,9 @@ class SkinManager {
 
       console.log(`[SkinManager] Loading skin '${skinName}'...`);
 
+      // 2. Clear old hover targets
+      this.clearHoverTargets();
+
       // 2. Load CSS (if not already loaded)
       if (this.cssLoaded !== skinName) {
         // Remove old skin CSS
@@ -123,11 +126,15 @@ class SkinManager {
 
       await Promise.all(templatePromises);
 
+      // 5. Inject hover targets into DOM
+      this.injectHoverTargets(manifest.hoverTargets || []);
+
       this.currentSkin = manifest;
 
       console.log(`✓ Skin '${skinName}' loaded:`, {
         templates: Array.from(this.templates.keys()),
-        cssVariables: Object.keys(manifest.cssVariables || {}).length
+        cssVariables: Object.keys(manifest.cssVariables || {}).length,
+        hoverTargets: (manifest.hoverTargets || []).length
       });
 
       return manifest;
@@ -191,6 +198,43 @@ class SkinManager {
     }));
 
     console.log(`✓ Skin hot-reloaded: ${skinName}`);
+  }
+
+  /**
+   * Clear existing hover targets from DOM
+   */
+  clearHoverTargets() {
+    const existingTargets = document.querySelectorAll('.skin-hover-target');
+    existingTargets.forEach(target => target.remove());
+  }
+
+  /**
+   * Inject hover targets into DOM based on skin manifest
+   * @param {Array} hoverTargets - Array of hover target configs from manifest
+   */
+  injectHoverTargets(hoverTargets) {
+    if (!hoverTargets || hoverTargets.length === 0) {
+      console.log('[SkinManager] No hover targets defined for this skin');
+      return;
+    }
+
+    // Inject each hover target as direct body child (for CSS sibling selectors to work)
+    hoverTargets.forEach(target => {
+      const div = document.createElement('div');
+      div.className = 'skin-hover-target';
+      div.setAttribute('data-hover-id', target.id);
+      div.setAttribute('data-hint', target.hint || 'none');
+      div.setAttribute('aria-hidden', 'true');
+
+      // Store controlled selectors as data attribute
+      const controls = Array.isArray(target.controls) ? target.controls : [target.controls];
+      div.setAttribute('data-controls', controls.join(','));
+
+      // Insert at start of body (before other elements) so sibling selectors work
+      document.body.insertBefore(div, document.body.firstChild);
+
+      console.log(`[SkinManager] Hover target '${target.id}' controls: ${controls.join(', ')}`);
+    });
   }
 
   /**
