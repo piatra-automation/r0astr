@@ -1,0 +1,20 @@
+{
+  "name": "r0astr Default",
+  "version": "1.0.0",
+  "author": "Piatra",
+  "description": "Clean tree-based panel layout with collapsible details",
+  "layoutType": "tree",
+  "cssVariables": {},
+  "templates": {
+    "panel": "panel.html",
+    "slider": "slider.html",
+    "sliderCollapsed": "slider-collapsed.html"
+  },
+  "hoverTargets": [
+    {
+      "id": "metronome-trigger",
+      "controls": [".top-menu-bar"],
+      "hint": "visible"
+    }
+  ]
+}

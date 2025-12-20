@@ -64,26 +64,6 @@
 
   <!-- Master Button Block: Removed - buttons now in master panel row -->
 
-  <div id="splash-modal" class="splash-overlay" role="dialog" aria-modal="true" aria-label="Loading r0astr">
-    <!-- Large animated logo -->
-    <div class="splash-logo-image" id="splash-logo-animate">
-      <img src="/static/images/banner.png" alt="r0astr Logo">
-    </div>
-
-    <div class="splash-content">
-      <div class="splash-logo">
-        <h1 class="splash-title">r0astr</h1>
-      </div>
-      <p class="splash-tagline">Multi-Instrument Live Coding Interface</p>
-      <div class="splash-progress-container">
-        <div class="splash-progress-bar splash-progress-indeterminate">
-          <div class="splash-progress-fill"></div>
-        </div>
-        <p class="splash-status">Loading samples...</p>
-      </div>
-    </div>
-  </div>
-
   <!-- Settings Modal -->
   <div id="settings-modal" class="modal-overlay" role="dialog" aria-labelledby="settings-title" aria-modal="true">
     <div class="modal-content settings-panel">
@@ -140,18 +120,6 @@
             </label>
             <p class="setting-description">
               When enabled, background panels collapse to show only header (badge, title, buttons)
-            </p>
-          </div>
-
-          <!-- Show Splash Screen Toggle -->
-          <div class="setting-item">
-            <label class="toggle-label">
-              <input type="checkbox" id="show-splash-toggle" class="toggle-input">
-              <span class="toggle-slider"></span>
-              <span class="toggle-text">Show splash screen during loading</span>
-            </label>
-            <p class="setting-description">
-              Display animated splash screen while samples load. When disabled, page shows immediately and samples load in background.
             </p>
           </div>
 

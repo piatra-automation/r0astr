@@ -1,0 +1,438 @@
+/**
+ * Glass Skin Theme
+ * Modern glassmorphism design with frosted translucent panels
+ */
+
+/* =====================
+   Global Glass Effects
+   ===================== */
+
+body {
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  background-attachment: fixed;
+}
+
+/* Transparent overlay for glass effect */
+body::before {
+  background: transparent;
+}
+
+/* =====================
+   Hover Target: Left Edge
+   ===================== */
+
+/* Left edge trigger - extends to overlap with menu for seamless hover */
+.skin-hover-target[data-hover-id="left-edge-menu"] {
+  top: 0;
+  left: 0;
+  /* Wide enough to overlap with menu when it slides out */
+  width: 250px;
+  height: 100vh;
+  background: linear-gradient(to right, rgba(0, 212, 255, 0.08) 0%, transparent 60px);
+  border-right: 1px solid rgba(0, 212, 255, 0.15);
+  transition: background 0.3s ease;
+  /* z-index inherited from base.css (10050 - below menu) */
+}
+
+.skin-hover-target[data-hover-id="left-edge-menu"]:hover {
+  background: linear-gradient(to right, rgba(0, 212, 255, 0.12) 0%, transparent 60px);
+}
+
+/* Menu slides from left, positioned to overlap with trigger zone */
+.top-menu-bar {
+  top: 50%;
+  left: 0;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 16px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  transform: translateX(-100%) translateY(-50%); /* Hidden off-screen */
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Show menu on hover - menu overlaps trigger zone so hover persists */
+.skin-hover-target[data-hover-id="left-edge-menu"]:hover ~ .top-menu-bar,
+.top-menu-bar:hover {
+  transform: translateX(0) translateY(-50%); /* Slides into trigger zone */
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Banner visible by default in glass skin */
+.banner-bar {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Metronome visible by default */
+.metronome-section {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Main container with ambient glow */
+.panel-tree {
+  filter: drop-shadow(0 0 40px rgba(0, 212, 255, 0.15));
+}
+
+/* =====================
+   Panel Glass Effects
+   ===================== */
+
+.level-panel {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.level-panel:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 12px 48px rgba(0, 212, 255, 0.3),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Playing panel glow */
+.level-panel.playing {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 30px var(--primary-glow),
+              0 12px 48px rgba(0, 0, 0, 0.5),
+              inset 0 0 0 1px rgba(0, 212, 255, 0.3);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 30px var(--primary-glow),
+                0 12px 48px rgba(0, 0, 0, 0.5),
+                inset 0 0 0 1px rgba(0, 212, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 50px var(--primary-glow),
+                0 12px 48px rgba(0, 0, 0, 0.5),
+                inset 0 0 0 1px rgba(0, 212, 255, 0.5);
+  }
+}
+
+/* Stale panel warning glow */
+.level-panel.stale {
+  border-color: #fbbf24 !important;
+  box-shadow: 0 0 25px rgba(251, 191, 36, 0.4),
+              0 12px 48px rgba(0, 0, 0, 0.5),
+              inset 0 0 0 1px rgba(251, 191, 36, 0.2);
+}
+
+/* =====================
+   Panel Header (Summary)
+   ===================== */
+
+.level-panel summary {
+  background: linear-gradient(135deg,
+              rgba(255, 255, 255, 0.1) 0%,
+              rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 16px 16px 0 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+}
+
+.level-panel[open] summary {
+  border-radius: 16px 16px 0 0;
+}
+
+/* Panel number badge - frosted circle */
+.panel-number-badge {
+  background: linear-gradient(135deg, var(--primary-color), #00a8cc) !important;
+  color: #000 !important;
+  font-weight: 700;
+  box-shadow: 0 4px 12px var(--primary-glow),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 14px;
+}
+
+/* Panel title with glass effect */
+.panel-title {
+  color: var(--text-primary) !important;
+  font-weight: 500;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* =====================
+   Buttons - Frosted Glass
+   ===================== */
+
+.btn-playback,
+.btn-delete,
+.btn-update-all,
+.btn-stop-all {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: var(--text-primary) !important;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.btn-playback:hover,
+.btn-delete:hover,
+.btn-update-all:hover,
+.btn-stop-all:hover {
+  background: rgba(0, 212, 255, 0.2) !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 4px 16px var(--primary-glow),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.btn-playback:active,
+.btn-delete:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.3);
+}
+
+/* Playing button state */
+.btn-playback.playing {
+  background: linear-gradient(135deg, var(--primary-color), #00a8cc) !important;
+  color: #000 !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* =====================
+   Code Editor - Dark Glass
+   ===================== */
+
+.code-editor-wrapper {
+  background: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 0 0 12px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.cm-editor {
+  background: transparent !important;
+}
+
+.cm-scroller {
+  background: transparent !important;
+}
+
+.cm-gutters {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* =====================
+   Sliders - Glass Controls
+   ===================== */
+
+.leaf-slider {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 8px 0;
+  transition: all 0.2s ease;
+}
+
+.leaf-slider:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+}
+
+.leaf-slider label {
+  color: var(--text-primary);
+  font-weight: 500;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.leaf-slider input[type="range"] {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  height: 6px;
+}
+
+.leaf-slider input[type="range"]::-webkit-slider-thumb {
+  background: linear-gradient(135deg, var(--primary-color), #00a8cc);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px var(--primary-glow),
+              0 0 0 4px rgba(0, 212, 255, 0.2);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.leaf-slider input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 4px 16px var(--primary-glow),
+              0 0 0 6px rgba(0, 212, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.slider-value {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-shadow: 0 0 10px var(--primary-glow);
+}
+
+/* =====================
+   Top Menu Bar - Glass
+   ===================== */
+
+.top-menu-bar {
+  background: rgba(15, 12, 41, 0.8) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+.top-bar-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: var(--text-primary) !important;
+}
+
+.top-bar-btn:hover {
+  background: rgba(0, 212, 255, 0.2) !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 4px 16px var(--primary-glow);
+}
+
+/* =====================
+   Banner - Frosted Glass
+   ===================== */
+
+.banner-bar {
+  background: rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.banner-subtitle a {
+  color: var(--primary-color) !important;
+  text-shadow: 0 0 10px var(--primary-glow);
+}
+
+/* =====================
+   Metronome - Glass Steps
+   ===================== */
+
+.metronome-section {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.step-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.step-box.active {
+  background: linear-gradient(135deg, var(--primary-color), #00a8cc);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 20px var(--primary-glow),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* =====================
+   Add Panel Button - Glass
+   ===================== */
+
+.add-panel-trigger {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 2px dashed rgba(255, 255, 255, 0.2) !important;
+  border-radius: 16px;
+  color: var(--text-secondary) !important;
+  transition: all 0.3s ease;
+}
+
+.add-panel-trigger:hover {
+  background: rgba(0, 212, 255, 0.1) !important;
+  border-color: var(--primary-color) !important;
+  border-style: solid !important;
+  box-shadow: 0 8px 32px var(--primary-glow);
+  color: var(--primary-color) !important;
+}
+
+.add-badge {
+  background: linear-gradient(135deg, var(--primary-color), #00a8cc);
+  color: #000;
+  font-size: 24px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px var(--primary-glow);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* =====================
+   Scrollbars - Glass
+   ===================== */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: 10px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.5);
+}
+
+/* =====================
+   Modals - Glass Overlay
+   ===================== */
+
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.modal-content {
+  background: rgba(15, 12, 41, 0.95) !important;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8),
+              0 0 0 1px rgba(255, 255, 255, 0.1);
+}

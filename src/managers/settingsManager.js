@@ -21,7 +21,6 @@ export const DEFAULT_SETTINGS = {
   activePanelOpacity: 95,         // Active (focused) panel background opacity (50-100%)
   backgroundPanelOpacity: 60,     // Background (unfocused) panels cumulative opacity (20-100%)
   collapseOnBlur: false,          // Collapse unfocused panels to mini-view (header only)
-  showSplash: true,               // Show splash screen during sample loading (false = skip, show page immediately)
   showControlsWhenCollapsed: true, // Show sliders/viz when panel is collapsed but playing (hides only code editor)
   wrap_lines: false,              // Line wrapping in code panels (true = wrap, false = scroll) - Story 7.1
   auto_format: false,             // Auto-format code on PLAY/UPDATE (true = format, false = no format) - Story 7.4

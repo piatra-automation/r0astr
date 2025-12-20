@@ -19,7 +19,7 @@ import * as estreePlugin from 'prettier/plugins/estree';
 import { connect as wsConnect, send as wsSend, isConnected as wsIsConnected, MESSAGE_TYPES, syncPanelState, sendFullState } from './managers/websocketManager.js';
 import { eventBus } from './utils/eventBus.js';
 import { renderSliders as smRenderSliders, renderCollapsedSliders as smRenderCollapsedSliders, updateSliderValue as smUpdateSliderValue, clearSliders as smClearSliders, getPanelSliders } from './managers/sliderManager.js';
-import { initializeWithSplash, dismissSplash, updateSplashProgress, prebake, skipSplash } from './managers/splash.js';
+import { prebake } from './managers/splash.js';
 import { initializeMetronome, initializePatternHighlighting } from './managers/visualization.js';
 import {
   cardStates,
@@ -2312,19 +2312,11 @@ async function initializeStrudel() {
   const modulesLoading = loadModules();
   const snippetUrl = appSettings?.snippetLocation || '';
 
-  // Check splash setting
-  if (appSettings?.showSplash) {
-    // Show splash screen with progress during loading
-    const samplesLoadingWithSplash = initializeWithSplash(snippetUrl);
-    await Promise.all([modulesLoading, samplesLoadingWithSplash]);
-  } else {
-    // Skip splash - show UI immediately, load samples async
-    skipSplash();
-    // Fire off sample loading in background (don't await)
-    prebake(snippetUrl).catch(err => console.warn('Background sample loading error:', err));
-    // Only await modules (required for REPL)
-    await modulesLoading;
-  }
+  // Load samples in background (non-blocking)
+  prebake(snippetUrl).catch(err => console.warn('Background sample loading error:', err));
+
+  // Only await modules (required for REPL)
+  await modulesLoading;
 
   // Create single repl instance shared by all cards
   const replInstance = repl({

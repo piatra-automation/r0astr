@@ -1,0 +1,29 @@
+{
+  "name": "Glass",
+  "version": "1.0.0",
+  "author": "r0astr",
+  "description": "Modern glassmorphism design with frosted translucent panels and backdrop blur",
+  "layoutType": "tree",
+  "cssVariables": {
+    "--primary-color": "#00d4ff",
+    "--primary-glow": "rgba(0, 212, 255, 0.5)",
+    "--glass-bg": "rgba(255, 255, 255, 0.08)",
+    "--glass-border": "rgba(255, 255, 255, 0.18)",
+    "--glass-shadow": "0 8px 32px rgba(0, 0, 0, 0.4)",
+    "--backdrop-blur": "12px",
+    "--text-primary": "#ffffff",
+    "--text-secondary": "rgba(255, 255, 255, 0.7)"
+  },
+  "templates": {
+    "panel": "panel.html",
+    "slider": "slider.html",
+    "sliderCollapsed": "slider-collapsed.html"
+  },
+  "hoverTargets": [
+    {
+      "id": "left-edge-menu",
+      "controls": [".top-menu-bar"],
+      "hint": "subtle-glow"
+    }
+  ]
+}

@@ -113,7 +113,7 @@
   --master-buttons-height: 60px;
   --top-bar-hover-zone: 90px;
 
-  /* Logo positioning (used by banner-bar and splash animation) */
+  /* Logo positioning (used by banner-bar) */
   --logo-height: 36px;
   --logo-left-offset: 20px;
   /* Vertical center: projection-margin + (banner-height - logo-height) / 2 */
@@ -207,8 +207,6 @@
   --z-logo: 10001;
   --z-subtitle: 10001;
   --z-modal: 10001;
-  --z-splash: 10002;
-  --z-splash-content: 10003;
 
   /* Theme colors (default dark) */
   --bg-color: var(--cream);

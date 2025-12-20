@@ -96,12 +96,6 @@ function loadSettingsIntoForm() {
     collapseOnBlurToggle.checked = settings.collapseOnBlur || false;
   }
 
-  // Show Splash Toggle
-  const showSplashToggle = document.getElementById('show-splash-toggle');
-  if (showSplashToggle) {
-    showSplashToggle.checked = settings.showSplash !== false;
-  }
-
   // Show Controls When Collapsed Toggle
   const showControlsCollapsedToggle = document.getElementById('show-controls-collapsed-toggle');
   if (showControlsCollapsedToggle) {
@@ -551,18 +545,6 @@ export function initializeSettingsModal() {
     updatePanelOpacities();
 
     console.log(`Collapse on blur ${collapse ? 'enabled' : 'disabled'}`);
-  });
-
-  // Show Splash - save (applies on next page load)
-  const showSplashToggle = document.getElementById('show-splash-toggle');
-  showSplashToggle?.addEventListener('change', (e) => {
-    const showSplash = e.target.checked;
-
-    const settings = getSettings();
-    settings.showSplash = showSplash;
-    saveSettings(settings);
-
-    console.log(`Show splash ${showSplash ? 'enabled' : 'disabled'} (applies on next load)`);
   });
 
   // Show Controls When Collapsed - save and apply immediately

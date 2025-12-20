@@ -1,0 +1,53 @@
+/**
+ * Default Skin Theme
+ *
+ * The default skin uses the base CSS from /static/css/
+ * This file explicitly restores default backgrounds when switching from other skins.
+ */
+
+/* Default beige/gray background */
+body {
+  background: #969696;
+  background-attachment: scroll;
+}
+
+/* Default gradient overlay */
+body::before {
+  background: linear-gradient(to bottom right, var(--panel-warm-light), var(--panel-warm-dark));
+}
+
+/* =====================
+   Hover Target: Metronome
+   ===================== */
+
+/* Position hover target over metronome area - extends to overlap menu */
+.skin-hover-target[data-hover-id="metronome-trigger"] {
+  top: calc(var(--projection-margin-top) + var(--banner-bar-height));
+  left: var(--projection-margin-left);
+  right: var(--projection-margin-right);
+  /* Tall enough to include menu area for seamless hover transition */
+  height: calc(var(--metronome-height) + var(--top-bar-height));
+  /* z-index inherited from base.css (10050 - below menu, above metronome) */
+}
+
+/* Position menu to appear just above metronome, overlapping trigger zone */
+.top-menu-bar {
+  top: calc(var(--projection-margin-top) + var(--banner-bar-height));
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%); /* Hidden above */
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Show menu on hover - menu overlaps trigger zone so hover persists */
+.skin-hover-target[data-hover-id="metronome-trigger"]:hover ~ .top-menu-bar,
+.top-menu-bar:hover {
+  transform: translateX(-50%) translateY(0); /* Slides down, overlapping trigger */
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Metronome visible by default */
+.metronome-section {
+  opacity: 1;
+  pointer-events: auto;
+}
