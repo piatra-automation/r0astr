@@ -410,10 +410,14 @@ export function renderPanel(panelId, options = {}) {
 export async function reRenderAllPanels(createEditorView, editorViews, renderSliders = null, getPanelSliders = null) {
   console.log(`[PanelManager] Re-rendering ${panels.size} panels with new skin...`);
 
-  // Clear DOM (keep internal state)
+  // Clear DOM except master panel (keep internal state)
   const panelTree = document.querySelector('.panel-tree');
-  const existingPanels = panelTree.querySelectorAll('.level-panel');
+  const existingPanels = panelTree.querySelectorAll('.level-panel:not([data-panel-id="panel-0"])');
   existingPanels.forEach(panel => panel.remove());
+
+  // Get master panel code before clearing editor views
+  const masterView = editorViews.get(MASTER_PANEL_ID);
+  const masterCode = masterView?.state.doc.toString() || '';
 
   // Clear editor views (will be recreated)
   editorViews.clear();
@@ -456,6 +460,21 @@ export async function reRenderAllPanels(createEditorView, editorViews, renderSli
       console.error(`[PanelManager] ✗ Failed to render ${panelId}:`, error);
       // Continue with next panel instead of stopping
     }
+  }
+
+  // Re-create master panel editor (static HTML panel, not in panels Map)
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const masterContainer = getPanelEditorContainer(MASTER_PANEL_ID);
+  if (masterContainer) {
+    console.log('[PanelManager] Recreating master panel editor');
+    const masterEditorView = createEditorView(masterContainer, {
+      initialCode: masterCode,
+      panelId: MASTER_PANEL_ID
+    });
+    editorViews.set(MASTER_PANEL_ID, masterEditorView);
+    console.log('[PanelManager] ✓ Master panel editor recreated');
+  } else {
+    console.error('[PanelManager] ✗ Master panel container not found');
   }
 
   console.log('[PanelManager] ✓ Panels re-rendered');
