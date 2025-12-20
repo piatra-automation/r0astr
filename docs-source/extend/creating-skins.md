@@ -41,9 +41,27 @@ public/skins/
     "panel": "panel.html",
     "slider": "slider.html",
     "sliderCollapsed": "slider-collapsed.html"
-  }
+  },
+  "hoverTargets": [
+    {
+      "id": "menu-trigger",
+      "controls": [".top-menu-bar"],
+      "hint": "subtle-glow"
+    }
+  ]
 }
 ```
+
+#### Manifest Fields
+
+- **name** - Display name for the skin
+- **version** - Semantic version (1.0.0)
+- **author** - Creator name
+- **description** - Brief description
+- **layoutType** - Layout style identifier
+- **cssVariables** - CSS custom properties to override
+- **templates** - Template file mappings
+- **hoverTargets** (optional) - Array of hover interaction configs
 
 ### 3. Create Templates
 
@@ -120,6 +138,116 @@ Override CSS variables or add custom styles:
 }
 ```
 
+### 5. Configure Hover Targets (Optional)
+
+Hover targets allow you to create interactive regions that trigger UI elements.
+
+#### Hover Target Configuration
+
+Each hover target in the manifest has:
+
+```json
+{
+  "id": "unique-identifier",
+  "controls": [".selector1", ".selector2"],
+  "hint": "visual-hint-type"
+}
+```
+
+**Fields:**
+
+- `id` - Unique identifier for CSS targeting
+- `controls` - Array of CSS selectors for elements to show on hover
+- `hint` - Visual hint type (see below)
+
+#### Visual Hint Types
+
+- `subtle-glow` - Faint edge glow (good for edge triggers)
+- `pulse` - Pulsing animation (draws attention)
+- `visible` - Always visible (like a button)
+- `banner` - Uses existing element visibility
+- `none` - Completely invisible (discovery by accident)
+
+#### CSS Implementation
+
+Position and style hover targets in your theme CSS:
+
+```css
+/* Position the hover target */
+.skin-hover-target[data-hover-id="menu-trigger"] {
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 100vh;
+  background: linear-gradient(to right, rgba(255, 107, 53, 0.2), transparent);
+  transition: all 0.3s ease;
+}
+
+/* Optional: Enhance on hover */
+.skin-hover-target[data-hover-id="menu-trigger"]:hover {
+  width: 30px;
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+}
+
+/* Position the controlled element */
+.top-menu-bar {
+  top: 50%;
+  left: 0;
+  transform: translateX(-100%) translateY(-50%);
+  transition: transform 0.3s ease;
+}
+
+/* Show element on hover */
+.skin-hover-target[data-hover-id="menu-trigger"]:hover ~ .top-menu-bar,
+.top-menu-bar:hover {
+  transform: translateX(0) translateY(-50%);
+  opacity: 1;
+  pointer-events: auto;
+}
+```
+
+#### Example: Multi-Point Hover (Glass Skin)
+
+```json
+{
+  "hoverTargets": [
+    {
+      "id": "left-edge-menu",
+      "controls": [".top-menu-bar"],
+      "hint": "subtle-glow"
+    },
+    {
+      "id": "bottom-metronome",
+      "controls": [".metronome-section"],
+      "hint": "visible"
+    }
+  ]
+}
+```
+
+**CSS:**
+
+```css
+/* Left edge menu trigger */
+.skin-hover-target[data-hover-id="left-edge-menu"] {
+  top: 0;
+  left: 0;
+  width: 15px;
+  height: 100vh;
+  background: linear-gradient(to right, rgba(0, 212, 255, 0.15), transparent);
+}
+
+/* Bottom metronome trigger */
+.skin-hover-target[data-hover-id="bottom-metronome"] {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+}
+```
+
 ## Required CSS Classes
 
 Your templates MUST include these classes for JS functionality:
@@ -164,7 +292,13 @@ Your templates MUST include these classes for JS functionality:
 3. Open Settings → Integrations → UI Skin
 4. Select your skin from dropdown
 5. Save settings
-6. Reload page
+6. UI hot-reloads automatically - no page refresh needed!
+
+!!! tip "Development Workflow"
+    - **CSS changes**: Vite HMR updates automatically
+    - **Template changes**: Require page reload
+    - **Manifest changes**: Require page reload
+    - **Skin switching**: Hot-reloads (panel state preserved)
 
 ## Skin Storage
 
@@ -204,6 +338,12 @@ Retro WinAmp-inspired design with skinnable sprites.
 - Verify all required CSS classes present
 - Check template placeholders match expected variables
 - Fallback: Reset to default skin in localStorage
+
+**Hover targets not working:**
+- Ensure z-index is above all UI elements (use `z-index: 10101`)
+- Check that hidden elements have `pointer-events: none`
+- Verify hover selectors use `~` for sibling combinators
+- Remember hover targets are injected as direct body children
 
 **Page won't reload:**
 - Clear localStorage: `localStorage.removeItem('r0astr-settings')`

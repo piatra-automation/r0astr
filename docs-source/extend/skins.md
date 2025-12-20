@@ -16,8 +16,9 @@ Unlike traditional themes that only change colors, r0astr skins can completely r
 
 ✅ **Complete Layout Control** - Change from tree layout to grid, tabs, or floating windows
 ✅ **Visual Customization** - Override colors, fonts, spacing, animations
+✅ **Configurable Hover Interactions** - Define custom hover targets for menus and UI elements
 ✅ **Offline-First** - Skins bundled with app, no external dependencies
-✅ **Hot-Swappable** - Switch skins from settings, takes effect on reload
+✅ **Hot-Swappable** - Switch skins from settings without page reload
 ✅ **Community Shareable** - Package and distribute custom skins
 ✅ **Browser & Electron** - Works in all deployment modes
 
@@ -33,6 +34,19 @@ The standard r0astr interface with collapsible tree-structured panels, inline sl
 - Badge-based panel numbering
 - Material icons
 - Drag-to-reorder panels
+- Top banner hover trigger for menu access
+
+### Glass (Glassmorphism)
+Modern frosted glass design with translucent panels, backdrop blur, and multi-point hover interactions.
+
+**Features:**
+
+- Dark purple gradient background
+- Frosted glass panels with backdrop blur
+- Glowing cyan accents
+- Left-edge menu trigger (vertical slide-out)
+- Bottom metronome trigger (glass strip)
+- Pulsing glow animations on playing panels
 
 ## How Skins Work
 
@@ -62,14 +76,54 @@ Your selected skin is stored in:
 
 ### Switching Skins
 
-1. Click **CONFIG** button in top menu
+1. Click **CONFIG** button in top menu (hover top banner area to reveal menu)
 2. Navigate to **Integrations** section
 3. Select skin from **UI Skin / Theme** dropdown
 4. Click **Save**
-5. Reload page (Cmd+R / Ctrl+R)
+5. UI updates instantly - no reload needed!
 
-!!! tip "Reload Required"
-    Skin changes require a page reload to take effect. This ensures a clean slate for the new layout.
+!!! tip "Hot-Reload"
+    Skins hot-reload automatically when you save settings. Your panel state is preserved during the transition.
+
+## Hover Targets System
+
+Skins can define custom hover targets that control when and how UI elements appear. This allows for edge-based menus, corner triggers, and interactive regions.
+
+### How It Works
+
+1. **Manifest Definition** - Skin defines hover targets in `skin.json`
+2. **DOM Injection** - skinManager creates invisible hover regions
+3. **CSS Control** - Skin CSS positions targets and defines interactions
+4. **Pure CSS** - No JavaScript needed for hover behaviors
+
+### Example: Glass Skin
+
+The Glass skin demonstrates multi-point hover interactions:
+
+**Left Edge** (15px cyan glow):
+```
+Hover → Menu slides out from left vertically
+```
+
+**Top-Right Corner** (pulsing hint):
+```
+Hover → Banner slides down (unused in current version)
+```
+
+**Bottom Strip** (visible glass bar):
+```
+Hover → Metronome slides up from bottom
+```
+
+### Hover Target Hints
+
+Skins can use different visual hints for discoverability:
+
+- `subtle-glow` - Faint edge glow (Glass left edge)
+- `pulse` - Pulsing animation (Glass top corner)
+- `visible` - Always visible strip (Glass bottom)
+- `banner` - Inherit existing banner visibility (Default)
+- `none` - Completely invisible
 
 ## Creating Your Own Skin
 
