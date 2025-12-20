@@ -1,0 +1,231 @@
+/**
+ * Skin Manager
+ *
+ * Manages UI skins (themes + templates) for r0astr.
+ * Skins are loaded from /skins/ directory and cached in memory.
+ *
+ * Architecture:
+ * - Skins bundle CSS + HTML templates
+ * - Templates use {{placeholder}} syntax (Mustache-like)
+ * - Loaded once at startup, cached in memory for fast rendering
+ * - User preference stored in localStorage via settingsManager
+ */
+
+/**
+ * Simple template compiler (Mustache-style)
+ * Supports:
+ * - {{variable}} - Simple substitution
+ * - {{#condition}}...{{/condition}} - Conditional blocks (truthy check)
+ *
+ * @param {string} template - HTML template with {{placeholders}}
+ * @returns {Function} Compiled template function
+ */
+function compileTemplate(template) {
+  return (data) => {
+    let result = template;
+
+    // Handle conditional blocks: {{#key}}...{{/key}}
+    result = result.replace(/\{\{#(\w+)\}\}([\s\S]*?)\{\{\/\1\}\}/g, (match, key, content) => {
+      return data[key] ? content : '';
+    });
+
+    // Handle simple variable substitution: {{key}}
+    result = result.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+      const value = data[key];
+      return value !== undefined && value !== null ? value : '';
+    });
+
+    return result;
+  };
+}
+
+/**
+ * SkinManager class - Singleton pattern
+ */
+class SkinManager {
+  constructor() {
+    this.currentSkin = null;
+    this.templates = new Map();
+    this.cssLoaded = null;
+  }
+
+  /**
+   * Load a skin by name
+   * @param {string} skinName - Name of skin folder (e.g., 'default', 'minimal')
+   * @returns {Promise<Object>} Skin manifest
+   */
+  async loadSkin(skinName) {
+    const skinPath = `/skins/${skinName}`;
+
+    try {
+      // 1. Load manifest
+      const manifestResponse = await fetch(`${skinPath}/skin.json`);
+      if (!manifestResponse.ok) {
+        throw new Error(`Failed to load skin manifest: ${manifestResponse.status}`);
+      }
+      const manifest = await manifestResponse.json();
+
+      console.log(`[SkinManager] Loading skin '${skinName}'...`);
+
+      // 2. Load CSS (if not already loaded)
+      if (this.cssLoaded !== skinName) {
+        // Remove old skin CSS
+        const oldLink = document.getElementById('skin-css');
+        if (oldLink) {
+          oldLink.remove();
+        }
+
+        // Add new skin CSS and wait for it to load
+        await new Promise((resolve, reject) => {
+          const link = document.createElement('link');
+          link.id = 'skin-css';
+          link.rel = 'stylesheet';
+          // Add cache-busting timestamp
+          link.href = `${skinPath}/theme.css?v=${Date.now()}`;
+
+          link.onload = () => {
+            console.log(`[SkinManager] CSS loaded: ${skinPath}/theme.css`);
+            // Small delay to ensure browser applies styles
+            setTimeout(resolve, 50);
+          };
+
+          link.onerror = () => {
+            console.error(`[SkinManager] Failed to load CSS: ${skinPath}/theme.css`);
+            reject(new Error(`Failed to load CSS file`));
+          };
+
+          document.head.appendChild(link);
+        });
+
+        this.cssLoaded = skinName;
+      }
+
+      // 3. Apply CSS variable overrides from manifest
+      if (manifest.cssVariables) {
+        Object.entries(manifest.cssVariables).forEach(([key, value]) => {
+          document.documentElement.style.setProperty(key, value);
+        });
+      }
+
+      // 4. Load and compile HTML templates
+      const templatePromises = Object.entries(manifest.templates || {}).map(
+        async ([name, filename]) => {
+          const response = await fetch(`${skinPath}/templates/${filename}`);
+          if (!response.ok) {
+            throw new Error(`Failed to load template '${name}': ${response.status}`);
+          }
+          const html = await response.text();
+          const compiled = compileTemplate(html);
+          this.templates.set(name, compiled);
+          return name;
+        }
+      );
+
+      await Promise.all(templatePromises);
+
+      this.currentSkin = manifest;
+
+      console.log(`✓ Skin '${skinName}' loaded:`, {
+        templates: Array.from(this.templates.keys()),
+        cssVariables: Object.keys(manifest.cssVariables || {}).length
+      });
+
+      return manifest;
+
+    } catch (error) {
+      console.error(`[SkinManager] Failed to load skin '${skinName}':`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Render a template with data
+   * @param {string} templateName - Name of template (e.g., 'panel', 'slider')
+   * @param {Object} data - Data to interpolate into template
+   * @returns {string} Rendered HTML
+   */
+  render(templateName, data) {
+    const template = this.templates.get(templateName);
+
+    if (!template) {
+      console.error(`[SkinManager] Template '${templateName}' not found. Available:`, Array.from(this.templates.keys()));
+      // Fallback to basic structure
+      return this.getFallbackTemplate(templateName, data);
+    }
+
+    return template(data);
+  }
+
+  /**
+   * Check if a template exists
+   * @param {string} templateName - Template name
+   * @returns {boolean}
+   */
+  hasTemplate(templateName) {
+    return this.templates.has(templateName);
+  }
+
+  /**
+   * Get current skin info
+   * @returns {Object|null} Current skin manifest
+   */
+  getCurrentSkin() {
+    return this.currentSkin;
+  }
+
+  /**
+   * Hot-reload skin without page refresh
+   * Re-renders all panels with new templates while preserving state
+   * @param {string} skinName - Name of skin to load
+   * @returns {Promise<void>}
+   */
+  async hotReloadSkin(skinName) {
+    console.log(`[SkinManager] Hot-reloading skin: ${skinName}`);
+
+    // Load new skin
+    await this.loadSkin(skinName);
+
+    // Dispatch event for components to re-render
+    window.dispatchEvent(new CustomEvent('skin-changed', {
+      detail: { skinName, manifest: this.currentSkin }
+    }));
+
+    console.log(`✓ Skin hot-reloaded: ${skinName}`);
+  }
+
+  /**
+   * Fallback templates when skin templates fail to load
+   * @param {string} templateName - Template name
+   * @param {Object} data - Template data
+   * @returns {string} Minimal fallback HTML
+   */
+  getFallbackTemplate(templateName, data) {
+    const fallbacks = {
+      panel: `
+        <details>
+          <summary>
+            <span class="panel-number-badge">${data.panelNumber || '?'}</span>
+            <span class="panel-title">${data.title || 'Untitled'}</span>
+          </summary>
+          <div class="panel-editor-container">
+            <div class="code-editor" id="editor-${data.panelId}"></div>
+          </div>
+        </details>
+        <div class="panel-controls-container"></div>
+      `,
+      slider: `
+        <label>${data.label || 'Slider'}</label>
+        <input type="range" min="${data.min}" max="${data.max}" value="${data.value}">
+        <span class="slider-value">${data.valueFormatted || data.value}</span>
+      `,
+      sliderCollapsed: `
+        <input type="range" min="${data.min}" max="${data.max}" value="${data.value}">
+      `
+    };
+
+    return fallbacks[templateName] || `<div>Template '${templateName}' not found</div>`;
+  }
+}
+
+// Export singleton instance
+export const skinManager = new SkinManager();

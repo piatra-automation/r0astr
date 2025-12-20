@@ -138,6 +138,12 @@ function loadSettingsIntoForm() {
     editorThemeSelect.value = settings.editor_theme || 'atomone';
   }
 
+  // UI Skin Selection
+  const skinSelect = document.getElementById('skin-select');
+  if (skinSelect) {
+    skinSelect.value = settings.skin || 'default';
+  }
+
   // Story 4.4: Behavior Settings Controls
   const yoloToggle = document.getElementById('yolo-toggle');
   const autoSaveSelect = document.getElementById('autosave-interval-select');
@@ -279,6 +285,19 @@ function collectSettingsFromForm() {
     settings.editor_theme = editorThemeSelect.value;
   }
 
+  // UI Skin Selection
+  const skinSelect = document.getElementById('skin-select');
+  if (skinSelect) {
+    const newSkin = skinSelect.value;
+    const oldSkin = settings.skin || 'default';
+    settings.skin = newSkin;
+
+    // If skin changed, notify user that reload is required
+    if (newSkin !== oldSkin) {
+      console.log(`[Settings] Skin changed from '${oldSkin}' to '${newSkin}' - reload required`);
+    }
+  }
+
   // Story 4.4: Behavior Settings Controls
   const yoloToggle = document.getElementById('yolo-toggle');
   const autoSaveSelect = document.getElementById('autosave-interval-select');
@@ -380,8 +399,12 @@ function collectSettingsFromForm() {
  * Save settings from form
  * Collects form values, saves to localStorage, and closes modal
  */
-function handleSaveSettings() {
+async function handleSaveSettings() {
+  const oldSettings = getSettings();
   const newSettings = collectSettingsFromForm();
+
+  // Check if skin changed
+  const skinChanged = oldSettings.skin !== newSettings.skin;
 
   // Save to localStorage
   const success = saveSettings(newSettings);
@@ -393,6 +416,21 @@ function handleSaveSettings() {
     // Story 4.4: Restart auto-save timer with new interval
     if (newSettings.behavior?.autoSaveInterval) {
       startAutoSaveTimer(newSettings.behavior.autoSaveInterval);
+    }
+
+    // Hot-reload skin if changed (no page reload needed)
+    if (skinChanged) {
+      const skinName = newSettings.skin || 'default';
+      console.log(`[Settings] Skin changed to '${skinName}' - hot-reloading...`);
+
+      try {
+        const { skinManager } = await import('../managers/skinManager.js');
+        await skinManager.hotReloadSkin(skinName);
+        console.log('✓ Skin hot-reloaded successfully');
+      } catch (error) {
+        console.error('Failed to hot-reload skin:', error);
+        alert(`Failed to load skin '${skinName}'. Please reload the page.`);
+      }
     }
 
     // Dispatch settings changed event for components to react

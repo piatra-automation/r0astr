@@ -6,6 +6,7 @@
 import { getSettings } from './settingsManager.js';
 import { updatePanelOpacities } from './themeManager.js';
 import { eventBus } from '../utils/eventBus.js';
+import { skinManager } from './skinManager.js';
 
 // Master panel identifier constant (now panel-0 in tree structure)
 export const MASTER_PANEL_ID = 'panel-0';
@@ -373,37 +374,16 @@ export function renderPanel(panelId, options = {}) {
   // Hide delete button for master panel (panel-0)
   const deleteButtonStyle = panelId === MASTER_PANEL_ID ? 'display: none;' : '';
 
-  // Build tree structure: details (editor) + controls container (sliders/viz)
-  panelElement.innerHTML = `
-    <details${options.expanded ? ' open' : ''}>
-      <summary>
-        <span class="panel-number-badge" draggable="true">${panel.number}</span>
-        <span class="panel-title" data-panel-id="${panelId}" contenteditable="false" spellcheck="false">${panel.title}</span>
-        <div class="panel-actions">
-          <button class="btn-playback" data-card="${panelId}" title="Play">
-            <span class="material-icons">play_arrow</span>
-          </button>
-          <button class="btn-delete" data-panel="${panelId}" title="Delete" style="${deleteButtonStyle}">
-            <span class="material-icons">delete</span>
-          </button>
-        </div>
-      </summary>
-      <!-- Editor container - collapses with details -->
-      <div class="panel-editor-container">
-        <div class="code-editor-wrapper">
-          <div class="code-editor" id="editor-${panelId}" data-card="${panelId}"></div>
-        </div>
-        <div class="error-message" data-card="${panelId}" style="display: none;"></div>
-      </div>
-    </details>
-    <!-- Controls container - outside details, visibility controlled by settings -->
-    <div class="panel-controls-container">
-      <div class="leaf-viz" style="display: none;">
-        <div id="viz-container-${panelId}" class="viz-container"></div>
-      </div>
-      <!-- Slider leaves will be added dynamically by sliderManager -->
-    </div>
-  `;
+  // Render panel using skin template
+  const panelHTML = skinManager.render('panel', {
+    panelId,
+    panelNumber: panel.number,
+    title: panel.title,
+    expanded: options.expanded ? ' open' : '',
+    deleteButtonStyle
+  });
+
+  panelElement.innerHTML = panelHTML;
 
   // Insert into panel-tree (before add-panel-row to keep it at end)
   const panelTree = document.querySelector('.panel-tree');

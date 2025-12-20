@@ -5,6 +5,7 @@ import { sliderWithID, sliderValues as cmSliderValues, highlightExtension, updat
 import { createPanel, renderPanel, deletePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, expandPanel, collapsePanel, togglePanel, isPanelExpanded, MASTER_PANEL_ID } from './managers/panelManager.js';
 import { initializePanelReorder } from './ui/panelReorder.js';
 import { loadSettings, getSettings, updateSetting } from './managers/settingsManager.js';
+import { skinManager } from './managers/skinManager.js';
 import { moveEditorToScreen, removeEditorFromScreen, removeAllEditorsExcept, isEditorInScreen } from './managers/screenManager.js';
 import { initializeSettingsModal, openSettingsModal } from './ui/settingsModal.js';
 import { applyAllAppearanceSettings, updatePanelOpacities } from './managers/themeManager.js';
@@ -2916,14 +2917,35 @@ function initializeKeyboardShortcuts() {
 }
 
 // Initialize when DOM is ready
-// Load settings first (before any other initialization)
-appSettings = loadSettings();
-console.log('✓ Settings loaded');
+async function init() {
+  // Load settings first (before any other initialization)
+  appSettings = loadSettings();
+  console.log('✓ Settings loaded');
 
-// Wire up module dependencies (dependency injection)
-setMasterSlidersRef(() => currentMasterSliders);
-setUpdateAllButtonRef(updateAllButton);
-console.log('✓ Module dependencies wired');
+  // Load skin (before rendering any UI)
+  const skinName = appSettings.skin || 'default';
+  try {
+    await skinManager.loadSkin(skinName);
+  } catch (error) {
+    console.warn(`Failed to load skin '${skinName}', falling back to default`);
+    try {
+      await skinManager.loadSkin('default');
+    } catch (fallbackError) {
+      console.error('Failed to load default skin:', fallbackError);
+      alert('Critical error: Could not load UI skin. Please refresh the page.');
+    }
+  }
+
+  // Wire up module dependencies (dependency injection)
+  setMasterSlidersRef(() => currentMasterSliders);
+  setUpdateAllButtonRef(updateAllButton);
+  console.log('✓ Module dependencies wired');
+
+  continueInitialization();
+}
+
+// Continue with rest of initialization
+function continueInitialization() {
 
 // Story 4.4: Initialize auto-save timer with current settings
 startAutoSaveTimer(appSettings.behavior?.autoSaveInterval || 'manual');
@@ -2949,11 +2971,37 @@ if (document.querySelector('.panel-tree')) {
 
 // NOTE: updateAllEditorFontSizes is now imported from ./panels/panelEditor.js
 
-// Listen for settings changes to update tempo control and font sizes
-window.addEventListener('settings-changed', () => {
-  renderTempoControl();
-  updateAllEditorFontSizes();
-  updateMasterControlsVisibility();
-});
+  // Listen for settings changes to update tempo control and font sizes
+  window.addEventListener('settings-changed', () => {
+    renderTempoControl();
+    updateAllEditorFontSizes();
+    updateMasterControlsVisibility();
+  });
 
-initializeStrudel();
+  // Listen for skin changes to hot-reload UI
+  window.addEventListener('skin-changed', async (event) => {
+    console.log('[SkinHotReload] Saving current state and re-rendering panels...');
+
+    // Save current panel state (code, playing status, etc.)
+    savePanelStateWithMasterCode();
+
+    // Clear existing panels from DOM
+    const panelTree = document.querySelector('.panel-tree');
+    const existingPanels = panelTree.querySelectorAll('.level-panel');
+    existingPanels.forEach(panel => panel.remove());
+
+    // Clear editor views map
+    editorViews.clear();
+
+    // Reload panels from saved state with new skin templates
+    console.log('[SkinHotReload] Reloading panels from saved state...');
+    restorePanels();
+
+    console.log('✓ All panels re-rendered with new skin');
+  });
+
+  initializeStrudel();
+}
+
+// Start initialization
+init();

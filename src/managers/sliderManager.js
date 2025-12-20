@@ -6,6 +6,7 @@
 
 import { eventBus } from '../utils/eventBus.js';
 import { sliderValues } from '@strudel/codemirror';
+import { skinManager } from './skinManager.js';
 
 // Track slider metadata for each panel
 const panelSliders = {};
@@ -97,19 +98,21 @@ function renderTreeSliders(panelId, sliderWidgets, patternCode, sliderMetadata) 
       step: step ?? (max - min) / 1000
     });
 
-    // Create slider element (div, not li - not in a list)
+    // Create slider element using skin template
     const sliderEl = document.createElement('div');
     sliderEl.className = 'leaf-slider';
-    sliderEl.innerHTML = `
-      <label>${label}</label>
-      <input type="range"
-        min="${min}"
-        max="${max}"
-        step="${step ?? (max - min) / 1000}"
-        value="${currentValue}"
-        data-slider-id="${sliderId}">
-      <span class="slider-value" data-slider="${sliderId}">${currentValue.toFixed(2)}</span>
-    `;
+
+    const sliderHTML = skinManager.render('slider', {
+      label,
+      min,
+      max,
+      step: step ?? (max - min) / 1000,
+      value: currentValue,
+      valueFormatted: currentValue.toFixed(2),
+      sliderId
+    });
+
+    sliderEl.innerHTML = sliderHTML;
 
     const input = sliderEl.querySelector('input');
     input.addEventListener('input', (e) => {
@@ -202,7 +205,7 @@ export function renderCollapsedSliders(panelId, sliderWidgets) {
   // Clear existing collapsed sliders
   collapsedSlidersContainer.innerHTML = '';
 
-  // Render each slider without labels
+  // Render each slider without labels using skin template
   sliderWidgets.forEach((widget, index) => {
     const { value, min = 0, max = 1, step, from } = widget;
     const sliderId = `slider_${from}`;
@@ -210,13 +213,17 @@ export function renderCollapsedSliders(panelId, sliderWidgets) {
     const rawValue = sliderValues[sliderId] ?? value ?? 0;
     const currentValue = typeof rawValue === 'number' ? rawValue : parseFloat(rawValue) || 0;
 
-    const input = document.createElement('input');
-    input.type = 'range';
-    input.min = min;
-    input.max = max;
-    input.step = step ?? (max - min) / 1000;
-    input.value = currentValue;
-    input.dataset.sliderId = sliderId;
+    // Create wrapper div
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = skinManager.render('sliderCollapsed', {
+      min,
+      max,
+      step: step ?? (max - min) / 1000,
+      value: currentValue,
+      sliderId
+    });
+
+    const input = wrapper.querySelector('input');
     input.title = `Slider ${index + 1}: ${currentValue}`;
 
     input.addEventListener('input', (e) => {

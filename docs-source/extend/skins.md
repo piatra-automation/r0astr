@@ -1,236 +1,137 @@
-# Skins Overview
+# UI Skins System
 
-Customize r0astr's visual appearance with themes.
-
-!!! warning "In Development"
-    The skins system is partially implemented. Full theming support coming in v1.0.
-
----
+r0astr features a powerful skin system that allows complete customization of the UI layout and visual theme through modular skin packages.
 
 ## What Are Skins?
 
-Skins allow you to customize r0astr's visual appearance without modifying core code. Change colors, borders, and styling to match your preferences or performance setup.
+Skins in r0astr are self-contained packages that define:
 
-### Use Cases
+- **HTML Templates** - Panel layout, slider controls, UI components
+- **CSS Theme** - Visual styling, colors, spacing, animations
+- **Manifest** - Metadata, configuration, and CSS variable overrides
 
-- **Dark mode enthusiasts** - Pure black OLED themes
-- **Accessibility** - High contrast themes
-- **Branding** - Match your performance aesthetic
-- **Creativity** - Express your style
+Unlike traditional themes that only change colors, r0astr skins can completely restructure the UI layout while maintaining compatibility with the underlying JavaScript.
 
----
+## Features
 
-## What Can Be Customized
+✅ **Complete Layout Control** - Change from tree layout to grid, tabs, or floating windows
+✅ **Visual Customization** - Override colors, fonts, spacing, animations
+✅ **Offline-First** - Skins bundled with app, no external dependencies
+✅ **Hot-Swappable** - Switch skins from settings, takes effect on reload
+✅ **Community Shareable** - Package and distribute custom skins
+✅ **Browser & Electron** - Works in all deployment modes
 
-### Currently Supported
+## Included Skins
 
-| Element | Customizable |
-|---------|-------------|
-| Background colors | Yes |
-| Text colors | Yes |
-| Accent colors | Yes |
-| Panel styling | Yes |
-| Borders | Yes |
-| Button colors | Yes |
+### Default (Tree Layout)
+The standard r0astr interface with collapsible tree-structured panels, inline sliders, and floating visualizers.
 
-### Coming in v1.0
+**Features:**
 
-- Custom fonts and typography
-- Layout variations
-- Custom icons
-- Animation preferences
-- Component-level theming
+- Vertical tree layout
+- Collapsible details panels
+- Badge-based panel numbering
+- Material icons
+- Drag-to-reorder panels
 
----
+## How Skins Work
 
-## CSS Variables
+### Storage
+Your selected skin is stored in:
 
-r0astr uses CSS custom properties for theming. Override these in your skin:
+- **Browser**: `localStorage` as part of r0astr-settings
+- **Electron**: `userData/r0astr-settings.json`
+- **GitHub Pages**: Browser localStorage (persists across sessions)
 
-### Color Palette
+### Loading Sequence
 
-```css
-:root {
-  /* Background colors */
-  --r0astr-bg-primary: #1a1a2e;      /* Main background */
-  --r0astr-bg-secondary: #16213e;    /* Secondary background */
-  --r0astr-bg-tertiary: #0f0f23;     /* Tertiary background */
+1. **Startup**: App loads settings from localStorage
+2. **Skin Load**: Fetch manifest from `/skins/{skinName}/skin.json`
+3. **CSS Injection**: Add skin's `theme.css` to document head
+4. **Template Compilation**: Parse HTML templates into JavaScript functions
+5. **Rendering**: Use templates when creating panels/sliders
+6. **Caching**: Templates cached in memory for fast rendering
 
-  /* Text colors */
-  --r0astr-text-primary: #eee;       /* Main text */
-  --r0astr-text-secondary: #aaa;     /* Secondary text */
-  --r0astr-text-muted: #666;         /* Muted text */
+### Performance
 
-  /* Accent colors */
-  --r0astr-accent: #6366f1;          /* Primary accent */
-  --r0astr-accent-hover: #818cf8;    /* Accent hover state */
-  --r0astr-accent-active: #4f46e5;   /* Accent active state */
+- **Initial Load**: ~50-100ms (one-time fetch + compile)
+- **Rendering**: <1ms per panel (templates cached in memory)
+- **No I/O**: After initial load, all rendering is in-memory
 
-  /* Status colors */
-  --r0astr-success: #22c55e;         /* Success/playing */
-  --r0astr-warning: #f59e0b;         /* Warning states */
-  --r0astr-error: #ef4444;           /* Error states */
-}
+## Using Skins
+
+### Switching Skins
+
+1. Click **CONFIG** button in top menu
+2. Navigate to **Integrations** section
+3. Select skin from **UI Skin / Theme** dropdown
+4. Click **Save**
+5. Reload page (Cmd+R / Ctrl+R)
+
+!!! tip "Reload Required"
+    Skin changes require a page reload to take effect. This ensures a clean slate for the new layout.
+
+## Creating Your Own Skin
+
+Ready to create a custom skin? Head to [Creating Skins](creating-skins.md) for a complete tutorial.
+
+### Quick Start
+
+```bash
+# Create skin folder
+mkdir -p public/skins/my-custom-skin/templates
+
+# Copy default templates as starting point
+cp -r public/skins/default/templates/* public/skins/my-custom-skin/templates/
+
+# Create theme CSS
+touch public/skins/my-custom-skin/theme.css
+
+# Build and test
+npm run build
 ```
 
-### Panel Styling
+## Architecture
 
-```css
-:root {
-  /* Panel container */
-  --r0astr-panel-bg: #0f0f23;
-  --r0astr-panel-border: #333;
-  --r0astr-panel-radius: 8px;
-  --r0astr-panel-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+### Template System
 
-  /* Panel header */
-  --r0astr-header-bg: #16213e;
-  --r0astr-header-border: #333;
-}
+r0astr uses a simple Mustache-style templating engine:
+
+```html
+<!-- Template -->
+<span class="panel-title">{{title}}</span>
+
+<!-- Rendered -->
+<span class="panel-title">Instrument 1</span>
 ```
 
-### Buttons and Controls
+### Required CSS Classes
 
-```css
-:root {
-  /* Buttons */
-  --r0astr-button-bg: #333;
-  --r0astr-button-hover: #444;
-  --r0astr-button-active: #555;
-  --r0astr-button-text: #eee;
-  --r0astr-button-radius: 4px;
+For JavaScript functionality to work, templates must include specific CSS classes:
 
-  /* Sliders */
-  --r0astr-slider-track: #333;
-  --r0astr-slider-thumb: #6366f1;
-  --r0astr-slider-fill: #4f46e5;
-}
-```
+| Class | Purpose |
+|-------|---------|
+| `.panel-tree` | Main container |
+| `.level-panel` | Panel wrapper |
+| `.panel-title` | Editable title |
+| `.code-editor` | CodeMirror mount |
+| `.btn-playback` | Play/pause button |
+| `.panel-controls-container` | Sliders area |
 
-### Code Editor
+## Technical Details
 
-```css
-:root {
-  /* Editor area */
-  --r0astr-editor-bg: #0d0d1a;
-  --r0astr-editor-text: #d4d4d4;
-  --r0astr-editor-selection: rgba(99, 102, 241, 0.3);
-  --r0astr-editor-line-numbers: #666;
-}
-```
+For developers interested in the implementation:
 
----
+- **SkinManager**: `/src/managers/skinManager.js`
+- **Template Compilation**: Simple regex-based Mustache engine
+- **Integration**: panelManager.js, sliderManager.js use `skinManager.render()`
+- **Initialization**: `main.js` loads skin before rendering UI
 
-## Applying a Skin
+## License
 
-### Method 1: Browser Dev Tools (Testing)
-
-1. Open r0astr in your browser
-2. Open Developer Tools (F12 or Cmd+Option+I)
-3. Go to Elements/Inspector
-4. Find the `:root` element
-5. Add or modify CSS variables
-6. Changes are temporary (refresh to reset)
-
-### Method 2: Custom CSS File
-
-1. Create a `skin.css` file with your overrides
-2. Add to r0astr's HTML:
-   ```html
-   <link rel="stylesheet" href="skin.css">
-   ```
-3. Reload the page
-
-### Method 3: Local Development
-
-1. Clone the r0astr repository
-2. Modify `src/styles.css`
-3. Run `npm run dev` to preview
-
----
-
-## Quick Theme Examples
-
-### Pure Black (OLED)
-
-```css
-:root {
-  --r0astr-bg-primary: #000000;
-  --r0astr-bg-secondary: #0a0a0a;
-  --r0astr-panel-bg: #000000;
-  --r0astr-border: #222;
-}
-```
-
-### High Contrast
-
-```css
-:root {
-  --r0astr-bg-primary: #000000;
-  --r0astr-text-primary: #ffffff;
-  --r0astr-accent: #00ff00;
-  --r0astr-border: #ffffff;
-}
-```
-
-### Warm Tones
-
-```css
-:root {
-  --r0astr-bg-primary: #1a1612;
-  --r0astr-bg-secondary: #2d2520;
-  --r0astr-accent: #f59e0b;
-  --r0astr-accent-hover: #fbbf24;
-}
-```
-
----
-
-## Testing Your Skin
-
-### Checklist
-
-- [ ] Text is readable on all backgrounds
-- [ ] Buttons are visible and distinct
-- [ ] Playing/stopped states are clear
-- [ ] Code syntax highlighting is visible
-- [ ] Slider controls are usable
-- [ ] Works in both fullscreen and windowed modes
-
-### Accessibility
-
-Consider contrast ratios:
-
-- Text: Minimum 4.5:1 contrast ratio (WCAG AA)
-- Large text: Minimum 3:1 contrast ratio
-- UI components: Minimum 3:1 contrast ratio
-
-Use tools like [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) to verify.
-
----
+Skins inherit the project's **AGPL-3.0** license unless otherwise specified in `skin.json`.
 
 ## Next Steps
 
-<div class="grid cards" markdown>
-
--   :material-palette:{ .lg .middle } **Create Your Own**
-
-    ---
-
-    Step-by-step guide to creating a custom skin.
-
-    [:octicons-arrow-right-24: Creating Skins](creating-skins.md)
-
--   :material-view-gallery:{ .lg .middle } **Browse Gallery**
-
-    ---
-
-    See community-created themes.
-
-    [:octicons-arrow-right-24: Skin Gallery](skin-gallery.md)
-
-</div>
-
----
-
-*Full theming API documentation coming with v1.0.*
+- [Creating Skins Tutorial](creating-skins.md) - Step-by-step guide
+- [Skin Gallery](skin-gallery.md) - Browse community skins (coming soon)
