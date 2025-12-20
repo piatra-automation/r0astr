@@ -2,14 +2,16 @@
  * Skin Manager
  *
  * Manages UI skins (themes + templates) for r0astr.
- * Skins are loaded from /skins/ directory and cached in memory.
+ * Skins are loaded from /skins/ directory (bundled) or IndexedDB (custom).
  *
  * Architecture:
  * - Skins bundle CSS + HTML templates
  * - Templates use {{placeholder}} syntax (Mustache-like)
- * - Loaded once at startup, cached in memory for fast rendering
+ * - Dual-source loading: Check IndexedDB first, then fall back to bundled
  * - User preference stored in localStorage via settingsManager
  */
+
+import { getSkin, listSkins, getAllSkins } from './skinStorage.js';
 
 /**
  * Simple template compiler (Mustache-style)
@@ -50,11 +52,105 @@ class SkinManager {
   }
 
   /**
-   * Load a skin by name
-   * @param {string} skinName - Name of skin folder (e.g., 'default', 'minimal')
+   * Load a custom skin from IndexedDB
+   * @param {string} skinName - Skin name
+   * @returns {Promise<Object|null>} Skin manifest or null if not found
+   */
+  async loadCustomSkin(skinName) {
+    try {
+      const skinData = await getSkin(skinName);
+      if (!skinData) {
+        return null;
+      }
+
+      console.log(`[SkinManager] Loading custom skin '${skinName}' from IndexedDB...`);
+
+      const { manifest, files } = skinData;
+
+      // Clear old hover targets
+      this.clearHoverTargets();
+
+      // Load CSS from stored file
+      if (files['theme.css']) {
+        // Remove old skin CSS
+        const oldLink = document.getElementById('skin-css');
+        if (oldLink) {
+          oldLink.remove();
+        }
+
+        // Create blob URL from CSS content
+        const cssBlob = new Blob([files['theme.css']], { type: 'text/css' });
+        const cssUrl = URL.createObjectURL(cssBlob);
+
+        await new Promise((resolve, reject) => {
+          const link = document.createElement('link');
+          link.id = 'skin-css';
+          link.rel = 'stylesheet';
+          link.href = cssUrl;
+
+          link.onload = () => {
+            console.log(`[SkinManager] Custom CSS loaded from IndexedDB`);
+            setTimeout(resolve, 50);
+          };
+
+          link.onerror = () => reject(new Error('Failed to load custom CSS'));
+
+          document.head.appendChild(link);
+        });
+
+        this.cssLoaded = skinName;
+      }
+
+      // Apply CSS variable overrides
+      if (manifest.cssVariables) {
+        Object.entries(manifest.cssVariables).forEach(([key, value]) => {
+          document.documentElement.style.setProperty(key, value);
+        });
+      }
+
+      // Compile templates from stored files
+      this.templates.clear();
+      for (const [templateName, templateFilename] of Object.entries(manifest.templates || {})) {
+        // Try both with and without 'templates/' prefix
+        const templatePath = templateFilename.startsWith('templates/')
+          ? templateFilename
+          : `templates/${templateFilename}`;
+
+        const templateContent = files[templatePath] || files[templateFilename];
+        if (templateContent) {
+          const compiled = compileTemplate(templateContent);
+          this.templates.set(templateName, compiled);
+        } else {
+          console.warn(`[SkinManager] Template file not found: ${templateFilename}`);
+        }
+      }
+
+      // Inject hover targets
+      this.injectHoverTargets(manifest.hoverTargets || []);
+
+      this.currentSkin = manifest;
+
+      console.log(`✓ Custom skin '${skinName}' loaded:`, {
+        templates: Array.from(this.templates.keys()),
+        cssVariables: Object.keys(manifest.cssVariables || {}).length,
+        hoverTargets: (manifest.hoverTargets || []).length,
+        source: 'IndexedDB'
+      });
+
+      return manifest;
+
+    } catch (error) {
+      console.error(`[SkinManager] Failed to load custom skin '${skinName}':`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Load a bundled skin from /skins/ directory
+   * @param {string} skinName - Name of skin folder (e.g., 'default', 'glass')
    * @returns {Promise<Object>} Skin manifest
    */
-  async loadSkin(skinName) {
+  async loadBundledSkin(skinName) {
     const skinPath = `/skins/${skinName}`;
 
     try {
@@ -65,7 +161,7 @@ class SkinManager {
       }
       const manifest = await manifestResponse.json();
 
-      console.log(`[SkinManager] Loading skin '${skinName}'...`);
+      console.log(`[SkinManager] Loading bundled skin '${skinName}'...`);
 
       // 2. Clear old hover targets
       this.clearHoverTargets();
@@ -131,18 +227,36 @@ class SkinManager {
 
       this.currentSkin = manifest;
 
-      console.log(`✓ Skin '${skinName}' loaded:`, {
+      console.log(`✓ Bundled skin '${skinName}' loaded:`, {
         templates: Array.from(this.templates.keys()),
         cssVariables: Object.keys(manifest.cssVariables || {}).length,
-        hoverTargets: (manifest.hoverTargets || []).length
+        hoverTargets: (manifest.hoverTargets || []).length,
+        source: 'bundled'
       });
 
       return manifest;
 
     } catch (error) {
-      console.error(`[SkinManager] Failed to load skin '${skinName}':`, error);
+      console.error(`[SkinManager] Failed to load bundled skin '${skinName}':`, error);
       throw error;
     }
+  }
+
+  /**
+   * Load a skin by name (checks custom skins first, then bundled)
+   * @param {string} skinName - Skin name
+   * @returns {Promise<Object>} Skin manifest
+   */
+  async loadSkin(skinName) {
+    // Try loading from IndexedDB first (custom skins)
+    const customSkin = await this.loadCustomSkin(skinName);
+    if (customSkin) {
+      return customSkin;
+    }
+
+    // Fall back to bundled skin
+    console.log(`[SkinManager] No custom skin '${skinName}', loading bundled...`);
+    return await this.loadBundledSkin(skinName);
   }
 
   /**
@@ -235,6 +349,37 @@ class SkinManager {
 
       console.log(`[SkinManager] Hover target '${target.id}' controls: ${controls.join(', ')}`);
     });
+  }
+
+  /**
+   * List all available skins (bundled + custom)
+   * @returns {Promise<Array>} Array of skin info objects { name, source: 'bundled'|'custom', manifest }
+   */
+  async listAllSkins() {
+    const allSkins = [];
+
+    // Get bundled skins (hardcoded for now)
+    const bundledSkins = ['default', 'glass'];
+    for (const name of bundledSkins) {
+      allSkins.push({
+        name,
+        source: 'bundled',
+        manifest: null // Could fetch manifest if needed
+      });
+    }
+
+    // Get custom skins from IndexedDB
+    const customSkins = await getAllSkins();
+    for (const skinData of customSkins) {
+      allSkins.push({
+        name: skinData.name,
+        source: 'custom',
+        manifest: skinData.manifest,
+        importedAt: skinData.importedAt
+      });
+    }
+
+    return allSkins;
   }
 
   /**

@@ -292,11 +292,39 @@
           <div class="setting-item">
             <label for="skin-select">UI Skin / Theme</label>
             <select id="skin-select" class="setting-select">
-              <option value="default">Default (Tree Layout)</option>
-              <option value="glass">Glass (Glassmorphism)</option>
+              <!-- Options populated dynamically from bundled + custom skins -->
             </select>
             <p class="setting-description">
               Choose UI skin (layout + visual theme). Requires page reload to take effect.
+            </p>
+          </div>
+
+          <!-- Import Custom Skin -->
+          <div class="setting-item">
+            <label>Import Custom Skin</label>
+            <div class="skin-import-controls">
+              <input type="file" id="skin-import-file" accept=".zip" style="display: none;">
+              <button class="btn-hole btn-slim-md" id="skin-import-btn" type="button">
+                <span class="btn-surface">
+                  <span class="material-icons">upload_file</span>
+                  <span>Import Skin (ZIP)</span>
+                </span>
+              </button>
+              <div id="skin-import-status" class="import-status" style="display: none;"></div>
+            </div>
+            <p class="setting-description">
+              Import custom skins from ZIP files. Skins must include skin.json manifest and theme.css.
+            </p>
+          </div>
+
+          <!-- Manage Custom Skins -->
+          <div class="setting-item" id="custom-skins-manager">
+            <label>Installed Custom Skins</label>
+            <div id="custom-skins-list" class="custom-skins-list">
+              <!-- Populated dynamically -->
+            </div>
+            <p class="setting-description">
+              Manage your imported custom skins.
             </p>
           </div>
         </section>

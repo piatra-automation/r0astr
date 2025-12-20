@@ -32,6 +32,7 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "interactjs": "^1.10.27",
+    "jszip": "^3.10.1",
     "prettier": "^3.6.2"
   },
   "devDependencies": {

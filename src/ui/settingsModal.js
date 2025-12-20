@@ -8,15 +8,100 @@ import { startAutoSaveTimer } from '../managers/panelManager.js';
 import { applyFontSize, applyActivePanelOpacity, applyBackgroundPanelOpacity, applyLineWrapping, updatePanelOpacities } from '../managers/themeManager.js';
 import { validateURL, validatePath } from '../utils/validation.js';
 import { loadSnippets, clearSnippets } from '../managers/snippetManager.js';
+import { importSkinFromZip, downloadSkin } from '../managers/skinImporter.js';
+import { getAllSkins, deleteSkin } from '../managers/skinStorage.js';
+import { skinManager } from '../managers/skinManager.js';
 
 // Track if settings have been modified (dirty flag)
 let settingsDirty = false;
 
 /**
+ * Populate skin selector with bundled + custom skins
+ */
+async function populateSkinSelector() {
+  const skinSelect = document.getElementById('skin-select');
+  if (!skinSelect) return;
+
+  const allSkins = await skinManager.listAllSkins();
+  const settings = getSettings();
+  const currentSkin = settings.skin || 'default';
+
+  skinSelect.innerHTML = '';
+  allSkins.forEach(skin => {
+    const option = document.createElement('option');
+    option.value = skin.name;
+    option.textContent = `${skin.name}${skin.source === 'custom' ? ' (Custom)' : ''}`;
+    skinSelect.appendChild(option);
+  });
+
+  // Select current skin
+  skinSelect.value = currentSkin;
+}
+
+/**
+ * Render custom skins list with export/delete buttons
+ */
+async function renderCustomSkinsList() {
+  const container = document.getElementById('custom-skins-list');
+  if (!container) return;
+
+  const allSkins = await getAllSkins();
+
+  container.innerHTML = '';
+
+  if (allSkins.length === 0) {
+    container.innerHTML = '<div class="no-custom-skins">No custom skins imported yet</div>';
+    return;
+  }
+
+  allSkins.forEach(skinData => {
+    const item = document.createElement('div');
+    item.className = 'custom-skin-item';
+    item.innerHTML = `
+      <div class="custom-skin-info">
+        <div class="custom-skin-name">${skinData.name}</div>
+        <div class="custom-skin-meta">${skinData.manifest.description || 'No description'}</div>
+      </div>
+      <div class="custom-skin-actions">
+        <button class="btn-export" data-skin="${skinData.name}">Export</button>
+        <button class="btn-delete" data-skin="${skinData.name}">Delete</button>
+      </div>
+    `;
+
+    // Export handler
+    item.querySelector('.btn-export').addEventListener('click', async () => {
+      await downloadSkin(skinData.name, skinData.manifest, skinData.files);
+      showSettingsNotification(`Exported "${skinData.name}"`, 'success');
+    });
+
+    // Delete handler
+    item.querySelector('.btn-delete').addEventListener('click', async () => {
+      const settings = getSettings();
+      const currentSkin = settings.skin || 'default';
+
+      // Prevent deleting currently active skin
+      if (skinData.name === currentSkin) {
+        showSettingsNotification(`Cannot delete active skin "${skinData.name}". Switch to another skin first.`, 'error');
+        return;
+      }
+
+      if (confirm(`Delete custom skin "${skinData.name}"?`)) {
+        await deleteSkin(skinData.name);
+        await populateSkinSelector();
+        await renderCustomSkinsList();
+        showSettingsNotification(`Deleted "${skinData.name}"`, 'info');
+      }
+    });
+
+    container.appendChild(item);
+  });
+}
+
+/**
  * Open settings modal
  * Loads current settings and displays modal
  */
-export function openSettingsModal() {
+export async function openSettingsModal() {
   const modal = document.getElementById('settings-modal');
   if (!modal) {
     console.error('Settings modal not found');
@@ -24,7 +109,7 @@ export function openSettingsModal() {
   }
 
   // Load current settings into form
-  loadSettingsIntoForm();
+  await loadSettingsIntoForm();
 
   // Show modal
   modal.style.display = 'flex';
@@ -52,10 +137,14 @@ export function closeSettingsModal() {
  * Load current settings into form controls
  * Populates form with values from localStorage
  */
-function loadSettingsIntoForm() {
+async function loadSettingsIntoForm() {
   const settings = getSettings();
 
   console.log('Loading settings into form:', settings);
+
+  // Populate skin selector and custom skins list
+  await populateSkinSelector();
+  await renderCustomSkinsList();
 
   // Story 4.5: Appearance Settings Controls
   const fontSizeSlider = document.getElementById('font-size-slider');
@@ -132,11 +221,7 @@ function loadSettingsIntoForm() {
     editorThemeSelect.value = settings.editor_theme || 'atomone';
   }
 
-  // UI Skin Selection
-  const skinSelect = document.getElementById('skin-select');
-  if (skinSelect) {
-    skinSelect.value = settings.skin || 'default';
-  }
+  // UI Skin Selection - populated by populateSkinSelector() above
 
   // Story 4.4: Behavior Settings Controls
   const yoloToggle = document.getElementById('yolo-toggle');
@@ -746,6 +831,43 @@ export function initializeSettingsModal() {
       console.log('Skin pack path saved:', path);
       console.warn('Skin loading not yet implemented (Epic 2 future feature)');
     }
+  });
+
+  // Skin Import - ZIP file upload
+  const importBtn = document.getElementById('skin-import-btn');
+  const importFile = document.getElementById('skin-import-file');
+  const importStatus = document.getElementById('skin-import-status');
+
+  importBtn?.addEventListener('click', () => {
+    importFile.click();
+  });
+
+  importFile?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    importStatus.style.display = 'block';
+    importStatus.className = 'import-status';
+    importStatus.textContent = 'Importing...';
+
+    const result = await importSkinFromZip(file, { overwrite: false });
+
+    if (result.success) {
+      importStatus.className = 'import-status success';
+      importStatus.textContent = `✓ Imported "${result.skinName}" successfully!`;
+      await populateSkinSelector();
+      await renderCustomSkinsList();
+
+      // Auto-dismiss success message after 3 seconds
+      setTimeout(() => {
+        importStatus.style.display = 'none';
+      }, 3000);
+    } else {
+      importStatus.className = 'import-status error';
+      importStatus.textContent = `✗ ${result.errors.join(', ')}`;
+    }
+
+    importFile.value = ''; // Reset file input
   });
 
   // Track changes to form inputs (dirty flag)
