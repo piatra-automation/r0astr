@@ -2,7 +2,7 @@ import { repl, evalScope, ref } from '@strudel/core';
 import { getAudioContext, webaudioOutput, initAudioOnFirstClick, registerSynthSounds } from '@strudel/webaudio';
 import { transpiler } from '@strudel/transpiler';
 import { sliderWithID, sliderValues as cmSliderValues, highlightExtension, updateMiniLocations, highlightMiniLocations } from '@strudel/codemirror';
-import { createPanel, renderPanel, deletePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, expandPanel, collapsePanel, togglePanel, isPanelExpanded, MASTER_PANEL_ID } from './managers/panelManager.js';
+import { createPanel, renderPanel, deletePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, expandPanel, collapsePanel, togglePanel, isPanelExpanded, reRenderAllPanels, MASTER_PANEL_ID } from './managers/panelManager.js';
 import { initializePanelReorder } from './ui/panelReorder.js';
 import { loadSettings, getSettings, updateSetting } from './managers/settingsManager.js';
 import { skinManager } from './managers/skinManager.js';
@@ -2987,22 +2987,10 @@ if (document.querySelector('.panel-tree')) {
 
   // Listen for skin changes to hot-reload UI
   window.addEventListener('skin-changed', async (event) => {
-    console.log('[SkinHotReload] Saving current state and re-rendering panels...');
+    console.log('[SkinHotReload] Re-rendering panels with new skin...');
 
-    // Save current panel state (code, playing status, etc.)
-    savePanelStateWithMasterCode();
-
-    // Clear existing panels from DOM
-    const panelTree = document.querySelector('.panel-tree');
-    const existingPanels = panelTree.querySelectorAll('.level-panel');
-    existingPanels.forEach(panel => panel.remove());
-
-    // Clear editor views map
-    editorViews.clear();
-
-    // Reload panels from saved state with new skin templates
-    console.log('[SkinHotReload] Reloading panels from saved state...');
-    restorePanels();
+    // Re-render all panels with new templates (preserves internal state, including master)
+    await reRenderAllPanels(createEditorView, editorViews, smRenderSliders, getPanelSliders);
 
     console.log('✓ All panels re-rendered with new skin');
   });

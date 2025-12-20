@@ -400,6 +400,68 @@ export function renderPanel(panelId, options = {}) {
 }
 
 /**
+ * Re-render all existing panels with new skin (hot-reload)
+ * Preserves internal panel state, only updates DOM with new templates
+ * @param {Function} createEditorView - Function to create CodeMirror editor
+ * @param {Map} editorViews - Map to store editor views
+ * @param {Function} renderSliders - Function to render sliders (optional)
+ * @param {Function} getPanelSliders - Function to get panel slider data (optional)
+ */
+export async function reRenderAllPanels(createEditorView, editorViews, renderSliders = null, getPanelSliders = null) {
+  console.log(`[PanelManager] Re-rendering ${panels.size} panels with new skin...`);
+
+  // Clear DOM (keep internal state)
+  const panelTree = document.querySelector('.panel-tree');
+  const existingPanels = panelTree.querySelectorAll('.level-panel');
+  existingPanels.forEach(panel => panel.remove());
+
+  // Clear editor views (will be recreated)
+  editorViews.clear();
+
+  // Re-render each panel (including master)
+  for (const [panelId, panelData] of panels) {
+    try {
+      console.log(`[PanelManager] Rendering ${panelId} (number: ${panelData.number}, title: "${panelData.title}")`);
+
+      // Render panel DOM with new template
+      const panelElement = renderPanel(panelId);
+      console.log(`[PanelManager] ✓ Panel ${panelId} DOM created`);
+
+      // Wait for DOM to settle before looking up editor container
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      // Recreate CodeMirror editor with existing code
+      const editorContainer = getPanelEditorContainer(panelId);
+      if (editorContainer) {
+        console.log(`[PanelManager] Creating editor for ${panelId}`, editorContainer);
+        const view = createEditorView(editorContainer, {
+          initialCode: panelData.code || '',
+          panelId: panelId
+        });
+        editorViews.set(panelId, view);
+        console.log(`[PanelManager] ✓ Editor created for ${panelId}`);
+      } else {
+        console.error(`[PanelManager] ✗ Editor container not found for ${panelId}`);
+      }
+
+      // Re-render sliders if available (skip master panel - it has special handling)
+      if (renderSliders && getPanelSliders && panelId !== MASTER_PANEL_ID) {
+        const sliderData = getPanelSliders(panelId);
+        if (sliderData && sliderData.length > 0) {
+          renderSliders(panelId, sliderData, panelData.code || '');
+          console.log(`[PanelManager] ✓ Sliders rendered for ${panelId}`);
+        }
+      }
+    } catch (error) {
+      console.error(`[PanelManager] ✗ Failed to render ${panelId}:`, error);
+      // Continue with next panel instead of stopping
+    }
+  }
+
+  console.log('[PanelManager] ✓ Panels re-rendered');
+}
+
+/**
  * Bring panel to front (highest z-index)
  * @param {string} panelId - Panel ID
  * @returns {boolean} Success status
