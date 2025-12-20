@@ -1,131 +1,187 @@
 /**
  * Panel Tree Component
  *
- * Simple column layout of panel rows.
- * Structure:
- *   .panel-tree (column container)
- *     .panel-row (each panel - master, instruments, add-panel)
- *       .panel-header (clickable summary row)
- *       .panel-body (expandable content - editor, controls)
+ * Hierarchical tree view using native <details>/<summary> elements.
+ * Structure: panel-tree > level-panel > details > summary + panel-children
  */
 
-/* ============================================
-   CSS Variables
-   ============================================ */
+/* === CSS Variables === */
 .panel-tree {
-  /* Spacing */
-  --row-gap: 4px;
-  --row-padding: 12px 16px;
-  --row-radius: 4px;
+  --tree-spacing: 1.5rem;
+  --tree-node-radius: 8px;
+  --tree-line-color: var(--panel-light-shadow, #b8b8b8);
+  --tree-line-width: 2px;
+  --tree-summary-height: 48px;
+  --tree-summary-padding: 12px;
+  --tree-badge-size: 24px;
 
-  /* Badge */
-  --badge-size: 24px;
+  /* Focus ring variables (skinnable) */
+  --panel-focus-color: var(--focus-ring-color, #4a9eff);
+  --panel-focus-width: 2px;
+  --panel-focus-offset: 2px;
+  --panel-focus-radius: 6px;
+  --panel-focus-glow: 0 0 8px rgba(74, 158, 255, 0.4);
 
-  /* Colors (defaults, overridden by theme) */
-  --row-bg: var(--surface-1, #1a1a1a);
-  --row-bg-hover: var(--surface-2, #222);
-  --row-border: var(--border-subtle, rgba(255,255,255,0.1));
-  --text-primary: var(--text-high, #fff);
-  --text-secondary: var(--text-medium, rgba(255,255,255,0.7));
-
-  /* Focus state */
-  --focus-color: var(--neon-cyan, #4a9eff);
-  --focus-glow: 0 0 8px rgba(74, 158, 255, 0.4);
+  /* Header focus accent (skinnable) */
+  --panel-header-focus-bg: rgba(74, 158, 255, 0.08);
+  --panel-header-focus-border: var(--panel-focus-color);
 }
 
-/* ============================================
-   Panel Tree Container
-   ============================================ */
+/* === Base Tree Structure === */
 .panel-tree {
-  display: flex;
-  flex-direction: column;
-  gap: var(--row-gap);
-
-  /* Clear fixed header */
-  padding-top: calc(var(--banner-bar-height, 50px) + var(--metronome-height, 24px) + 16px);
-  padding-bottom: 60px;
-  padding-left: 16px;
-  padding-right: 16px;
-
-  /* Center and constrain width */
-  max-width: 1000px;
-  margin: 0 auto;
-
-  /* Reset list styling */
   list-style: none;
-
-  /* DEBUG: Bright green to prove CSS is loading */
-  background: lime !important;
+  margin: 0;
+  padding: 16px;
+  padding-left: calc(var(--tree-spacing) + 16px);
+  /* Top padding to clear fixed header (banner + metronome) */
+  padding-top: calc(var(--banner-bar-height, 50px) + var(--metronome-height, 24px) + 16px);
+  /* Bottom padding for scroll breathing room */
+  padding-bottom: 100px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* ============================================
-   Panel Row - Base styling for ALL rows
-   (master, instruments, add-panel)
-   ============================================ */
-.panel-row {
-  display: flex;
-  flex-direction: column;
-  background: var(--row-bg);
-  border: 1px solid var(--row-border);
-  border-radius: var(--row-radius);
-  overflow: hidden;
+.panel-tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  padding-left: var(--tree-spacing);
 }
 
-/* Hover state */
-.panel-row:hover {
-  border-color: var(--focus-color);
+/* === Tree Lines === */
+
+/* Vertical line from parent to children */
+.panel-tree .panel-children {
+  position: relative;
+  margin-left: calc(var(--tree-node-radius) + 4px);
+  padding-left: calc(var(--tree-spacing) - var(--tree-node-radius));
+  border-left: var(--tree-line-width) solid var(--tree-line-color);
 }
 
-/* Focused/Active state */
-.panel-row.focused,
-.panel-row.active {
-  border-color: var(--focus-color);
-  box-shadow: var(--focus-glow);
+/* Remove vertical line after last child */
+.panel-tree .panel-children > li:last-child {
+  position: relative;
 }
 
-/* Playing state */
-.panel-row.playing {
-  border-color: var(--color-play, #00e676);
-  box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
+/* Horizontal line from vertical to node */
+.panel-tree .panel-children > li {
+  position: relative;
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 
-/* Stale state */
-.panel-row.stale {
-  border-color: var(--color-update, #fbbf24);
+.panel-tree .panel-children > li::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: calc(-1 * var(--tree-spacing) + var(--tree-node-radius));
+  width: calc(var(--tree-spacing) - var(--tree-node-radius) - 4px);
+  height: 0;
+  border-top: var(--tree-line-width) solid var(--tree-line-color);
 }
 
-/* Error state */
-.panel-row.error {
-  border-color: var(--color-stop, #ff4466);
+/* === Level Panel (Branch Nodes) === */
+.level-panel {
+  position: relative;
+  margin-bottom: 4px;
+  border-radius: var(--panel-focus-radius);
+  /* Prepare for focus outline */
+  outline: var(--panel-focus-width) solid transparent;
+  outline-offset: var(--panel-focus-offset);
+  transition: outline-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* ============================================
-   Panel Header - Clickable row header
-   ============================================ */
-.panel-header {
+/* Focused/Active panel indicator - wraps entire panel */
+.level-panel.focused,
+.level-panel.active {
+  outline-color: var(--panel-focus-color);
+  box-shadow: var(--panel-focus-glow);
+}
+
+/* Header accent when focused (skinnable) - excludes master panel which has its own accent */
+.level-panel.focused:not([data-panel-number="0"]) > details > summary,
+.level-panel.active:not([data-panel-number="0"]) > details > summary {
+  background: var(--panel-header-focus-bg);
+  border-left: 3px solid var(--panel-header-focus-border);
+  margin-left: calc(-1 * var(--tree-node-radius) - 7px);
+  padding-left: calc(var(--tree-node-radius) * 2 + 15px);
+}
+
+/* Master panel header bg when focused (keeps green border) */
+.level-panel.focused[data-panel-number="0"] > details > summary,
+.level-panel.active[data-panel-number="0"] > details > summary {
+  background: var(--panel-header-focus-bg);
+}
+
+/* Expand/collapse indicator accent when focused */
+.level-panel.focused > details > summary::before,
+.level-panel.active > details > summary::before {
+  border-color: var(--panel-focus-color);
+}
+
+/* === Summary Row (Clickable Header) === */
+.panel-tree summary {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: var(--row-padding);
+  gap: 8px;
+  min-height: var(--tree-summary-height);
+  padding: var(--tree-summary-padding);
+  padding-left: calc(var(--tree-node-radius) * 2 + 12px);
+  margin-left: calc(-1 * var(--tree-node-radius) - 4px);
   cursor: pointer;
   user-select: none;
-  transition: background 0.15s ease;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+  position: relative;
 }
 
-.panel-header:hover {
-  background: var(--row-bg-hover);
+.panel-tree summary:hover {
+  background-color: var(--panel-row-hover-bg, rgba(0, 0, 0, 0.05));
 }
 
-/* Panel number badge */
-.panel-badge {
-  width: var(--badge-size);
-  height: var(--badge-size);
-  min-width: var(--badge-size);
+/* Hide native marker */
+.panel-tree summary::marker,
+.panel-tree summary::-webkit-details-marker {
+  display: none;
+}
+
+/* === Expand/Collapse Indicator (+/-) === */
+.panel-tree summary::before {
+  content: '+';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: calc(var(--tree-node-radius) * 2);
+  height: calc(var(--tree-node-radius) * 2);
   border-radius: 50%;
-  background: var(--darkness, #0a0a0a);
-  color: var(--text-primary);
+  background: var(--btn-surface-bg, #d1d8e0);
+  border: var(--tree-line-width) solid var(--tree-line-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+  color: var(--darkness, #1a1a1a);
+  z-index: 1;
+}
+
+.panel-tree details[open] > summary::before {
+  content: '−';
+}
+
+/* === Panel Number Badge === */
+.panel-number-badge {
+  width: var(--tree-badge-size);
+  height: var(--tree-badge-size);
+  min-width: var(--tree-badge-size);
+  border-radius: 50%;
+  background: var(--darkness, #1a1a1a);
+  color: var(--pale-white, #d1d8e0);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -133,49 +189,77 @@
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
-.panel-badge:hover {
+.panel-number-badge:hover {
   transform: scale(1.1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.panel-badge:active,
-.panel-badge.dragging {
+.panel-number-badge:active,
+.panel-number-badge.dragging {
   cursor: grabbing;
   transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-/* Playing badge pulse */
-.panel-row.playing .panel-badge {
-  background: var(--color-play, #00e676);
-  animation: pulse-badge 1.5s infinite;
+/* Drag-over states for drop targets */
+.level-panel.drag-over-above::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--dark-green, #076443);
+  border-radius: 2px;
+  z-index: 100;
 }
 
-@keyframes pulse-badge {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+.level-panel.drag-over-below::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--dark-green, #076443);
+  border-radius: 2px;
+  z-index: 100;
 }
 
-/* Panel title */
+.level-panel.dragging {
+  opacity: 0.5;
+}
+
+/* Master panel (panel-0) accent */
+.level-panel[data-panel-number="0"] > details > summary {
+  border-left: 3px solid var(--dark-green, #076443);
+  margin-left: calc(-1 * var(--tree-node-radius) - 7px);
+  padding-left: calc(var(--tree-node-radius) * 2 + 15px);
+}
+
+/* Hide delete button for master panel */
+.level-panel[data-panel-number="0"] .btn-delete {
+  display: none;
+}
+
+/* === Panel Title === */
 .panel-title {
   flex: 1;
   font-weight: 500;
-  font-size: 14px;
-  color: var(--text-primary);
+  font-size: 0.95rem;
+  color: var(--darkness, #1a1a1a);
   padding: 2px 4px;
   border-radius: 2px;
-  min-width: 80px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 100px;
 }
 
 .panel-title:focus {
   outline: none;
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 0 2px var(--focus-color);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 2px var(--dark-green, #076443);
 }
 
-/* Panel action buttons */
+/* === Panel Actions (Buttons) === */
 .panel-actions {
   display: flex;
   align-items: center;
@@ -188,47 +272,78 @@
   height: 32px;
   border: none;
   border-radius: 4px;
-  background: transparent;
-  color: var(--text-secondary);
+  background: var(--btn-surface-bg, #d1d8e0);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease, color 0.15s ease;
+  font-size: 14px;
+  transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .panel-actions button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
+  background: var(--panel-light-highlight, #e0e5ea);
 }
 
-/* Playback button states */
+.panel-actions button:active {
+  transform: scale(0.95);
+}
+
+/* Play button (legacy) */
+.panel-actions .btn-play {
+  color: var(--dark-green, #076443);
+}
+
+/* Stop button (legacy) */
+.panel-actions .btn-stop {
+  color: var(--burnt-red, #8b0000);
+}
+
+/* Contextual playback button */
 .panel-actions .btn-playback {
-  color: var(--color-play, #00e676);
+  color: var(--dark-green, #076443);
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .panel-actions .btn-playback.playing {
-  color: var(--color-stop, #ff4466);
+  color: var(--burnt-red, #8b0000);
 }
 
 .panel-actions .btn-playback.stale {
-  color: var(--color-update, #fbbf24);
+  color: var(--puke, #c8b400);
+}
+
+.panel-actions .btn-playback:hover {
+  background: rgba(7, 100, 67, 0.1);
+}
+
+.panel-actions .btn-playback.playing:hover {
+  background: rgba(139, 0, 0, 0.1);
+}
+
+.panel-actions .btn-playback.stale:hover {
+  background: rgba(200, 180, 0, 0.1);
 }
 
 /* Delete button */
 .panel-actions .btn-delete {
-  color: var(--color-stop, #ff4466);
+  color: var(--burnt-red, #8b0000);
   opacity: 0.6;
 }
 
 .panel-actions .btn-delete:hover {
   opacity: 1;
+  background: rgba(139, 0, 0, 0.1);
 }
 
 /* Update All button (master panel) */
 .panel-actions .btn-update-all {
-  color: var(--color-update, #fbbf24);
+  color: var(--puke, #c8b400);
   position: relative;
+}
+
+.panel-actions .btn-update-all:hover {
+  background: rgba(200, 180, 0, 0.15);
 }
 
 .panel-actions .btn-update-all .count-badge {
@@ -242,8 +357,8 @@
   font-weight: 700;
   line-height: 14px;
   text-align: center;
-  color: #000;
-  background: var(--color-update, #fbbf24);
+  color: white;
+  background: var(--puke, #c8b400);
   border-radius: 7px;
 }
 
@@ -253,362 +368,145 @@
 
 /* Stop All button (master panel) */
 .panel-actions .btn-stop-all {
-  color: var(--color-stop, #ff4466);
+  color: var(--burnt-red, #8b0000);
 }
 
-/* ============================================
-   Panel Body - Expandable content area
-   ============================================ */
-.panel-body {
-  display: none;
-  padding: 8px 16px 16px;
-  border-top: 1px solid var(--row-border);
+.panel-actions .btn-stop-all:hover {
+  background: rgba(139, 0, 0, 0.15);
 }
 
-/* Show body when expanded */
-.panel-row.expanded .panel-body {
-  display: block;
+/* === Panel Children (Leaves) === */
+.panel-children {
+  /* Animation handled by JavaScript for proper details element support */
 }
 
-/* Code editor wrapper */
-.panel-body .code-editor-wrapper {
-  background: var(--surface-0, #0d0d14);
+/* === Leaf Nodes === */
+.leaf-node {
+  position: relative;
+  padding: 8px 0;
+}
+
+/* Leaf node marker (circle) */
+.leaf-node::after {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--tree-spacing) + var(--tree-node-radius) - 3px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tree-line-color);
+}
+
+/* === Editor Leaf === */
+.leaf-editor {
+  padding: 12px 0;
+}
+
+.leaf-editor .code-editor-wrapper {
+  width: 90%;
+  min-height: 100px;
+  max-height: 400px;
+  background: var(--panel-base-dark, #1a1a1a);
   border-radius: 4px;
   overflow: hidden;
-  min-height: 80px;
 }
 
-.panel-body .code-editor {
+.leaf-editor .code-editor {
   width: 100%;
-  min-height: 80px;
+  height: 100%;
+  min-height: 100px;
 }
 
-/* CodeMirror auto-height */
-.panel-body .cm-editor {
-  height: auto !important;
-}
-
-.panel-body .cm-scroller {
-  overflow: visible !important;
-  height: auto !important;
-}
-
-.panel-body .cm-content {
-  min-height: 60px;
-}
-
-/* Error message */
-.panel-body .error-message {
-  margin-top: 8px;
-  padding: 8px;
-  background: rgba(255, 68, 102, 0.1);
-  border: 1px solid var(--color-stop, #ff4466);
-  border-radius: 4px;
-  color: var(--color-stop);
-  font-size: 12px;
-}
-
-/* ============================================
-   Panel Controls - Sliders, visualizations
-   (visible even when collapsed, if playing)
-   ============================================ */
-.panel-controls {
-  padding: 8px 16px;
-  border-top: 1px solid var(--row-border);
-}
-
-/* Hide controls when not playing (unless expanded) */
-.panel-row:not(.playing):not(.expanded) .panel-controls {
-  display: none;
-}
-
-/* Slider row */
-.panel-controls .slider-row {
+/* === Slider Leaf === */
+.leaf-slider {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 4px 0;
+  padding: 8px 0;
+  padding-left: 8px;
 }
 
-.panel-controls .slider-row label {
+.leaf-slider label {
   min-width: 80px;
-  font-size: 12px;
-  color: var(--text-secondary);
+  font-size: 0.85rem;
+  color: var(--darkness, #1a1a1a);
 }
 
-.panel-controls .slider-row input[type="range"] {
+.leaf-slider input[type="range"] {
   flex: 1;
   max-width: 300px;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--tree-line-color);
+  border-radius: 3px;
+  cursor: pointer;
 }
 
-.panel-controls .slider-row .slider-value {
+.leaf-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--dark-green, #076443);
+  cursor: pointer;
+}
+
+.leaf-slider .slider-value {
   min-width: 50px;
   text-align: right;
-  font-size: 12px;
+  font-size: 0.85rem;
   font-family: monospace;
-  color: var(--text-secondary);
+  color: var(--darkness, #1a1a1a);
 }
 
-/* Visualization container */
-.panel-controls .viz-container {
+/* === Visualization Leaf === */
+.leaf-viz {
+  padding: 12px 0;
+}
+
+.leaf-viz .viz-container {
   display: flex;
   gap: 8px;
+  width: 90%;
   flex-wrap: wrap;
-  margin-top: 8px;
 }
 
-.panel-controls .viz-container canvas {
+.leaf-viz canvas,
+.leaf-viz .visualization-canvas {
   flex: 1;
-  min-width: 100px;
-  height: 50px;
-  background: var(--surface-0, #0d0d14);
+  min-width: 150px;
+  height: 60px;
+  background: var(--panel-base-dark, #1a1a1a);
   border-radius: 4px;
 }
 
-/* ============================================
-   Master Panel Row - Minor styling tweaks
-   ============================================ */
-.panel-row.master-panel {
-  /* Slightly more prominent border */
-  border-width: 2px;
-}
-
-/* Hide delete button on master */
-.panel-row.master-panel .btn-delete {
-  display: none;
-}
-
-/* ============================================
-   Add Panel Row - Ghost/placeholder styling
-   ============================================ */
-.panel-row.add-panel-row {
-  background: transparent;
-  border-style: dashed;
-  border-color: rgba(255, 255, 255, 0.2);
-  opacity: 0.5;
-  transition: opacity 0.2s ease, border-color 0.2s ease;
-}
-
-.panel-row.add-panel-row:hover {
-  opacity: 1;
-  border-color: var(--focus-color);
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.panel-row.add-panel-row .panel-header {
-  justify-content: flex-start;
-}
-
-.panel-row.add-panel-row .panel-badge {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
-}
-
-.panel-row.add-panel-row:hover .panel-badge {
-  background: var(--focus-color);
-  color: #000;
-}
-
-.panel-row.add-panel-row .panel-title {
-  color: var(--text-secondary);
-}
-
-.panel-row.add-panel-row:hover .panel-title {
-  color: var(--text-primary);
-}
-
-/* ============================================
-   Drag and Drop States
-   ============================================ */
-.panel-row.dragging {
-  opacity: 0.5;
-}
-
-.panel-row.drag-over-above {
-  box-shadow: 0 -3px 0 0 var(--focus-color);
-}
-
-.panel-row.drag-over-below {
-  box-shadow: 0 3px 0 0 var(--focus-color);
-}
-
-/* ============================================
-   Touch Device Overrides
-   ============================================ */
-@media (pointer: coarse) {
-  .panel-tree {
-    --row-padding: 16px 20px;
-    --badge-size: 28px;
-  }
-
-  .panel-actions button {
-    width: 44px;
-    height: 44px;
-  }
-}
-
-/* ============================================
-   Legacy Class Support
-   Map old classes to new structure
-   ============================================ */
-
-/* .level-panel → .panel-row */
-.level-panel {
-  display: flex;
-  flex-direction: column;
-  background: hotpink !important;  /* DEBUG */
-  border: 1px solid var(--row-border);
-  border-radius: var(--row-radius);
-  overflow: hidden;
-}
-
-.level-panel:hover {
-  border-color: var(--focus-color);
-}
-
-.level-panel.focused,
-.level-panel.active {
-  border-color: var(--focus-color);
-  box-shadow: var(--focus-glow);
-}
-
-.level-panel.playing {
-  border-color: var(--color-play, #00e676);
-  box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
-}
-
-.level-panel.stale {
-  border-color: var(--color-update, #fbbf24);
-}
-
-.level-panel.error {
-  border-color: var(--color-stop, #ff4466);
-}
-
-/* Hide delete button for master panel */
-.level-panel[data-panel-number="0"] .btn-delete {
-  display: none;
-}
-
-/* Master panel - slightly thicker border */
-.level-panel[data-panel-number="0"] {
-  border-width: 2px;
-}
-
-/* Details/Summary for expand/collapse */
-.level-panel > details {
-  display: contents;
-}
-
-.level-panel > details > summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: var(--row-padding);
-  cursor: pointer;
-  user-select: none;
-  list-style: none;
-  transition: background 0.15s ease;
-}
-
-.level-panel > details > summary::-webkit-details-marker {
-  display: none;
-}
-
-.level-panel > details > summary:hover {
-  background: var(--row-bg-hover);
-}
-
-/* Panel number badge (legacy) */
-.panel-number-badge {
-  width: var(--badge-size);
-  height: var(--badge-size);
-  min-width: var(--badge-size);
-  border-radius: 50%;
-  background: var(--darkness, #0a0a0a);
-  color: var(--text-primary);
-  font-size: 12px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: grab;
-  transition: transform 0.1s ease;
-}
-
-.panel-number-badge:hover {
-  transform: scale(1.1);
-}
-
-.level-panel.playing .panel-number-badge {
-  background: var(--color-play, #00e676);
-  animation: pulse-badge 1.5s infinite;
-}
-
-.level-panel.stale .panel-number-badge {
-  background: var(--color-update, #fbbf24);
-}
-
-/* Panel title (legacy) */
-.level-panel .panel-title {
-  flex: 1;
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--text-primary);
-  padding: 2px 4px;
-  min-width: 80px;
-}
-
-.level-panel .panel-title:focus {
-  outline: none;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* Panel actions (legacy) */
-.level-panel .panel-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: auto;
-}
-
-.level-panel .panel-actions button {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s ease;
-}
-
-.level-panel .panel-actions button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-}
-
-/* Panel editor container (inside details) */
+/* === Panel Editor Container (inside details - collapses) === */
 .panel-editor-container {
-  padding: 8px 16px 16px;
-  border-top: 1px solid var(--row-border);
+  padding: 12px 0;
+  padding-left: calc(var(--tree-node-radius) * 2 + 12px);
+  margin-left: calc(-1 * var(--tree-node-radius) - 4px);
 }
 
 .panel-editor-container .code-editor-wrapper {
-  background: var(--surface-0, #0d0d14);
+  width: 90%;
+  /* Min 3 lines (~60px at default line height) */
+  min-height: calc(3 * 1.4em + 16px);
+  /* No max-height - grows with content */
+  background: var(--panel-base-dark, #1a1a1a);
   border-radius: 4px;
-  overflow: hidden;
-  min-height: 80px;
 }
 
 .panel-editor-container .code-editor {
   width: 100%;
-  min-height: 80px;
+  /* Auto height - fits to content */
+  height: auto;
+  min-height: calc(3 * 1.4em);
 }
 
+/* CodeMirror auto-sizing for tree layout */
 .panel-editor-container .cm-editor {
   height: auto !important;
 }
@@ -618,159 +516,211 @@
   height: auto !important;
 }
 
-/* Panel controls container (outside details) */
+.panel-editor-container .cm-content {
+  min-height: calc(3 * 1.4em);
+}
+
+/* === Panel Controls Container (outside details - always visible) === */
 .panel-controls-container {
-  padding: 8px 16px;
-  border-top: 1px solid var(--row-border);
+  padding-left: calc(var(--tree-node-radius) * 2 + 12px);
+  margin-left: calc(-1 * var(--tree-node-radius) - 4px);
 }
 
-.level-panel:not(.playing) .panel-controls-container:empty,
-.level-panel:not(.playing):not([open]) .panel-controls-container {
-  display: none;
+/* Hide controls when panel not playing AND setting says hide */
+.level-panel:not(.playing) .panel-controls-container {
+  /* Controls visible by default, hidden via JS based on setting */
 }
 
-/* Slider leaves */
-.panel-controls-container .leaf-slider,
-.leaf-slider {
+/* Slider styling in controls container */
+.panel-controls-container .leaf-slider {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 4px 0;
-}
-
-.leaf-slider label {
-  min-width: 80px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.leaf-slider input[type="range"] {
-  flex: 1;
-  max-width: 300px;
-}
-
-.leaf-slider .slider-value {
-  min-width: 50px;
-  text-align: right;
-  font-size: 12px;
-  font-family: monospace;
-  color: var(--text-secondary);
-}
-
-/* Visualization leaves */
-.leaf-viz {
   padding: 8px 0;
 }
 
-.leaf-viz .viz-container {
+.panel-controls-container .leaf-slider label {
+  min-width: 80px;
+  font-size: 0.85rem;
+  color: var(--darkness, #1a1a1a);
+}
+
+.panel-controls-container .leaf-slider input[type="range"] {
+  flex: 1;
+  max-width: 300px;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--tree-line-color);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.panel-controls-container .leaf-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--dark-green, #076443);
+  cursor: pointer;
+}
+
+.panel-controls-container .slider-value {
+  min-width: 50px;
+  text-align: right;
+  font-size: 0.85rem;
+  font-family: monospace;
+  color: var(--darkness, #1a1a1a);
+}
+
+/* Viz styling in controls container */
+.panel-controls-container .leaf-viz {
+  padding: 12px 0;
+}
+
+.panel-controls-container .viz-container {
   display: flex;
   gap: 8px;
+  width: 90%;
   flex-wrap: wrap;
 }
 
-.leaf-viz canvas,
-.viz-container canvas {
+.panel-controls-container .viz-container canvas,
+.panel-controls-container .visualization-canvas {
   flex: 1;
-  min-width: 100px;
-  height: 50px;
-  background: var(--surface-0, #0d0d14);
+  min-width: 150px;
+  height: 60px;
+  background: var(--panel-base-dark, #1a1a1a);
   border-radius: 4px;
 }
 
-/* ============================================
-   Add Panel Row (legacy class)
-   ============================================ */
+/* === Playing State === */
+.level-panel.playing > details > summary {
+  background: rgba(7, 100, 67, 0.1);
+}
+
+.level-panel.playing .panel-number-badge {
+  background: var(--dark-green, #076443);
+  animation: pulse-badge 1.5s infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* === Stale State === */
+.level-panel.stale > details > summary {
+  background: rgba(200, 180, 0, 0.1);
+}
+
+.level-panel.stale .panel-number-badge {
+  background: var(--puke, #c8b400);
+}
+
+/* === Error State === */
+.level-panel.error > details > summary {
+  background: rgba(139, 0, 0, 0.1);
+}
+
+.level-panel.error .panel-number-badge {
+  background: var(--burnt-red, #8b0000);
+}
+
+/* === Touch Device Overrides === */
+@media (pointer: coarse) {
+  .panel-tree {
+    --tree-summary-height: 56px;
+    --tree-summary-padding: 16px;
+    --tree-badge-size: 28px;
+  }
+
+  .panel-actions button {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .leaf-slider input[type="range"]::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* === Add Panel Row === */
+/* Styled to match instrument panels but as a ghost/placeholder */
+
 .add-panel-row {
-  display: flex;
-  flex-direction: column;
-  background: transparent;
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: var(--row-radius);
+  margin-top: 8px;
   opacity: 0.5;
-  transition: opacity 0.2s ease, border-color 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 
 .add-panel-row:hover {
   opacity: 1;
-  border-color: var(--focus-color);
-  background: rgba(255, 255, 255, 0.02);
 }
 
+/* Match the summary row styling from level-panel */
 .add-panel-trigger {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: var(--row-padding);
-  cursor: pointer;
-  background: none;
-  border: none;
+  gap: 8px;
   width: 100%;
-  font: inherit;
-  text-align: left;
+  min-height: var(--tree-summary-height);
+  padding: var(--tree-summary-padding);
+  padding-left: calc(var(--tree-node-radius) + 16px);
+  background: rgba(128, 128, 128, 0.05);
+  border: 2px dashed rgba(128, 128, 128, 0.25);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  font-size: inherit;
+  position: relative;
 }
 
-.add-panel-trigger .add-badge,
-.add-panel-trigger .panel-number-badge {
-  width: var(--badge-size);
-  height: var(--badge-size);
-  min-width: var(--badge-size);
+.add-panel-trigger:hover {
+  background: rgba(128, 128, 128, 0.12);
+  border-color: var(--dark-green, #01614f);
+  border-style: solid;
+}
+
+.add-panel-trigger:active {
+  transform: scale(0.99);
+}
+
+/* The + badge - matches panel-number-badge */
+.add-panel-trigger .add-badge {
+  width: var(--tree-badge-size);
+  height: var(--tree-badge-size);
+  min-width: var(--tree-badge-size);
+  background: rgba(128, 128, 128, 0.25);
+  color: rgba(128, 128, 128, 0.7);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
-  font-size: 14px;
-  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.add-panel-row:hover .add-badge,
-.add-panel-row:hover .panel-number-badge {
-  background: var(--focus-color);
-  color: #000;
-}
-
-.add-panel-text {
-  color: var(--text-secondary);
   font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.add-panel-trigger:hover .add-badge {
+  background: var(--dark-green, #01614f);
+  color: white;
+  box-shadow: 0 0 8px rgba(1, 97, 79, 0.4);
+}
+
+/* Text label - matches panel-title */
+.add-panel-text {
+  color: rgba(128, 128, 128, 0.5);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
   transition: color 0.2s ease;
 }
 
-.add-panel-row:hover .add-panel-text {
-  color: var(--text-primary);
-}
-
-/* ============================================
-   Drag and Drop (legacy)
-   ============================================ */
-.level-panel.dragging {
-  opacity: 0.5;
-}
-
-.level-panel.drag-over-above::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--focus-color);
-  border-radius: 2px;
-}
-
-.level-panel.drag-over-below::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--focus-color);
-  border-radius: 2px;
-}
-
-/* Position relative for drag indicators */
-.level-panel {
-  position: relative;
+.add-panel-trigger:hover .add-panel-text {
+  color: var(--text-color, #333);
 }
