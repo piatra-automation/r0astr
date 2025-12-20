@@ -30,14 +30,44 @@ import {
   appState
 } from './state.js';
 
-// CodeMirror 6 imports
-import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
-import { EditorState, Compartment } from '@codemirror/state';
-import { javascript } from '@codemirror/lang-javascript';
-import { syntaxHighlighting, defaultHighlightStyle, bracketMatching } from '@codemirror/language';
-import { history, defaultKeymap, historyKeymap } from '@codemirror/commands';
-import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
-import { theme } from '@strudel/codemirror/themes.mjs';
+// Panel modules (extracted from main.js)
+import {
+  updateActivateButton,
+  updatePauseButton,
+  updatePlaybackButton,
+  updatePanelButtons,
+  updateVisualIndicators,
+  updateMasterControlsVisibility,
+  setMasterSlidersRef
+} from './panels/panelUI.js';
+
+import {
+  checkStaleness,
+  isPanelStale,
+  validateCode,
+  displayError,
+  clearErrorMessage,
+  attachValidationListener
+} from './panels/panelValidation.js';
+
+import {
+  createEditorView,
+  handleEditorChange,
+  updateAllEditorFontSizes,
+  setUpdateAllButtonRef
+} from './panels/panelEditor.js';
+
+// UI modules - utility functions only (initializeKeyboardShortcuts kept in main.js for complete logic)
+import {
+  findFocusedPanel,
+  animateButtonPress,
+  animatePressStart,
+  animatePressRelease
+} from './ui/keyboard.js';
+
+// CodeMirror - only Compartment and EditorView needed for font size updates
+import { EditorView } from '@codemirror/view';
+import { Compartment } from '@codemirror/state';
 
 // Version tracking
 const APP_VERSION = '8.4.0-full-state-sync';
@@ -1399,550 +1429,18 @@ function initializeCards() {
   });
 }
 
-/**
- * Check if panel is stale (code differs from running pattern)
- * Story 6.1: Staleness Detection Logic
- * @param {string} panelId - Panel ID to check
- * @returns {boolean} True if panel is stale
- */
-function checkStaleness(panelId) {
-  const panel = cardStates[panelId];
-  if (!panel) return false;
-
-  const view = editorViews.get(panelId);
-  if (!view) return false;
-
-  // Staleness only applies to playing panels
-  if (!panel.playing) {
-    panel.stale = false;
-    updatePanel(panelId, { stale: false }); // Sync to panelManager for persistence
-    return false;
-  }
-
-  // Compare current code to last-evaluated code
-  const currentCode = view.state.doc.toString();
-  const isStale = currentCode !== panel.lastEvaluatedCode;
-  panel.stale = isStale;
-  updatePanel(panelId, { stale: isStale }); // Sync to panelManager for persistence
-
-  // Clear highlighting when panel becomes stale
-  if (isStale) {
-    highlightMiniLocations(view, strudelCore.scheduler.now(), []); // Clear highlights
-  }
-
-  return isStale;
-}
-
-/**
- * Helper to check if panel is stale
- * Story 6.1: Staleness Detection Logic
- * @param {string} panelId - Panel ID to check
- * @returns {boolean} True if panel is stale
- */
-function isPanelStale(panelId) {
-  return cardStates[panelId]?.stale ?? false;
-}
-
-/**
- * Update ACTIVATE button based on panel state
- * Story 6.2: Separate PAUSE and ACTIVATE Buttons
- * Story 7.3: Live Transpilation Validation (disable if invalid)
- * @param {string} panelId - Panel ID
- */
-async function updateActivateButton(panelId) {
-  const panel = cardStates[panelId];
-  // Support both legacy (.activate-btn) and tree (.btn-play) layouts
-  const button = document.querySelector(`#${panelId} .activate-btn`) ||
-    document.querySelector(`.activate-btn[data-card="${panelId}"]`) ||
-    document.querySelector(`[data-panel-id="${panelId}"] .btn-play`) ||
-    document.querySelector(`#${panelId} .btn-play`);
-
-  if (!panel || !button) return;
-
-  // DISABLED: Validation causes eval spam during typing
-  // Buttons always enabled now - validation only at PLAY time
-  const validation = { valid: true };
-
-  // Determine button state
-  if (panel.playing && !panel.stale) {
-    // Playing and in sync → Hide activate button (pause button will be shown)
-    button.classList.add('hidden');
-    button.disabled = true;
-    button.classList.remove('update');
-  } else if (panel.stale) {
-    // Stale (playing with edits) → Show UPDATE button
-    button.classList.remove('hidden');
-    // Story 7.3: Enable only if code is valid
-    button.disabled = !validation.valid;
-    button.classList.add('update');
-    // Story 7.3: Add disabled class for styling
-    button.classList.toggle('disabled', !validation.valid);
-  } else {
-    // Paused → Show PLAY button
-    button.classList.remove('hidden');
-    // Story 7.3: Enable only if code is valid
-    button.disabled = !validation.valid;
-    button.classList.remove('update');
-    // Story 7.3: Add disabled class for styling
-    button.classList.toggle('disabled', !validation.valid);
-  }
-}
-
-/**
- * Update PAUSE button based on panel state
- * Story 6.2: Separate PAUSE and ACTIVATE Buttons
- * @param {string} panelId - Panel ID
- */
-function updatePauseButton(panelId) {
-  const panel = cardStates[panelId];
-  // Support both legacy (.pause-btn) and tree (.btn-stop) layouts
-  const button = document.querySelector(`#${panelId} .pause-btn`) ||
-    document.querySelector(`.pause-btn[data-card="${panelId}"]`) ||
-    document.querySelector(`[data-panel-id="${panelId}"] .btn-stop`) ||
-    document.querySelector(`#${panelId} .btn-stop`);
-
-  if (!panel || !button) return;
-
-  // PAUSE/STOP button only visible/enabled when playing
-  button.disabled = !panel.playing;
-  button.classList.toggle('hidden', !panel.playing);
-}
-
-/**
- * Update contextual PLAYBACK button (tree layout)
- * Shows play/stop/refresh icon based on panel state
- * @param {string} panelId - Panel ID
- */
-function updatePlaybackButton(panelId) {
-  const panel = cardStates[panelId];
-  const button = document.querySelector(`[data-panel-id="${panelId}"] .btn-playback`) ||
-    document.querySelector(`#${panelId} .btn-playback`);
-
-  if (!panel || !button) return;
-
-  const icon = button.querySelector('.material-icons');
-  if (!icon) return;
-
-  // Remove all state classes
-  button.classList.remove('playing', 'stale', 'paused');
-
-  if (panel.playing && !panel.stale) {
-    // Playing and in sync -> Show pause icon
-    icon.textContent = 'pause';
-    button.title = 'Pause';
-    button.classList.add('playing');
-  } else if (panel.stale) {
-    // Stale (playing with edits) -> Show refresh/update icon
-    icon.textContent = 'refresh';
-    button.title = 'Update';
-    button.classList.add('stale');
-  } else {
-    // Paused -> Show play icon
-    icon.textContent = 'play_arrow';
-    button.title = 'Play';
-    button.classList.add('paused');
-  }
-}
-
-/**
- * Update all playback buttons for a panel
- * Supports legacy (separate play/pause) and tree (contextual) layouts
- * @param {string} panelId - Panel ID
- */
-function updatePanelButtons(panelId) {
-  // Legacy layout buttons
-  updateActivateButton(panelId);
-  updatePauseButton(panelId);
-  // Tree layout contextual button
-  updatePlaybackButton(panelId);
-}
-
-/**
- * Story 7.3: Validation timers (debounced)
- * Separate timers for button state (500ms) and error display (1000ms)
- */
-const validationTimers = {};
-
-/**
- * Story 7.3: Validate code by transpiling AND evaluating (dry run)
- * Catches both syntax errors and runtime errors (undefined variables/functions)
- * @param {string} panelId - Panel ID
- * @returns {Promise<Object>} { valid: boolean, error?: string, line?: number }
- */
-async function validateCode(panelId) {
-  // Guard: evaluate not initialized yet (during early startup)
-  if (!evaluate) {
-    return { valid: true }; // Assume valid until Strudel is ready
-  }
-
-  const view = editorViews.get(panelId);
-
-  if (!view) {
-    return { valid: false, error: 'EditorView not found' };
-  }
-
-  const code = view.state.doc.toString().trim();
-
-  // Empty code is valid (no pattern to play)
-  if (!code) {
-    return { valid: true };
-  }
-
-  try {
-    // Step 1: Transpile (catches syntax errors)
-    const { output } = transpiler(code, { addReturn: false });
-
-    // Step 2: Evaluate WITHOUT .p() (dry run - catches ReferenceErrors/TypeErrors)
-    // Suppress console errors during validation (prevents error spam in console)
-    const originalConsoleError = console.error;
-    console.error = () => { }; // Temporarily silence console.error
-
-    try {
-      // This executes the code and returns a Pattern, but doesn't start playback
-      // Catches: undefined variables, undefined functions, some type errors
-      await strudelCore.evaluate(output, false, false);
-    } finally {
-      // Restore console.error
-      console.error = originalConsoleError;
-    }
-
-    return { valid: true };
-  } catch (error) {
-    // Extract error details and clean up message
-    let errorMessage = error.message || 'Unknown error';
-
-    // Clean up common TypeError patterns for better readability
-    if (errorMessage.includes('Cannot read properties of undefined')) {
-      // "Cannot read properties of undefined (reading 'delay')" -> "Property 'delay' is undefined"
-      const match = errorMessage.match(/reading '([^']+)'/);
-      if (match) {
-        errorMessage = `Property '${match[1]}' is undefined`;
-      }
-    } else if (errorMessage.includes('is not a function')) {
-      // "arrange(...).note(...).s.delay is not a function" -> "Method '.delay()' is not a function"
-      const match = errorMessage.match(/\.(\w+)\s+is not a function/);
-      if (match) {
-        errorMessage = `Method '.${match[1]}()' is not a function`;
-      }
-    }
-
-    const lineNumber = error.line || error.lineNumber || 'unknown';
-
-    return {
-      valid: false,
-      error: errorMessage,
-      line: lineNumber
-    };
-  }
-}
-
-/**
- * Story 7.3: Display error message in panel
- * @param {string} panelId - Panel ID
- * @param {string} errorMessage - Error message
- * @param {number|string} lineNumber - Line number
- */
-function displayError(panelId, errorMessage, lineNumber) {
-  const errorContainer = document.querySelector(`.error-message[data-card="${panelId}"]`);
-  if (!errorContainer) return;
-
-  const formattedError = `Error: ${errorMessage} (line ${lineNumber})`;
-  errorContainer.textContent = formattedError;
-  errorContainer.style.display = 'block';
-}
-
-/**
- * Story 7.3: Clear error message in panel
- * @param {string} panelId - Panel ID
- */
-function clearErrorMessage(panelId) {
-  const errorContainer = document.querySelector(`.error-message[data-card="${panelId}"]`);
-  if (!errorContainer) return;
-
-  errorContainer.textContent = '';
-  errorContainer.style.display = 'none';
-}
-
-/**
- * Story 7.3: Attach validation listener to panel textarea
- * Debounced: 500ms for button state, 1000ms for error display
- * @param {string} panelId - Panel ID
- */
-function attachValidationListener(panelId) {
-  // DISABLED: Live validation causes eval spam and typing lag
-  // Validation still runs on PLAY button click via updateActivateButton
-  return;
-
-  // Skip master panel (transpiler causes hang, uses regex parsing instead)
-  if (panelId === 'master-panel') return;
-
-  const textarea = document.querySelector(`#${panelId} .code-input`) ||
-    document.querySelector(`.code-input[data-card="${panelId}"]`);
-
-  if (!textarea) return;
-
-  textarea.addEventListener('input', () => {
-    // Clear existing timers
-    if (validationTimers[panelId]) {
-      clearTimeout(validationTimers[panelId].button);
-      clearTimeout(validationTimers[panelId].error);
-    }
-
-    // Initialize timer object if needed
-    if (!validationTimers[panelId]) {
-      validationTimers[panelId] = {};
-    }
-
-    // Validate for button state after 2000ms (reduced from 500ms to prevent eval spam)
-    validationTimers[panelId].button = setTimeout(async () => {
-      await updateActivateButton(panelId); // Re-use existing button update logic with validation
-    }, 2000);
-
-    // Display error message after 3000ms (longer delay to avoid incomplete code validation)
-    validationTimers[panelId].error = setTimeout(async () => {
-      const result = await validateCode(panelId);
-      if (result.valid) {
-        clearErrorMessage(panelId);
-      } else {
-        displayError(panelId, result.error, result.line);
-      }
-    }, 3000);
-  });
-}
-
-/**
- * Handle editor change event
- * Story 7.6: CodeMirror Integration
- * @param {string} code - New code content
- * @param {string} panelId - Panel ID
- */
-function handleEditorChange(code, panelId) {
-  const startTime = performance.now();
-
-  const panel = getPanel(panelId);
-  if (panel) {
-    const t1 = performance.now();
-    updatePanel(panelId, { code: code });
-    const t2 = performance.now();
-    checkStaleness(panelId);
-    const t3 = performance.now();
-    updateVisualIndicators(panelId);
-    const t4 = performance.now();
-    updateAllButton();
-    const t5 = performance.now();
-
-    const total = t5 - startTime;
-    if (total > 5) {
-      console.warn(`[PERF INPUT] Total: ${total.toFixed(1)}ms | updatePanel: ${(t2 - t1).toFixed(1)}ms | checkStaleness: ${(t3 - t2).toFixed(1)}ms | updateVisualIndicators: ${(t4 - t3).toFixed(1)}ms | updateAllButton: ${(t5 - t4).toFixed(1)}ms`);
-    }
-  }
-}
-
-/**
- * Create CodeMirror 6 editor view
- * Story 7.6: CodeMirror Integration
- * @param {HTMLElement} container - DOM element to attach editor to
- * @param {Object} options - Editor configuration
- * @param {string} options.initialCode - Initial code content
- * @param {Function} options.onChange - Callback when code changes (code, panelId)
- * @param {string} options.panelId - Panel ID for change tracking
- * @returns {EditorView} CodeMirror editor instance
- */
-function createEditorView(container, options = {}) {
-  const { initialCode = '', onChange = null, panelId = null } = options;
-  const settings = getSettings();
-
-  // Create compartment for font size theme (allows dynamic reconfiguration)
-  const fontSizeCompartment = new Compartment();
-
-  const extensions = [
-    // Minimal setup
-    lineNumbers(),
-    highlightActiveLine(),
-    highlightActiveLineGutter(),
-    history(),
-    bracketMatching(),
-    closeBrackets(),
-    keymap.of([
-      ...defaultKeymap,
-      ...historyKeymap,
-      ...closeBracketsKeymap,
-    ]),
-    // Pattern highlighting extension
-    highlightExtension,
-    // Make scroller non-scrollable, wrapper handles it
-    // Make background transparent to show container color
-    fontSizeCompartment.of(EditorView.theme({
-      ".cm-scroller": {
-        overflow: "visible !important"
-      },
-      "&": {
-        backgroundColor: "transparent !important",
-        fontSize: `${settings.fontSize || 14}px`
-      },
-      ".cm-content": {
-        backgroundColor: "transparent !important"
-      },
-      ".cm-gutters": {
-        backgroundColor: "transparent !important",
-        borderRight: "1px solid rgba(255, 255, 255, 0.1)"
-      },
-      ".cm-activeLineGutter": {
-        backgroundColor: "rgba(255, 255, 255, 0.05) !important"
-      },
-      ".cm-activeLine": {
-        backgroundColor: "rgba(255, 255, 255, 0.03) !important"
-      }
-    })),
-  ];
-
-  // Story 7.6: Conditional syntax highlighting
-  if (settings.syntax_highlight !== false) {
-    extensions.push(
-      syntaxHighlighting(defaultHighlightStyle),
-      javascript(),
-      theme(settings.editor_theme || 'atomone')
-    );
-  }
-
-  // Conditional line wrapping
-  if (settings.wrap_lines) {
-    extensions.push(EditorView.lineWrapping);
-  }
-
-  // Update listener for onChange callback
-  if (onChange) {
-    extensions.push(EditorView.updateListener.of((update) => {
-      if (update.docChanged) {
-        const code = update.state.doc.toString();
-        onChange(code, panelId);
-      }
-    }));
-  }
-
-  const state = EditorState.create({
-    doc: initialCode,
-    extensions,
-  });
-
-  const view = new EditorView({
-    state,
-    parent: container,
-  });
-
-  // Store font size compartment for dynamic updates
-  if (panelId) {
-    fontSizeCompartments.set(panelId, fontSizeCompartment);
-  }
-
-  return view;
-}
-
-/**
- * Update all visual indicators for a panel
- * Story 6.3: Visual Staleness Indicators
- * @param {string} panelId - Panel ID
- */
-function updateVisualIndicators(panelId) {
-  const panel = cardStates[panelId];
-  // Support both legacy (#panelId) and tree ([data-panel-id]) layouts
-  const panelElement = document.getElementById(panelId) ||
-    document.querySelector(`[data-panel-id="${panelId}"]`);
-
-  if (!panel || !panelElement) return;
-
-  // Check if this is a tree layout (.level-panel) or legacy layout
-  const isTreeLayout = panelElement.classList.contains('level-panel');
-
-  if (isTreeLayout) {
-    // Tree layout uses simpler class names: playing, stale, error
-    panelElement.classList.remove('playing', 'stale', 'error');
-
-    // Add playing class if panel is playing (stale panels are still playing)
-    if (panel.playing) {
-      panelElement.classList.add('playing');
-    }
-    // Add stale class on top if code changed
-    if (panel.stale) {
-      panelElement.classList.add('stale');
-    }
-    // No explicit 'paused' class needed in tree layout (default state)
-
-    // Manage controls container visibility based on settings
-    const settings = getSettings();
-    const controlsContainer = panelElement.querySelector('.panel-controls-container');
-    const details = panelElement.querySelector('details');
-
-    if (controlsContainer) {
-      // Controls visible when:
-      // 1. Panel is playing (always show controls for playing panels)
-      // 2. OR details is open (expanded panel shows everything)
-      // 3. OR showControlsWhenCollapsed is true (keep controls visible even when collapsed)
-      const isExpanded = details?.open;
-      const showControls = panel.playing || isExpanded || settings.showControlsWhenCollapsed;
-      controlsContainer.style.display = showControls ? '' : 'none';
-    }
-
-  } else {
-    // Legacy layout uses panel- prefixed classes
-    panelElement.classList.remove('panel-paused', 'panel-playing', 'panel-stale');
-
-    if (panel.stale) {
-      panelElement.classList.add('panel-stale');
-    } else if (panel.playing) {
-      panelElement.classList.add('panel-playing');
-    } else {
-      panelElement.classList.add('panel-paused');
-    }
-  }
-
-  // Update button styling (from Story 6.2)
-  updatePanelButtons(panelId);
-
-  // Update master panel controls visibility (depends on any panel playing)
-  updateMasterControlsVisibility();
-}
-
-/**
- * Update master panel controls visibility
- * Master sliders should show when ANY panel is playing (not just master)
- * Tempo control should ALWAYS show if enabled in settings
- */
-function updateMasterControlsVisibility() {
-  const masterPanel = document.querySelector(`[data-panel-id="${MASTER_PANEL_ID}"]`) ||
-                      document.getElementById(MASTER_PANEL_ID);
-  if (!masterPanel) return;
-
-  const controlsContainer = masterPanel.querySelector('.panel-controls-container');
-  if (!controlsContainer) return;
-
-  const settings = getSettings();
-  const details = masterPanel.querySelector('details');
-  const isExpanded = details?.open;
-
-  // Check if ANY panel is playing
-  const anyPanelPlaying = Object.values(cardStates).some(state => state.playing);
-
-  // Check if tempo control is enabled (should always show if enabled)
-  const tempoEnabled = settings.advanced?.show_tempo_knob;
-
-  // Check if master panel has sliders defined
-  const hasMasterSliders = currentMasterSliders.length > 0;
-
-  // Master controls visible when:
-  // 1. Any panel is playing (master sliders affect all panels)
-  // 2. OR master panel is expanded
-  // 3. OR showControlsWhenCollapsed is enabled
-  // 4. OR tempo control is enabled (tempo should always be visible)
-  const showControls = anyPanelPlaying || isExpanded || settings.showControlsWhenCollapsed || tempoEnabled;
-
-  controlsContainer.style.display = showControls ? '' : 'none';
-
-  // Log for debugging
-  if (showControls && (hasMasterSliders || tempoEnabled)) {
-    console.log(`[MasterControls] Visible: anyPlaying=${anyPanelPlaying}, expanded=${isExpanded}, sliders=${hasMasterSliders}, tempo=${tempoEnabled}`);
-  }
-}
+// NOTE: The following functions are now imported from extracted modules:
+// - checkStaleness, isPanelStale, validateCode, displayError, clearErrorMessage, attachValidationListener
+//   from ./panels/panelValidation.js
+// - handleEditorChange, createEditorView, updateAllEditorFontSizes, setUpdateAllButtonRef
+//   from ./panels/panelEditor.js
+// - updateActivateButton, updatePauseButton, updatePlaybackButton, updatePanelButtons,
+//   updateVisualIndicators, updateMasterControlsVisibility, setMasterSlidersRef
+//   from ./panels/panelUI.js
+
+// =====================
+// Code Formatting (kept in main.js - not performance critical)
+// =====================
 
 /**
  * Custom formatter that preserves quotes (Prettier replacement)
@@ -3136,88 +2634,8 @@ function activatePanelByIndex(index) {
   }
 }
 
-/**
- * Find which panel currently has focus
- * @returns {string|null} Panel ID or null if no panel focused
- */
-function findFocusedPanel() {
-  // Check if any editor view has focus
-  for (const [panelId, view] of editorViews.entries()) {
-    if (view.hasFocus) {
-      // console.log('[Focus DEBUG] Found focused panel via view.hasFocus:', panelId);
-      return panelId;
-    }
-  }
-
-  // Fallback: check which panel container is within the active element
-  const activeElement = document.activeElement;
-  // console.log('[Focus DEBUG] Active element:', activeElement, 'className:', activeElement?.className);
-
-  if (activeElement) {
-    const panelContainer = activeElement.closest('.panel-container');
-    if (panelContainer) {
-      // console.log('[Focus DEBUG] Found panel container:', panelContainer.id);
-      return panelContainer.id;
-    }
-  }
-
-  // Last resort: check if activeElement is a CodeMirror editor
-  if (activeElement && activeElement.closest('.cm-editor')) {
-    // Find which panel contains this editor
-    for (const [panelId, view] of editorViews.entries()) {
-      if (view.dom.contains(activeElement)) {
-        // console.log('[Focus DEBUG] Found panel via editor DOM:', panelId);
-        return panelId;
-      }
-    }
-  }
-
-  // Final fallback: check for .focused class (set by setActivePanel in panelManager)
-  // This handles case where panel is expanded but CodeMirror doesn't have focus
-  // Check both tree layout (.level-panel) and legacy card layout (.card)
-  const focusedPanel = document.querySelector('.level-panel.focused, .card.focused');
-  if (focusedPanel) {
-    // For tree layout, get panel ID from data attribute; for cards, use element ID
-    const panelId = focusedPanel.dataset?.panelId || focusedPanel.id;
-    // console.log('[Focus DEBUG] Found focused panel via .focused class:', panelId);
-    return panelId;
-  }
-
-  console.warn('[Focus DEBUG] No focused panel found');
-  return null;
-}
-
-/**
- * Animate a button press with visual feedback (legacy - single call)
- * @param {HTMLElement} button - Button element to animate
- * @param {number} duration - Duration in ms (default 150ms)
- */
-function animateButtonPress(button, duration = 150) {
-  if (!button) return;
-
-  button.classList.add('pressing');
-  setTimeout(() => {
-    button.classList.remove('pressing');
-  }, duration);
-}
-
-/**
- * Start button press animation (add 'pressing' class)
- * @param {HTMLElement} button - Button element to animate
- */
-function animatePressStart(button) {
-  if (!button) return;
-  button.classList.add('pressing');
-}
-
-/**
- * End button press animation (remove 'pressing' class)
- * @param {HTMLElement} button - Button element to animate
- */
-function animatePressRelease(button) {
-  if (!button) return;
-  button.classList.remove('pressing');
-}
+// NOTE: findFocusedPanel, animateButtonPress, animatePressStart, animatePressRelease
+// are now imported from ./ui/keyboard.js
 
 /**
  * Global keyboard shortcuts
@@ -3502,6 +2920,11 @@ function initializeKeyboardShortcuts() {
 appSettings = loadSettings();
 console.log('✓ Settings loaded');
 
+// Wire up module dependencies (dependency injection)
+setMasterSlidersRef(() => currentMasterSliders);
+setUpdateAllButtonRef(updateAllButton);
+console.log('✓ Module dependencies wired');
+
 // Story 4.4: Initialize auto-save timer with current settings
 startAutoSaveTimer(appSettings.behavior?.autoSaveInterval || 'manual');
 
@@ -3524,46 +2947,7 @@ if (document.querySelector('.panel-tree')) {
   initializePanelReorder();
 }
 
-/**
- * Update font size for all editor views
- */
-function updateAllEditorFontSizes() {
-  const settings = getSettings();
-  const fontSize = settings.fontSize || 14;
-
-  console.log(`[Settings] Updating font size to ${fontSize}px for all editors`);
-
-  // Update all editor views
-  editorViews.forEach((view, panelId) => {
-    const compartment = fontSizeCompartments.get(panelId);
-    if (compartment && view) {
-      view.dispatch({
-        effects: compartment.reconfigure(EditorView.theme({
-          ".cm-scroller": {
-            overflow: "visible !important"
-          },
-          "&": {
-            backgroundColor: "transparent !important",
-            fontSize: `${fontSize}px`
-          },
-          ".cm-content": {
-            backgroundColor: "transparent !important"
-          },
-          ".cm-gutters": {
-            backgroundColor: "transparent !important",
-            borderRight: "1px solid rgba(255, 255, 255, 0.1)"
-          },
-          ".cm-activeLineGutter": {
-            backgroundColor: "rgba(255, 255, 255, 0.05) !important"
-          },
-          ".cm-activeLine": {
-            backgroundColor: "rgba(255, 255, 255, 0.03) !important"
-          }
-        }))
-      });
-    }
-  });
-}
+// NOTE: updateAllEditorFontSizes is now imported from ./panels/panelEditor.js
 
 // Listen for settings changes to update tempo control and font sizes
 window.addEventListener('settings-changed', () => {
