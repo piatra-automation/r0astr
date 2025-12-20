@@ -1,0 +1,552 @@
+/**
+ * Panel Styles
+ *
+ * Panel tree layout, editor containers, and panel components.
+ * Combines: panel-tree.css + editor.css
+ */
+
+/* ============================================
+   PANEL TREE CONTAINER
+   ============================================ */
+
+.panel-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-top: calc(var(--banner-bar-height, 50px) + var(--metronome-height, 24px) + 16px);
+  padding-bottom: 100px;
+  list-style: none;
+}
+
+/* ============================================
+   PANEL ROW
+   ============================================ */
+
+.level-panel,
+.add-panel-row {
+  width: 100%;
+}
+
+.level-panel {
+  background: var(--panel-base-dark, #1a1a1a);
+  border: 1px solid #333;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* ============================================
+   SUMMARY (HEADER ROW)
+   ============================================ */
+
+.level-panel > details > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  background: var(--panel-base-dark, #1a1a1a);
+  transition: background-color 0.15s ease;
+}
+
+.level-panel > details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.level-panel > details > summary:hover {
+  background: #252525;
+}
+
+/* Expand/collapse chevron */
+.level-panel > details > summary::before {
+  content: '\25B6';
+  font-size: 10px;
+  color: #666;
+  transition: transform 0.2s ease;
+}
+
+.level-panel > details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+/* ============================================
+   PANEL NUMBER BADGE
+   ============================================ */
+
+.panel-number-badge {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 50%;
+  background: #444;
+  color: #ddd;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  transition: transform 0.1s ease, background-color 0.15s ease;
+}
+
+.panel-number-badge:hover {
+  transform: scale(1.1);
+  background: #555;
+}
+
+.panel-number-badge:active,
+.panel-number-badge.dragging {
+  cursor: grabbing;
+  transform: scale(1.15);
+}
+
+/* ============================================
+   PANEL TITLE
+   ============================================ */
+
+.panel-title {
+  flex: 1;
+  font-weight: 500;
+  font-size: 14px;
+  color: #ddd;
+  padding: 2px 6px;
+  border-radius: 2px;
+  min-width: 100px;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.panel-title:focus {
+  outline: none;
+  background: #2a2a2a;
+  border-color: var(--dark-green, #076443);
+}
+
+/* ============================================
+   PANEL ACTIONS (BUTTONS)
+   ============================================ */
+
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.panel-actions button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 4px;
+  background: #333;
+  color: #999;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.panel-actions button:hover {
+  background: #444;
+  color: #ddd;
+}
+
+.panel-actions button:active {
+  transform: scale(0.95);
+}
+
+/* Playback button states */
+.panel-actions .btn-playback {
+  color: var(--dark-green, #076443);
+}
+
+.panel-actions .btn-playback.playing {
+  color: var(--burnt-red, #c44);
+}
+
+.panel-actions .btn-playback.stale {
+  color: var(--puke, #c8b400);
+}
+
+/* Delete button */
+.panel-actions .btn-delete {
+  color: #666;
+}
+
+.panel-actions .btn-delete:hover {
+  color: var(--burnt-red, #c44);
+  background: rgba(200, 60, 60, 0.15);
+}
+
+/* Master panel buttons */
+.panel-actions .btn-update-all {
+  color: var(--puke, #c8b400);
+  position: relative;
+}
+
+.panel-actions .btn-update-all .count-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  color: #000;
+  background: var(--puke, #c8b400);
+  border-radius: 7px;
+}
+
+.panel-actions .btn-update-all .count-badge.hidden {
+  display: none;
+}
+
+.panel-actions .btn-stop-all {
+  color: var(--burnt-red, #c44);
+}
+
+/* Hide delete on master panel */
+.level-panel[data-panel-number="0"] .btn-delete {
+  display: none;
+}
+
+/* Master panel accent */
+.level-panel[data-panel-number="0"] > details > summary {
+  border-left: 3px solid var(--dark-green, #076443);
+}
+
+/* ============================================
+   EDITOR CONTAINER
+   ============================================ */
+
+.panel-editor-container {
+  padding: 0 16px 16px;
+}
+
+.panel-editor-container .code-editor-wrapper {
+  background: #111;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.panel-editor-container .code-editor {
+  width: 100%;
+  min-height: 60px;
+}
+
+/* CodeMirror auto-height */
+.panel-editor-container .cm-editor {
+  height: auto;
+}
+
+.panel-editor-container .cm-scroller {
+  overflow: visible;
+  height: auto;
+}
+
+.panel-editor-container .cm-content {
+  min-height: 60px;
+}
+
+/* Error message */
+.panel-editor-container .error-message {
+  padding: 8px 12px;
+  margin-top: 8px;
+  background: rgba(200, 60, 60, 0.15);
+  border-left: 3px solid var(--burnt-red, #c44);
+  color: #f88;
+  font-size: 12px;
+  font-family: monospace;
+  border-radius: 0 4px 4px 0;
+}
+
+/* ============================================
+   CONTROLS CONTAINER (SLIDERS, VIZ)
+   ============================================ */
+
+.panel-controls-container {
+  padding: 0 16px 16px;
+}
+
+.panel-controls-container .leaf-slider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.panel-controls-container .leaf-slider label {
+  min-width: 80px;
+  font-size: 13px;
+  color: #999;
+}
+
+.panel-controls-container .leaf-slider input[type="range"] {
+  flex: 1;
+  max-width: 300px;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #333;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.panel-controls-container .leaf-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--dark-green, #076443);
+  cursor: pointer;
+}
+
+.panel-controls-container .slider-value {
+  min-width: 50px;
+  text-align: right;
+  font-size: 13px;
+  font-family: monospace;
+  color: #999;
+}
+
+/* Viz container */
+.panel-controls-container .leaf-viz {
+  padding: 8px 0;
+}
+
+.panel-controls-container .viz-container {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.panel-controls-container .viz-container canvas {
+  flex: 1;
+  min-width: 150px;
+  height: 60px;
+  background: #111;
+  border-radius: 4px;
+}
+
+/* ============================================
+   PANEL STATES
+   ============================================ */
+
+/* Playing */
+.level-panel.playing > details > summary {
+  background: rgba(7, 100, 67, 0.15);
+}
+
+.level-panel.playing .panel-number-badge {
+  background: var(--dark-green, #076443);
+  color: #fff;
+}
+
+/* Stale */
+.level-panel.stale > details > summary {
+  background: rgba(200, 180, 0, 0.1);
+}
+
+.level-panel.stale .panel-number-badge {
+  background: var(--puke, #c8b400);
+  color: #000;
+}
+
+/* Error */
+.level-panel.error > details > summary {
+  background: rgba(200, 60, 60, 0.1);
+}
+
+.level-panel.error .panel-number-badge {
+  background: var(--burnt-red, #c44);
+  color: #fff;
+}
+
+/* Focused */
+.level-panel.focused {
+  outline: 2px solid var(--dark-green, #076443);
+  outline-offset: -2px;
+}
+
+/* ============================================
+   DRAG & DROP STATES
+   ============================================ */
+
+.level-panel.dragging {
+  opacity: 0.5;
+}
+
+.level-panel.drag-over-above {
+  border-top: 3px solid var(--dark-green, #076443);
+}
+
+.level-panel.drag-over-below {
+  border-bottom: 3px solid var(--dark-green, #076443);
+}
+
+/* ============================================
+   ADD PANEL ROW
+   ============================================ */
+
+.add-panel-row {
+  margin-top: 4px;
+}
+
+.add-panel-trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: 2px dashed #333;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.add-panel-trigger:hover {
+  background: rgba(7, 100, 67, 0.1);
+  border-color: var(--dark-green, #076443);
+  border-style: solid;
+}
+
+.add-panel-trigger .add-badge {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  background: #333;
+  color: #666;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.add-panel-trigger:hover .add-badge {
+  background: var(--dark-green, #076443);
+  color: #fff;
+}
+
+.add-panel-text {
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.add-panel-trigger:hover .add-panel-text {
+  color: #ddd;
+}
+
+/* ============================================
+   CODE INPUT (TEXTAREA - GENERIC)
+   ============================================ */
+
+.code-input {
+  width: 100%;
+  flex-grow: 1;
+  padding: 15px;
+  font-family: var(--font-family-monospace);
+  font-size: var(--code-font-size);
+  line-height: 1.5;
+  background: #1a1a1a;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 4px;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.code-input:focus {
+  border-color: #666;
+  box-shadow: 0 0 0 2px rgba(100, 100, 100, 0.2);
+}
+
+/* ============================================
+   CODEMIRROR WRAPPER (GENERIC)
+   ============================================ */
+
+.code-editor-wrapper {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.code-editor {
+  min-height: 100%;
+}
+
+.code-editor .cm-scroller {
+  overflow: visible;
+  height: auto;
+}
+
+.code-editor .cm-editor {
+  height: auto;
+}
+
+/* ============================================
+   ERROR MESSAGES (GENERIC)
+   ============================================ */
+
+.error-message {
+  display: none;
+  color: #e06c75;
+  font-size: 0.85em;
+  padding: 0.5em 0.75em;
+  margin: 0.5em 0 0 0;
+  background-color: rgba(224, 108, 117, 0.1);
+  border-left: 3px solid #e06c75;
+  border-radius: 4px;
+  font-family: var(--font-family-monospace);
+  line-height: 1.4;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.error-message:empty {
+  display: none;
+}
+
+/* ============================================
+   TOUCH DEVICES
+   ============================================ */
+
+@media (pointer: coarse) {
+  .level-panel > details > summary {
+    padding: 16px;
+  }
+
+  .panel-number-badge {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+  }
+
+  .panel-actions button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .panel-controls-container .leaf-slider input[type="range"]::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+  }
+}

@@ -80,49 +80,29 @@ export function updatePanelOpacities() {
   //       collapseOnBlur
   // });
 
-  // Import animatePanelPosition dynamically to avoid circular dependency
-  import('../managers/panelManager.js').then(({ animatePanelPosition }) => {
-    // Update instrument panels - support both legacy (.card) and tree layout (.level-panel)
-    const isTreeLayout = document.querySelector('.panel-tree') !== null;
-    const panels = isTreeLayout
-      ? document.querySelectorAll('.level-panel')
-      : document.querySelectorAll('.card');
-    // console.log('[Opacity DEBUG] Found panels:', panels.length, 'tree:', isTreeLayout);
+  // Tree layout: use native <details> for expand/collapse (CSS handles animation)
+  const panels = document.querySelectorAll('.level-panel');
 
-    let focusedCount = 0;
-    panels.forEach(panel => {
-      const isFocused = panel.classList.contains('focused') || panel.classList.contains('active');
-      if (isFocused) focusedCount++;
-      const targetOpacity = isFocused ? activePanelOpacity : backgroundPanelOpacity;
-      panel.style.opacity = targetOpacity;
+  panels.forEach(panel => {
+    const isFocused = panel.classList.contains('focused') || panel.classList.contains('active');
+    const targetOpacity = isFocused ? activePanelOpacity : backgroundPanelOpacity;
+    panel.style.opacity = targetOpacity;
 
-      // Collapse/expand with animation based on focus and setting
-      if (collapseOnBlur) {
-        const shouldCollapse = !isFocused;
-        const isCurrentlyCollapsed = panel.classList.contains('panel-collapsed');
-
-        if (shouldCollapse !== isCurrentlyCollapsed) {
-          animatePanelPosition(panel.id, shouldCollapse);
-        }
-      } else {
-        // If collapse disabled, ensure panels are expanded
-        if (panel.classList.contains('panel-collapsed')) {
-          animatePanelPosition(panel.id, false);
-        }
+    // Collapse/expand via details element (tree layout only)
+    if (collapseOnBlur) {
+      const details = panel.querySelector('details');
+      if (details) {
+        // Collapse unfocused panels, expand focused ones
+        details.open = isFocused;
       }
-
-      // console.log(`[Opacity DEBUG] Panel ${panel.id}: focused=${isFocused}, opacity=${targetOpacity}, collapsed=${collapseOnBlur && !isFocused}`);
-    });
-
-    // console.log(`[Opacity DEBUG] Total focused panels: ${focusedCount}`);
-
-    // Update master panel - ALWAYS use active opacity (never fade to background)
-    const masterPanel = document.getElementById('master-panel');
-    if (masterPanel) {
-      masterPanel.style.opacity = activePanelOpacity;
-      // console.log(`[Opacity DEBUG] Master panel: ALWAYS ACTIVE, opacity=${activePanelOpacity}`);
     }
   });
+
+  // Master panel - ALWAYS use active opacity
+  const masterPanel = document.getElementById('panel-0');
+  if (masterPanel) {
+    masterPanel.style.opacity = activePanelOpacity;
+  }
 }
 
 /**

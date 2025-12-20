@@ -182,14 +182,17 @@ function handleDrop(e) {
     return;
   }
 
-  // Move the element in DOM
+  // Move the element in DOM (always keep add-panel-row at end)
+  const addPanelRow = document.getElementById('add-panel-row');
   if (insertBefore) {
     panelTree.insertBefore(draggedElement, targetPanel);
   } else {
-    // Insert after target
+    // Insert after target, but before add-panel-row
     const nextSibling = targetPanel.nextElementSibling;
-    if (nextSibling) {
+    if (nextSibling && nextSibling !== addPanelRow) {
       panelTree.insertBefore(draggedElement, nextSibling);
+    } else if (addPanelRow) {
+      panelTree.insertBefore(draggedElement, addPanelRow);
     } else {
       panelTree.appendChild(draggedElement);
     }

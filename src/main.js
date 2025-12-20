@@ -2,8 +2,7 @@ import { repl, evalScope, ref } from '@strudel/core';
 import { getAudioContext, webaudioOutput, initAudioOnFirstClick, registerSynthSounds } from '@strudel/webaudio';
 import { transpiler } from '@strudel/transpiler';
 import { sliderWithID, sliderValues as cmSliderValues, highlightExtension, updateMiniLocations, highlightMiniLocations } from '@strudel/codemirror';
-import { createPanel, renderPanel, deletePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, animatePanelPosition, expandPanel, collapsePanel, togglePanel, isPanelExpanded, MASTER_PANEL_ID } from './managers/panelManager.js';
-import { initializeDragAndResize } from './ui/dragResize.js';
+import { createPanel, renderPanel, deletePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, expandPanel, collapsePanel, togglePanel, isPanelExpanded, MASTER_PANEL_ID } from './managers/panelManager.js';
 import { initializePanelReorder } from './ui/panelReorder.js';
 import { loadSettings, getSettings, updateSetting } from './managers/settingsManager.js';
 import { moveEditorToScreen, removeEditorFromScreen, removeAllEditorsExcept, isEditorInScreen } from './managers/screenManager.js';
@@ -618,10 +617,6 @@ function restorePanels() {
         console.log(`[RESTORE] CodeMirror initialized for: ${panelId}`);
       }
 
-      // Initialize drag and resize functionality (legacy layout only)
-      if (!isTreeLayout()) {
-        initializeDragAndResize(panelElement);
-      }
 
       // Initialize visual state (Story 6.3)
       updateVisualIndicators(panelId);
@@ -725,10 +720,6 @@ async function restoreLayoutFromFile(layout) {
         editorViews.set(panelId, view);
       }
 
-      // Initialize drag/resize for legacy layout
-      if (!isTreeLayout() && panelElement) {
-        initializeDragAndResize(panelElement);
-      }
 
       console.log(`[FileIO] Restored panel: ${panelId} (${panelState.title})`);
     }
@@ -757,6 +748,17 @@ async function restoreLayoutFromFile(layout) {
   console.log('✓ Layout restored from file');
 }
 
+// Ensure add-panel-row is always at the end of panel-tree
+function ensureAddPanelRowAtEnd() {
+  const panelTree = document.querySelector('.panel-tree');
+  const addPanelRow = document.getElementById('add-panel-row');
+  if (panelTree && addPanelRow && addPanelRow.nextElementSibling) {
+    // Move add-panel-row to end if it has siblings after it
+    panelTree.appendChild(addPanelRow);
+    console.log('[Layout] Moved add-panel-row to end of panel tree');
+  }
+}
+
 // Initialize card UI
 function initializeCards() {
   // Check if we should restore panels from saved state
@@ -766,6 +768,9 @@ function initializeCards() {
   } else {
     console.log('Panel restoration disabled (restoreSession: false or no settings)');
   }
+
+  // Ensure add-panel-row is at end (fixes any corrupted DOM order)
+  ensureAddPanelRowAtEnd();
 
   // Initialize CodeMirror for existing panel containers
   // Note: This handles both restored panels and any panels already in HTML
@@ -987,10 +992,6 @@ function initializeCards() {
         }, 10);
       }
 
-      // Initialize drag and resize functionality (legacy layout only)
-      if (!isTreeLayout()) {
-        initializeDragAndResize(panelElement);
-      }
 
       // Initialize visual state (Story 6.3)
       updateVisualIndicators(panelId);
@@ -2675,10 +2676,6 @@ function wireWebSocketEventListeners() {
       console.log(`[WebSocket] CodeMirror initialized for API panel: ${newPanelId}`);
     }
 
-    // Initialize drag/resize (legacy layout only)
-    if (!isTreeLayout()) {
-      initializeDragAndResize(panelElement);
-    }
     updateVisualIndicators(newPanelId);
     attachValidationListener(newPanelId);
 
@@ -2982,10 +2979,6 @@ function createNewPanelAndFocus() {
     }, 10);
   }
 
-  // Initialize drag and resize functionality (legacy layout only)
-  if (!isTreeLayout()) {
-    initializeDragAndResize(panelElement);
-  }
 
   // Initialize visual state
   updateVisualIndicators(panelId);

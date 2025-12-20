@@ -1,0 +1,443 @@
+/**
+ * Layout Styles
+ *
+ * This file contains layout and structural styles for r0astr.
+ * Includes header sections, container positioning, and screen area.
+ *
+ * Structure:
+ * - Base styles (box-sizing, body)
+ * - Panel design classes
+ * - Banner bar
+ * - Top menu bar (auto-hiding)
+ * - Metronome section
+ * - Screen area
+ * - Container
+ * - Visualization containers
+ * - Electron app styles
+ * - Utility classes
+ */
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #969696;
+  font-family: var(--font-family-base);
+  letter-spacing: 1.5px;
+  color: var(--text-color);
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 100vh;
+  scroll-behavior: smooth;
+}
+
+/* Projection mode usable area with gradient background */
+body::before {
+  content: '';
+  position: fixed;
+  top: var(--projection-margin-top);
+  left: var(--projection-margin-left);
+  right: var(--projection-margin-right);
+  bottom: var(--projection-margin-bottom);
+  background: linear-gradient(to bottom right, var(--panel-warm-light), var(--panel-warm-dark));
+  border-radius: 5px;
+  z-index: var(--z-behind);
+  pointer-events: none;
+}
+
+header {
+  display: none;
+}
+
+h1 {
+  margin: 0;
+  color: #fff;
+}
+
+/* ============================================
+   Panel Design Classes
+   Reusable visual styles with computed gradients
+   ============================================ */
+
+/* Base Panel - Warm gradient background */
+.base-panel {
+  background: linear-gradient(to bottom right, var(--panel-warm-light), var(--panel-warm-dark));
+}
+
+/* Control Panel - Cool gradient */
+.control-panel {
+  background: linear-gradient(to bottom right, var(--panel-cool-light), var(--panel-cool-dark));
+}
+
+/* Highlight Panel - Light solid with subtle shadow */
+.highlight-panel {
+  background: var(--panel-base-light);
+  border-top: 1px solid color-mix(in srgb, var(--panel-base-light) 80%, white 20%);
+  border-left: 1px solid color-mix(in srgb, var(--panel-base-light) 80%, white 20%);
+  border-bottom: 1px solid color-mix(in srgb, var(--panel-base-light) 70%, black 30%);
+  border-right: 1px solid color-mix(in srgb, var(--panel-base-light) 70%, black 30%);
+}
+
+/* Screen Panel - Dark with configurable opacity */
+.screen-panel {
+  background: color-mix(in srgb, var(--panel-base-dark) 95%, transparent 5%);
+}
+
+/* ============================================
+   BANNER BAR - Narrow header at top
+   ============================================ */
+
+.banner-bar {
+  position: fixed;
+  top: var(--projection-margin-top);
+  left: var(--projection-margin-left);
+  right: var(--projection-margin-right);
+  height: var(--banner-bar-height);
+  background: var(--darkness);
+  z-index: var(--z-panel);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-app-region: no-drag;
+}
+
+.banner-bar.visible {
+  opacity: 1;
+}
+
+.banner-bar .site-logo {
+  height: var(--logo-height);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  -webkit-app-region: no-drag;
+}
+
+.banner-bar .site-logo img {
+  height: var(--logo-height);
+  width: auto;
+  object-fit: contain;
+}
+
+.banner-bar .banner-subtitle {
+  margin-left: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--pale-white);
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+.banner-bar .banner-subtitle a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.banner-bar .banner-subtitle a:hover {
+  text-decoration: underline;
+  opacity: 1;
+}
+
+/* ============================================
+   TOP MENU BAR - Auto-hiding drawer
+   ============================================ */
+
+.top-menu-bar {
+  position: fixed;
+  top: var(--projection-margin-top);
+  left: 50%;
+  height: var(--top-bar-height);
+  width: fit-content;
+  padding: 0 20px;
+  background: var(--darkness);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  z-index: 10100;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  transform: translateX(-50%) translateY(-100%);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.banner-bar:hover ~ .top-menu-bar,
+.top-menu-bar:hover,
+.top-menu-bar.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.top-menu-bar .top-bar-btn {
+  pointer-events: auto;
+}
+
+/* ============================================
+   METRONOME SECTION - Step sequencer strip
+   ============================================ */
+
+.metronome-section {
+  position: fixed;
+  top: calc(var(--projection-margin-top) + var(--banner-bar-height));
+  left: var(--projection-margin-left);
+  right: var(--projection-margin-right);
+  height: var(--metronome-height);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.15));
+  z-index: var(--z-panel);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+.metronome-section.visible {
+  opacity: 1;
+}
+
+.step-sequencer {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+  height: 16px;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+  padding: 2px 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.step-sequencer.active {
+  opacity: 1;
+}
+
+.step-box {
+  flex: 1;
+  height: 100%;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  transition: background 0.05s ease, transform 0.05s ease, box-shadow 0.05s ease;
+}
+
+/* Downbeat markers */
+.step-box[data-step="0"],
+.step-box[data-step="4"],
+.step-box[data-step="8"],
+.step-box[data-step="12"] {
+  margin-top: -2px;
+  height: calc(100% + 4px);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.step-box.active {
+  background: var(--dark-green);
+  box-shadow: 0 0 8px var(--dark-green);
+}
+
+.step-box.beat {
+  background: #fff;
+  transform: scaleX(1.05);
+}
+
+.step-sequencer.downbeat {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Legacy hero-section - hidden */
+.hero-section,
+.hero-controls {
+  display: none;
+}
+
+/* ============================================
+   SCREEN AREA - CodeMirror container
+   ============================================ */
+
+.screen {
+  position: fixed;
+  top: calc(var(--top-bar-height) + var(--hero-bar-height));
+  left: 0;
+  right: 0;
+  min-height: 87px;
+  max-height: calc(100vh - var(--top-bar-height) - var(--hero-bar-height) - 20px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--screen-bkg);
+  border-left: 14px solid var(--screen-edge);
+  border-right: 14px solid var(--screen-edge);
+  border-top: 4px solid var(--screen-top);
+  border-bottom: 4px solid var(--screen-bottom);
+  z-index: var(--z-screen);
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+  box-shadow: 0px 16px 8px rgba(37, 158, 117, 0.6);
+  clip-path: inset(0px 0px -100px -100px);
+  background-image:
+    url('/static/images/screw.svg'),
+    url('/static/images/screw.svg'),
+    url('/static/images/screw.svg'),
+    url('/static/images/screw.svg'),
+    url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.1"/></svg>');
+  background-color: var(--screen-bkg);
+  background-position:
+    20px 10px,
+    calc(100% - 20px) 10px,
+    20px calc(100% - 10px),
+    calc(100% - 20px) calc(100% - 10px),
+    center;
+  background-repeat: no-repeat;
+  background-size:
+    16px 16px,
+    16px 16px,
+    16px 16px,
+    16px 16px,
+    cover;
+  position: relative;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.screen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0) 100%),
+    linear-gradient(135deg,
+      #ffffff0a 0%,
+      #ffffff26 49.8%,
+      #ffffff09 50%,
+      #ffffff00 100%);
+  pointer-events: none;
+  z-index: var(--z-base);
+}
+
+.screen.visible {
+  opacity: 1;
+}
+
+.screen .screen-editor-wrapper {
+  width: var(--default-width, 600px);
+  min-height: 300px;
+  max-height: 800px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  position: relative;
+  z-index: var(--z-above-base);
+}
+
+.screen .screen-editor-wrapper .code-editor {
+  height: 100%;
+  min-height: 300px;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-100%); opacity: 0; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.screen-editor-wrapper.slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+.screen-editor-wrapper.slide-down {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+/* ============================================
+   CONTAINER
+   ============================================ */
+
+.container {
+  position: fixed;
+  top: calc(var(--projection-margin-top) + var(--banner-bar-height) + var(--metronome-height) + var(--master-buttons-height));
+  left: var(--projection-margin-left);
+  right: var(--projection-margin-right);
+  bottom: var(--projection-margin-bottom);
+  overflow: hidden;
+  padding: 20px;
+}
+
+/* ============================================
+   VISUALIZATION CONTAINERS
+   ============================================ */
+
+.visualization-canvas-container {
+  display: none;
+  overflow: hidden;
+}
+
+.visualization-canvas {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+  display: block;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes flash {
+  0%, 100% { border-color: inherit; }
+  50% { border-color: #fff; box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
+}
+
+.panel-updating {
+  animation: flash 0.3s ease-in-out;
+}
+
+/* ============================================
+   ELECTRON APP STYLES
+   ============================================ */
+
+.electron-drag-region {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--banner-bar-height, 50px);
+  -webkit-app-region: drag;
+  z-index: 9998;
+  pointer-events: none;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.hidden {
+  display: none;
+}
+
+.info {
+  display: none;
+}
