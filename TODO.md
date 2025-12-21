@@ -31,7 +31,4 @@ default panel width and panel height are now deprecated in tree view so can be r
 
 
 
-- i would like to add a checkbox in settings near the projection settings called "Chromakey" and if it is selected the light/dark settings remain the same EXCEPT the background colour is set to a solid bright green suitable for chromakey/greenscreen...
-
-
-
+electron app name. html page title.

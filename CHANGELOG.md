@@ -5,6 +5,43 @@ All notable changes to r0astr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2025-12-21
+
+### Added
+- **Aftermarket Skin System**
+  - ZIP-based skin import/export functionality
+  - IndexedDB storage for custom skins (works in web and Electron)
+  - Skin validation with schema checking and security protections
+  - Dual-source skin loading (custom skins override bundled)
+  - Import UI in settings modal with status feedback
+  - Export/delete controls for custom skins
+  - Protection against deleting active skin
+- **Bundled Skins**
+  - Default skin with metronome hover trigger
+  - Glass skin with left-edge hover menu
+  - Hover target system with extended trigger zones
+  - Skinnable templates (panel.html, slider.html, sliderCollapsed.html)
+- **CI/CD Improvements**
+  - GitLab Pages deployment builds app into docs/app/
+  - Relative paths for subdirectory deployments
+  - Bundled skins included in production builds
+
+### Changed
+- Vite base path now uses relative paths for all builds
+- Hover trigger zones extended to overlap controlled elements (fixes "Tantalus problem")
+- Settings modal loads skin list dynamically
+- Metronome visible by default in both skins
+
+### Removed
+- Splash screen animation and settings
+- Sample loading now happens silently in background
+
+### Fixed
+- Hot-reload preserves panel state when switching skins
+- Menu hover persistence (trigger zones now include menu area)
+- Default skin metronome visibility
+- Electron drag region interference with hover targets
+
 ## [0.8.0] - 2025-12-12
 
 ### Added

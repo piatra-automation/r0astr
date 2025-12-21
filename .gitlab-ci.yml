@@ -3,15 +3,19 @@ stages:
 
 pages:
   stage: deploy
-  image: python:3.11
+  image: node:20-bullseye
   before_script:
-    - pip install poetry
-    - poetry config virtualenvs.in-project true
-    - poetry install --only docs
+    - npm install
   script:
-    - cd site
-    - poetry run mkdocs build --strict
-    - mv site ../public
+    # Build r0astr app with Vite
+    - npm run build
+
+    # Create docs/app directory and copy built app
+    - mkdir -p docs/app
+    - cp -r dist/* docs/app/
+
+    # Copy docs to public/ (GitLab Pages expects public/)
+    - cp -r docs public
   artifacts:
     paths:
       - public

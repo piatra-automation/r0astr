@@ -388,8 +388,8 @@ const websocketAndApiPlugin = () => ({
 const isElectron = process.env.ELECTRON === 'true';
 
 export default defineConfig({
-  // Use relative paths for Electron builds
-  base: isElectron ? './' : '/',
+  // Use relative paths for all builds (works for Electron, file://, and /app/ subdirectory)
+  base: './',
   plugins: [
     bundleAudioWorkletPlugin(),
     // Only add WebSocket plugin in dev mode (Electron main process handles it in production)

@@ -1,6 +1,7 @@
 dist
 out
 !docs/dist
+docs/app
 dist-*
 cabal-dev
 *.o
