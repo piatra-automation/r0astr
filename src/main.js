@@ -173,6 +173,11 @@ async function loadModules() {
     import('@strudel/tonal'),
     import('@strudel/soundfonts'),
     import('@strudel/codemirror'),
+    import('@strudel/draw'),      // CRITICAL: Adds .orbit()/.o() and visualization methods
+    import('@strudel/xen'),        // Xenharmonic/microtonal functions
+    import('@strudel/osc'),        // OSC (Open Sound Control) support
+    import('@strudel/serial'),     // Serial/MIDI hardware support
+    import('@strudel/csound'),     // CSound integration
     // Expose slider functionality
     Promise.resolve({ sliderValues, sliderWithID, ref })
   );
@@ -227,7 +232,7 @@ function toggleMasterMode() {
 }
 
 // Evaluate master code and make globals available
-function evaluateMasterCode(reRenderSliders = true) {
+async function evaluateMasterCode(reRenderSliders = true) {
   if (masterCodeEvaluating) {
     return; // Prevent recursion
   }
@@ -301,6 +306,23 @@ function evaluateMasterCode(reRenderSliders = true) {
     });
 
     console.log('✓ Master controls updated - variables available globally:', Object.keys(sliderVars));
+
+    // Evaluate master code as global setup (for register(), samples(), etc.)
+    // Skip evaluation if code only contains slider declarations
+    const hasNonSliderCode = cleanCode.replace(/\w+\s*=\s*slider\s*\([^)]+\)/g, '').trim();
+
+    if (hasNonSliderCode) {
+      try {
+        // Evaluate WITHOUT transpilation and WITHOUT .p() - just run the code globally
+        // This allows register(), samples(), variable assignments, etc.
+        await strudelCore.evaluate(cleanCode, false, false);
+        console.log('✓ Master panel code evaluated globally');
+      } catch (error) {
+        // Show error in console - could enhance to show in UI later
+        console.error('[Master] Evaluation error:', error);
+        // TODO: Display error in master panel UI
+      }
+    }
   } catch (error) {
     console.error('[Master] Error:', error);
   } finally {
@@ -1305,9 +1327,11 @@ function initializeCards() {
       // User confirmed (or YOLO mode) - now stop audio and delete
       if (cardStates[panelId] && cardStates[panelId].playing) {
         try {
-          strudelCore.evaluate(`silence.p('${panelId}')`, false, false);
+          // Use tracked pattern ID (handles .d1, .p1, etc.)
+          const patternId = cardStates[panelId].patternId || panelId;
+          strudelCore.evaluate(`silence.p('${patternId}')`, false, false);
           cardStates[panelId].playing = false;
-          console.log(`Stopped audio for panel ${panelId}`);
+          console.log(`Stopped audio for panel ${panelId} (pattern ID: ${patternId})`);
         } catch (error) {
           console.error(`Failed to silence panel ${panelId}:`, error);
         }
@@ -1516,10 +1540,13 @@ function pausePanel(panelId) {
   const panel = cardStates[panelId];
   if (!panel || !panel.playing) return;
 
+  // Use tracked pattern ID (handles .d1, .p1, etc.)
+  const patternId = panel.patternId || panelId;
+
   // Stop audio by replacing with silence
   try {
-    strudelCore.evaluate(`silence.p('${panelId}')`, true, false);
-    console.log(`Panel ${panelId}: Paused`);
+    strudelCore.evaluate(`silence.p('${patternId}')`, true, false);
+    console.log(`Panel ${panelId}: Paused (pattern ID: ${patternId})`);
   } catch (error) {
     console.error(`Panel ${panelId}: Pause error`, error);
   }
@@ -1672,13 +1699,33 @@ async function activatePanel(panelId) {
     // Remove trailing semicolon if present (escodegen adds them)
     output = output.trim().replace(/;$/, '');
 
-    // Check if code uses labeled statements ($:)
+    // Check if code uses labeled statements ($:) or named patterns (.d1, .p1, etc.)
     const hasLabeledStatements = output.includes(".p('$')");
+    const hasNamedPattern = /\.(p|d|q)\(|\.(?:p|d|q)\d+\s*$/.test(output);
+
+    // Extract pattern ID if user is manually registering
+    let userPatternId = null;
+    if (hasNamedPattern) {
+      // Match: .p('id'), .p("id"), .p(id), .d1, .p2, etc.
+      const idMatch = output.match(/\.(p|d|q)\((['"']?)([^'")]+)\2\)|\.([pdq])(\d+)/);
+      if (idMatch) {
+        userPatternId = idMatch[3] || idMatch[5]; // Quoted ID or numeric shortcut
+      }
+    }
 
     // Fix labeled statements: replace .p('$') with .p('panelId')
     // This ensures $: patterns register to the same panel ID
     if (hasLabeledStatements) {
       output = output.replace(/\.p\(['"]?\$['"]?\)/g, `.p('${panelId}')`);
+      userPatternId = panelId; // Track that we've mapped $ to panelId
+    }
+
+    // Store which pattern ID this panel is using (for pause button)
+    if (userPatternId) {
+      cardStates[panelId].patternId = userPatternId;
+      console.log(`[PATTERN ID] Panel ${panelId} using pattern ID: ${userPatternId}`);
+    } else {
+      cardStates[panelId].patternId = panelId; // Default to panel ID
     }
 
     // Render sliders from widget metadata (uses sliderManager)
@@ -1787,7 +1834,8 @@ async function activatePanel(panelId) {
         }
       }
 
-      if (hasLabeledStatements) {
+      if (hasLabeledStatements || hasNamedPattern) {
+        // User already registered pattern - evaluate without auto-appending .p(panelId)
         evalResult = await strudelCore.evaluate(output, true, false);
       } else {
         // Inject panel canvas contexts into visualization calls in user code
@@ -2197,8 +2245,11 @@ function wireWebSocketEventListeners() {
     // Stop audio if playing
     if (cardStates[panelId]?.playing) {
       try {
-        strudelCore.evaluate(`silence.p('${panelId}')`, false, false);
+        // Use tracked pattern ID (handles .d1, .p1, etc.)
+        const patternId = cardStates[panelId].patternId || panelId;
+        strudelCore.evaluate(`silence.p('${patternId}')`, false, false);
         cardStates[panelId].playing = false;
+        console.log(`[API] Stopped audio for panel ${panelId} (pattern ID: ${patternId})`);
       } catch (error) {
         console.error(`Failed to silence panel ${panelId}:`, error);
       }
@@ -2834,9 +2885,11 @@ function initializeKeyboardShortcuts() {
             }
             if (cardStates[focusedPanelW] && cardStates[focusedPanelW].playing) {
               try {
-                strudelCore.evaluate(`silence.p('${focusedPanelW}')`, false, false);
+                // Use tracked pattern ID (handles .d1, .p1, etc.)
+                const patternId = cardStates[focusedPanelW].patternId || focusedPanelW;
+                strudelCore.evaluate(`silence.p('${patternId}')`, false, false);
                 cardStates[focusedPanelW].playing = false;
-                console.log(`[Keyboard] Stopped audio for panel ${focusedPanelW}`);
+                console.log(`[Keyboard] Stopped audio for panel ${focusedPanelW} (pattern ID: ${patternId})`);
               } catch (error) {
                 console.error(`[Keyboard] Failed to silence panel ${focusedPanelW}:`, error);
               }

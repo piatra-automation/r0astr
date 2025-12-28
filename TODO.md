@@ -32,3 +32,28 @@ default panel width and panel height are now deprecated in tree view so can be r
 
 
 electron app name. html page title.
+
+
+### Basic Audio Rendering
+ - [x] `s("bd sd bd sd")` - OK
+ - [x] `note("c e g c5").s("sawtooth")` - OK
+ - [x] `s("piano:0 piano:4 piano:7")` - OK
+ - [x] `s("bd").gain(slider(0.5, 0, 1))` - OK
+
+ ### Pattern Functions
+ - [x] `.fast(2)`, `.slow(2)` - OK
+ - [x] `.lpf(slider(800, 100, 5000))` - OK
+ - [x] `.room(0.9)` - OK
+ - [x] `.every(4, fast(2))` - OK
+
+ ### Multi-Pattern Control (May not work in r0astr)
+ - [x] `all(fast(2))` - OK
+ - [ERR] `each(gain(0.5))` -  Error: V is not a function (line unknown)
+ - [x] `hush()` - OK
+ - [ERR] `cpm(120)` - Error: Method '.p()' is not a function (line unknown)
+
+ ### Advanced Features
+ - [ERR] `s("bd").orbit(slider(0, 0, 7))` - Error: V is not a function (line unknown)
+ - [ ] Multiple sliders in one pattern
+ - [ERR] Pattern shortcuts: `d1`, `.p1`, `$:`, `_pattern` when I use a named pattern or anonymous pattern then clikcing stop in the panel doesnt stop play. only STOP ALL/HUSH works to staop playback for that panel 
+
