@@ -14,6 +14,16 @@
 | Advanced Features | 0/3 | 3/3 | 0% ❌ |
 | **TOTAL** | **10/15** | **5/15** | **67%** |
 
+## Resolution Status (2025-12-28)
+
+| Issue | Status | Resolution |
+|-------|--------|------------|
+| #1: each(gain(0.5)) | ✅ DOCUMENTED | Use lambda: `each((p) => p.gain(0.5))` |
+| #2: cpm(120) | ✅ DOCUMENTED | User error - use `setCpm(120)` |
+| #3: orbit(slider()) | ✅ WORKAROUND | Use integer step: `slider(5, 0, 7, 1)` |
+| #4: Named patterns | ✅ FIXED | Pattern ID tracking in main.js |
+| #5: Multiple sliders | ✅ WORKS | Tested and confirmed working |
+
 ---
 
 ## ✅ PASSING Tests (10/15)

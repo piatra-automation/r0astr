@@ -104,6 +104,86 @@ note("c2").lpf(slider(800, 100, 5000))
 // UI automatically renders slider controls
 ```
 
+## Known Limitations & Workarounds
+
+### Named Pattern Shortcuts (.d1, .p1, $:)
+
+r0astr supports named patterns but with proper panel integration:
+
+```javascript
+// ✅ WORKS - Let r0astr auto-register (recommended)
+s("bd sd")
+
+// ✅ WORKS - Named patterns now tracked for pause control
+s("bd sd").d1
+s("bd sd").p(1)
+
+// ⚠️ NOTE: Pattern uses ID '1', not panel ID
+// Pause button will correctly stop pattern ID '1'
+```
+
+### Global Tempo Control
+
+```javascript
+// ❌ WRONG - cpm() is a pattern method, not global setter
+cpm(120)
+
+// ✅ CORRECT - Use setCpm() for global tempo
+setCpm(120)
+
+// ✅ CORRECT - Use as pattern method
+s("bd sd").cpm(120)
+```
+
+### each() Transform Syntax
+
+```javascript
+// ❌ WRONG - gain(0.5) returns a Pattern, not a function
+each(gain(0.5))
+
+// ✅ CORRECT - Use lambda syntax
+each((p) => p.gain(0.5))
+
+// ✅ WORKS - fast() returns a curried function
+each(fast(2))
+```
+
+### orbit() with Sliders
+
+`orbit()` expects integer values for effect bus routing:
+
+```javascript
+// ❌ FAILS - Floating point values break orbit
+s("bd").orbit(slider(5, 0, 7))
+
+// ✅ WORKS - Use step=1 for integer values
+s("bd").orbit(slider(5, 0, 7, 1))
+```
+
+### Visualization Methods
+
+r0astr supports Strudel's visualization methods with two rendering modes:
+
+**In-panel rendering (underscore prefix):**
+```javascript
+// Renders in a canvas within the panel
+s("bd sd")._pianoroll()
+s("bd sd")._scope()
+note("c3 e3 g3")._spectrum()
+```
+
+**Full-page rendering (no underscore):**
+```javascript
+// Renders on a full-page canvas overlay
+s("bd sd").pianoroll()
+s("bd sd").scope()
+note("c3 e3 g3").spectrum()
+```
+
+Both modes are properly integrated with panel controls - stopping a panel will clean up its visualizations.
+
+**Available methods:** `pianoroll`, `scope`, `tscope`, `fscope`, `spectrum`
+
 ## Code Style
 
 - Modern JavaScript (ES modules)

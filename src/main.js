@@ -1573,7 +1573,19 @@ function pausePanel(panelId) {
   console.log('[VIZ PAUSE] Stopping visualization for', panelId);
   if (window.cleanupDraw) {
     console.log('[VIZ PAUSE] Calling cleanupDraw with id:', panelId);
-    window.cleanupDraw(false, panelId); // false = don't clear (we'll do it manually)
+    // Stop animations for both in-panel and full-page visualizations
+    window.cleanupDraw(false, panelId); // Matches panelId-0, panelId-1, panelId-fullpage-0, etc.
+
+    // Check if any other panels have active full-page visualizations
+    const otherPlayingPanels = Object.entries(cardStates)
+      .filter(([id, state]) => id !== panelId && state.playing)
+      .length;
+
+    // If no other panels are playing, clear the full-page canvas
+    if (otherPlayingPanels === 0) {
+      console.log('[VIZ PAUSE] No other panels playing, clearing full-page canvas');
+      window.cleanupDraw(true); // Clear screen, no id filter
+    }
   } else {
     console.warn('[VIZ PAUSE] cleanupDraw not available');
   }
@@ -1757,22 +1769,23 @@ async function activatePanel(panelId) {
     let evalResult;
     try {
       // console.log('[VIZ DEBUG] ========== START ACTIVATION FOR', panelId, '==========');
-      // console.log('[VIZ DEBUG] Original pattern code:', output);
+      // console.log('[VIZ DEBUG] Transpiled code:', output);
 
       // Pre-process pattern code to detect visualizations BEFORE canvas setup
       let patternCode = output;
 
-      // Replace .punchcard() with .pianoroll() (they render identically)
+      // Replace punchcard variants with pianoroll equivalents
       patternCode = patternCode.replace(/\.punchcard\(/g, '.pianoroll(');
-      // console.log('[VIZ DEBUG] After punchcard replacement:', patternCode);
+      patternCode = patternCode.replace(/\._punchcard\(/g, '._pianoroll(');
 
-      // Detect all visualization methods in order of appearance
-      const vizMethodRegex = /\.(pianoroll|scope|tscope|fscope|spectrum)\(/g;
+      // Detect UNDERSCORE-prefixed viz methods for IN-PANEL rendering
+      // Non-underscore methods (.pianoroll, .scope) use Strudel's full-page behavior
+      const vizMethodRegex = /\._(pianoroll|scope|tscope|fscope|spectrum)\(/g;
       const vizMethodMatches = [...patternCode.matchAll(vizMethodRegex)];
       const detectedVizMethods = vizMethodMatches.map(m => m[1]);
       const hasVisualization = detectedVizMethods.length > 0;
 
-      // console.log('[VIZ DEBUG] Detected visualization methods:', detectedVizMethods);
+      // console.log('[VIZ DEBUG] Detected underscore viz methods:', detectedVizMethods, 'hasVisualization:', hasVisualization);
 
       // Get container element
       const container = document.getElementById(`viz-container-${panelId}`);
@@ -1842,7 +1855,7 @@ async function activatePanel(panelId) {
 
         if (hasVisualization && window.visualizationContexts[panelId]) {
           const contexts = window.visualizationContexts[panelId];
-          // console.log('[VIZ DEBUG] Injecting contexts into pattern code');
+          // console.log('[VIZ DEBUG] Injecting contexts into pattern code, contexts:', contexts);
 
           // Replace ALL visualization methods in order of appearance
           let contextIndex = 0;
@@ -1853,23 +1866,31 @@ async function activatePanel(panelId) {
           // Make all contexts available as globals
           contexts.forEach((ctx, i) => {
             window[`__viz_${safePanelId}_${i}`] = ctx;
+            // console.log(`[VIZ DEBUG] Set global __viz_${safePanelId}_${i}:`, ctx, 'canvas:', ctx?.canvas?.width, 'x', ctx?.canvas?.height);
           });
 
-          // Create a combined regex that matches any viz method
-          const allVizMethodsRegex = /\.(pianoroll|scope|tscope|fscope|spectrum)\((\s*\{[^}]*\})?\s*\)/g;
+          // Create a combined regex that matches UNDERSCORE-prefixed viz methods only
+          // These get panel canvas injection; non-underscore methods use full-page rendering
+          // The transpiler converts ._pianoroll() to ._pianoroll('_widget__pianoroll_0') so we must handle:
+          //   - Empty args: ._pianoroll()
+          //   - String arg: ._pianoroll('...')
+          //   - Object arg: ._pianoroll({ ... })
+          const allVizMethodsRegex = /\._(pianoroll|scope|tscope|fscope|spectrum)\(('[^']*'|"[^"]*"|\s*\{[^}]*\})?\s*\)/g;
 
-          patternCode = patternCode.replace(allVizMethodsRegex, (match, method, existingOptions) => {
+          patternCode = patternCode.replace(allVizMethodsRegex, (match, method, existingArg) => {
             // Use the context at the current index
             const ctxIdx = contextIndex;
             contextIndex++;
 
-            // console.log(`[VIZ DEBUG] Replacing .${method}() with context index ${ctxIdx}`);
+            // console.log(`[VIZ DEBUG] Replacing ._${method}() with context index ${ctxIdx}, match:`, match);
 
-            if (existingOptions) {
-              // Remove outer braces and whitespace
-              const opts = existingOptions.trim().slice(1, -1);
+            // Check if existingArg is an object (starts with {) or string (starts with ' or ")
+            if (existingArg && existingArg.trim().startsWith('{')) {
+              // Object options - merge our ctx and id
+              const opts = existingArg.trim().slice(1, -1);
               return `.tag('${panelId}-${ctxIdx}').${method}({ ctx: __viz_${safePanelId}_${ctxIdx}, id: '${panelId}-${ctxIdx}', ${opts} })`;
             } else {
+              // No args or string widget ID (ignore the widget ID, we use our own id)
               return `.tag('${panelId}-${ctxIdx}').${method}({ ctx: __viz_${safePanelId}_${ctxIdx}, id: '${panelId}-${ctxIdx}' })`;
             }
           });
@@ -1878,7 +1899,29 @@ async function activatePanel(panelId) {
           // console.log(`[VIZ DEBUG] Replaced ${contextIndex} total visualization calls`);
         }
 
+        // Inject panel-based tags AND IDs into NON-underscore viz methods (full-page rendering)
+        // .tag() is required because pianoroll/scope filter haps to only show those with matching tag
+        // The id ensures cleanupDraw(panelId) can find and stop the animation frames
+        const fullPageVizRegex = /\.(pianoroll|scope|tscope|fscope|spectrum)\((\s*\{[^}]*\})?\s*\)/g;
+        let fullPageIndex = 0;
+        patternCode = patternCode.replace(fullPageVizRegex, (match, method, existingOptions) => {
+          // Skip if this was already processed (has ctx: or tag: injected)
+          if (existingOptions && (existingOptions.includes('ctx:') || existingOptions.includes('tag('))) {
+            return match; // Leave unchanged
+          }
+          const idx = fullPageIndex++;
+          const tagId = `${panelId}-fullpage-${idx}`;
+          if (existingOptions) {
+            // Merge id into existing options
+            const opts = existingOptions.trim().slice(1, -1);
+            return `.tag('${tagId}').${method}({ id: '${tagId}', ${opts} })`;
+          } else {
+            return `.tag('${tagId}').${method}({ id: '${tagId}' })`;
+          }
+        });
+
         // Evaluate pattern
+        // console.log('[VIZ DEBUG] Final pattern code:', patternCode);
         // console.log('[VIZ DEBUG] About to evaluate:', `${patternCode}.p('${panelId}')`);
         evalResult = await strudelCore.evaluate(`${patternCode}.p('${panelId}')`, true, false);
         // console.log('[VIZ DEBUG] Evaluation complete');
