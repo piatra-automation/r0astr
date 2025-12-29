@@ -309,13 +309,15 @@ async function evaluateMasterCode(reRenderSliders = true) {
 
     // Evaluate master code as global setup (for register(), samples(), etc.)
     // Skip evaluation if code only contains slider declarations
-    const hasNonSliderCode = cleanCode.replace(/\w+\s*=\s*slider\s*\([^)]+\)/g, '').trim();
+    // Match: let/const/var VARNAME = slider(...) or plain VARNAME = slider(...)
+    const hasNonSliderCode = cleanCode.replace(/(?:let|const|var)?\s*\w+\s*=\s*slider\s*\([^)]+\)/g, '').trim();
 
     if (hasNonSliderCode) {
       try {
         // Evaluate WITHOUT transpilation and WITHOUT .p() - just run the code globally
         // This allows register(), samples(), variable assignments, etc.
-        await strudelCore.evaluate(cleanCode, false, false);
+        // Append 'silence' to satisfy Strudel's pattern expectation (register() returns undefined)
+        await strudelCore.evaluate(hasNonSliderCode + '\nsilence', false, false);
         console.log('✓ Master panel code evaluated globally');
       } catch (error) {
         // Show error in console - could enhance to show in UI later
@@ -930,7 +932,7 @@ function initializeCards() {
     console.log('[Init] Initializing master panel CodeMirror');
 
     // Use restored code if available, otherwise use default
-    const defaultMasterCode = `// Master Controls - Define global variables and sliders
+    const defaultMasterCode = `// Global Controls - Define global variables and sliders
 // These are accessible in all instrument panels
 
 // Add sliders here:

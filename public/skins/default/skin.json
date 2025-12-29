@@ -10,11 +10,5 @@
     "slider": "slider.html",
     "sliderCollapsed": "slider-collapsed.html"
   },
-  "hoverTargets": [
-    {
-      "id": "metronome-trigger",
-      "controls": [".top-menu-bar"],
-      "hint": "visible"
-    }
-  ]
+  "hoverTargets": []
 }

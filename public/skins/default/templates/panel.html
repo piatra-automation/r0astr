@@ -1,11 +1,15 @@
 <details{{expanded}}>
   <summary>
-    <span class="panel-number-badge" draggable="true">{{panelNumber}}</span>
-    <span class="panel-title" data-panel-id="{{panelId}}" contenteditable="false" spellcheck="false">{{title}}</span>
-    <div class="panel-actions">
-      <button class="btn-playback" data-card="{{panelId}}" title="Play">
+    <span class="panel-drag-handle" draggable="true" title="Drag to reorder">
+      <span class="material-icons">drag_indicator</span>
+    </span>
+    <div class="panel-actions-left">
+      <button class="btn-playback" data-card="{{panelId}}" title="Play/Pause">
         <span class="material-icons">play_arrow</span>
       </button>
+    </div>
+    <span class="panel-title" data-panel-id="{{panelId}}" contenteditable="false" spellcheck="false">{{title}}</span>
+    <div class="panel-actions">
       <button class="btn-delete" data-panel="{{panelId}}" title="Delete" style="{{deleteButtonStyle}}">
         <span class="material-icons">delete</span>
       </button>

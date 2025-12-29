@@ -5,49 +5,236 @@
  * This file explicitly restores default backgrounds when switching from other skins.
  */
 
-/* Default beige/gray background */
-body {
-  background: #969696;
-  background-attachment: scroll;
+/* Overscroll background color */
+html {
+  background-color: #0a0a0a;
 }
 
-/* Default gradient overlay */
+/* Synthwave gradient background */
+body {
+  background: linear-gradient(45deg, #2d1b4e 0%, #0a0a0a 50%, #0d3b3b 100%);
+  background-attachment: fixed;
+}
+
+/* Banner visible by default */
+.banner-bar {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Remove overlay - let body gradient show through */
 body::before {
-  background: linear-gradient(to bottom right, var(--panel-warm-light), var(--panel-warm-dark));
+  background: transparent;
 }
 
 /* =====================
-   Hover Target: Metronome
+   Top Menu Bar - Always Visible Icons
    ===================== */
 
-/* Position hover target over metronome area - extends to overlap menu */
-.skin-hover-target[data-hover-id="metronome-trigger"] {
-  top: calc(var(--projection-margin-top) + var(--banner-bar-height));
-  left: var(--projection-margin-left);
-  right: var(--projection-margin-right);
-  /* Tall enough to include menu area for seamless hover transition */
-  height: calc(var(--metronome-height) + var(--top-bar-height));
-  /* z-index inherited from base.css (10050 - below menu, above metronome) */
-}
-
-/* Position menu to appear just above metronome, overlapping trigger zone */
+/* Position menu as icon row on right side of banner */
 .top-menu-bar {
-  top: calc(var(--projection-margin-top) + var(--banner-bar-height));
-  left: 50%;
-  transform: translateX(-50%) translateY(-100%); /* Hidden above */
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-/* Show menu on hover - menu overlaps trigger zone so hover persists */
-.skin-hover-target[data-hover-id="metronome-trigger"]:hover ~ .top-menu-bar,
-.top-menu-bar:hover {
-  transform: translateX(-50%) translateY(0); /* Slides down, overlapping trigger */
+  position: fixed;
+  top: var(--projection-margin-top);
+  right: calc(var(--projection-margin-right) + 16px);
+  left: auto;
+  height: var(--banner-bar-height);
+  width: auto;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
   opacity: 1;
   pointer-events: auto;
+  transform: none;
+  transition: none;
+  z-index: calc(var(--z-panel) + 1);
 }
 
-/* Metronome visible by default */
+/* Compact icon buttons - plain icons, subtle hover */
+.top-menu-bar .top-bar-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 0; /* Hide text */
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--pale-white);
+  border: none;
+  box-shadow: none;
+  opacity: 0.7;
+  transform: translateY(0);
+  transition: opacity 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.top-menu-bar .top-bar-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.top-menu-bar .top-bar-btn:active {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(0);
+}
+
+/* Icon display for buttons */
+.top-menu-bar .top-bar-btn::before {
+  font-family: var(--font-family-icons);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.top-menu-bar #save-btn::before { content: 'save'; }
+.top-menu-bar #load-btn::before { content: 'folder_open'; }
+.top-menu-bar #remote-btn::before { content: 'cloud'; }
+.top-menu-bar #config-btn::before { content: 'settings'; }
+
+/* =====================
+   Metronome - Above Master Panel
+   ===================== */
+
+/* Override fixed positioning - center above panels */
 .metronome-section {
+  position: fixed;
+  top: calc(var(--projection-margin-top) + var(--banner-bar-height) + 16px);
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 900px; /* Match panel-tree width */
+  padding: 0 16px; /* Match panel-tree padding */
+  background: transparent;
   opacity: 1;
   pointer-events: auto;
+}
+
+/* Reduce panel-tree top padding since metronome is inline */
+.panel-tree {
+  padding-top: calc(var(--banner-bar-height, 50px) + var(--metronome-height, 24px) + 24px);
+}
+
+/* =====================
+   Panel Header - No Chevron
+   ===================== */
+
+/* Hide default chevron */
+.level-panel > details > summary::before {
+  display: none;
+}
+
+/* =====================
+   Panel Drag Handle
+   ===================== */
+
+.panel-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: grab;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.panel-drag-handle:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.panel-drag-handle:active {
+  cursor: grabbing;
+  color: var(--pale-white);
+}
+
+.panel-drag-handle .material-icons {
+  font-size: 20px;
+}
+
+/* =====================
+   Panel Actions Left (Play/Pause)
+   ===================== */
+
+.panel-actions-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 8px;
+}
+
+.panel-actions-left .btn-playback {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 4px;
+  background: #333;
+  color: var(--dark-green);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.panel-actions-left .btn-playback:hover {
+  background: #444;
+}
+
+.panel-actions-left .btn-playback:active {
+  transform: scale(0.95);
+}
+
+/* Playing state - show pause, red color */
+.level-panel.playing .panel-actions-left .btn-playback {
+  color: var(--burnt-red);
+}
+
+/* Stale state - yellow */
+.level-panel.stale .panel-actions-left .btn-playback {
+  color: var(--puke);
+}
+
+/* =====================
+   Metronome - Bright Illuminated Colors
+   ===================== */
+
+/* Active step - cyan glow for minor divisions */
+.step-box.active {
+  background: #00ffff;
+  box-shadow:
+    0 0 10px #00ffff,
+    0 0 20px rgba(0, 255, 255, 0.6),
+    0 0 30px rgba(0, 255, 255, 0.4);
+}
+
+/* Downbeat markers (quarter notes) - purple base */
+.step-box[data-step="0"],
+.step-box[data-step="4"],
+.step-box[data-step="8"],
+.step-box[data-step="12"] {
+  background: rgba(180, 100, 255, 0.4);
+}
+
+/* Active downbeats - bright purple glow */
+.step-box[data-step="0"].active,
+.step-box[data-step="4"].active,
+.step-box[data-step="8"].active,
+.step-box[data-step="12"].active {
+  background: #cc66ff;
+  box-shadow:
+    0 0 12px #cc66ff,
+    0 0 24px rgba(200, 100, 255, 0.7),
+    0 0 36px rgba(180, 80, 255, 0.5);
+}
+
+/* Beat flash effect */
+.step-box.beat {
+  background: #ffffff;
+  transform: scaleX(1.1);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
 }

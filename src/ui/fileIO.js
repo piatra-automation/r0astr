@@ -58,7 +58,7 @@ export function generateLayoutJSON(editorViews, appState = {}) {
   if (masterView) {
     panelArray.push({
       id: MASTER_PANEL_ID,
-      title: 'Master Panel (Global Controls)',
+      title: 'Global Panel',
       code: masterView.state.doc.toString(),
       isMaster: true,
       compact: appState.masterPanelCompact !== undefined ? appState.masterPanelCompact : true

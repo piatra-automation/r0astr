@@ -147,28 +147,57 @@ if (window.TEMPO_SLIDER_ID === sliderId && scheduler) {
 
 ---
 
-## ✅ Correct Master Panel Pattern
+## ✅ Correct Global Panel Pattern
 
 ### Architecture
 
-Master panel code is **NOT evaluated as Strudel patterns**. It defines global variables that patterns can reference.
+Global panel (formerly "Master panel") code goes through two stages:
+
+1. **Slider extraction** - Regex parses `slider()` calls to create UI widgets
+2. **Code evaluation** - Non-slider code (like `register()`, `samples()`) is evaluated WITHOUT transpilation
 
 ```javascript
-// Master panel input (user types this):
+// Global panel input (user types this):
 let SLIDER_LPF = slider(800, 100, 5000);
 let TEMPO = slider(30, 15, 45);
 
-// Card pattern (references master variables):
-note("c2 ~ c2 ~").s("sawtooth").lpf(SLIDER_LPF).gain(0.6)
+// Custom function registration (evaluated globally):
+register('trancegate', (density, seed, length, x) => {
+  return x.struct(rand.mul(density).round().seg(32).rib(seed, length)).fill().clip(.8)
+})
+
+// Card pattern (references global variables and custom functions):
+note("c2 ~ c2 ~").s("sawtooth").lpf(SLIDER_LPF).trancegate(1.5, 45, 2)
 ```
+
+### How Evaluation Works
+
+```javascript
+// From main.js evaluateMasterCode():
+
+// 1. Sliders extracted with regex (NOT transpiler - calling transpiler() directly blocks!)
+const sliderRegex = /(\w+)\s*=\s*slider\s*\(...\)/g;
+
+// 2. Non-slider code IS evaluated via repl's evaluate()
+const hasNonSliderCode = cleanCode.replace(/slider regex/, '').trim();
+if (hasNonSliderCode) {
+  // evaluate(code, autostart, shouldHush)
+  // false, false = no autostart, no hush
+  // NOTE: Transpiler IS still used internally by the repl!
+  await strudelCore.evaluate(cleanCode, false, false);
+}
+```
+
+**Important clarification**: The `evaluate(code, false, false)` call DOES use the transpiler internally - the `false` parameters control autostart and hush behavior, NOT transpilation. The transpiler is passed to `repl()` during initialization and used for all evaluations.
 
 ### Implementation Steps
 
-1. **Parse slider definitions** with regex (avoid transpiler)
+1. **Parse slider definitions** with regex (avoid transpiler - it blocks!)
 2. **Create slider value storage** in `sliderValues` object
 3. **Create reactive refs** on window object
 4. **Render UI controls** for each slider
-5. **Special handling for TEMPO** variable
+5. **Evaluate non-slider code** WITHOUT transpilation for `register()`, `samples()`, etc.
+6. **Special handling for TEMPO** variable
 
 ### Complete Implementation
 

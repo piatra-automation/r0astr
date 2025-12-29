@@ -33,27 +33,30 @@ export function initializePanelReorder() {
 }
 
 /**
- * Initialize drag handlers for a single panel badge
+ * Initialize drag handlers for a single panel drag handle
  * Call this when a new panel is created
  * @param {HTMLElement} panelElement - The .level-panel element
  */
 export function initializePanelBadgeDrag(panelElement) {
-  const badge = panelElement.querySelector('.panel-number-badge');
-  if (!badge) return;
+  // Try new drag handle first, fall back to badge for other skins
+  const handle = panelElement.querySelector('.panel-drag-handle') ||
+                 panelElement.querySelector('.panel-number-badge');
+  if (!handle) return;
 
-  // Badge already has draggable="true" from renderPanel()
-  // Just ensure it's set
-  badge.draggable = true;
+  // Ensure draggable is set
+  handle.draggable = true;
 }
 
 /**
- * Handle drag start on badge
+ * Handle drag start on drag handle (or badge for other skins)
  */
 function handleDragStart(e) {
-  const badge = e.target.closest('.panel-number-badge');
-  if (!badge) return;
+  // Support both drag handle and badge
+  const handle = e.target.closest('.panel-drag-handle') ||
+                 e.target.closest('.panel-number-badge');
+  if (!handle) return;
 
-  const panelElement = badge.closest('.level-panel');
+  const panelElement = handle.closest('.level-panel');
   if (!panelElement) return;
 
   const panelId = panelElement.dataset.panelId;
@@ -69,14 +72,14 @@ function handleDragStart(e) {
 
   // Add dragging class for visual feedback
   panelElement.classList.add('dragging');
-  badge.classList.add('dragging');
+  handle.classList.add('dragging');
 
   // Set drag data
   e.dataTransfer.effectAllowed = 'move';
   e.dataTransfer.setData('text/plain', panelId);
 
-  // Use badge as drag image
-  e.dataTransfer.setDragImage(badge, badge.offsetWidth / 2, badge.offsetHeight / 2);
+  // Use handle as drag image
+  e.dataTransfer.setDragImage(handle, handle.offsetWidth / 2, handle.offsetHeight / 2);
 
   console.log('[Reorder] Drag start:', panelId);
 }
@@ -220,9 +223,10 @@ function cleanupDragStates() {
   // Remove dragging class from dragged element
   if (draggedElement) {
     draggedElement.classList.remove('dragging');
-    const badge = draggedElement.querySelector('.panel-number-badge');
-    if (badge) {
-      badge.classList.remove('dragging');
+    const handle = draggedElement.querySelector('.panel-drag-handle') ||
+                   draggedElement.querySelector('.panel-number-badge');
+    if (handle) {
+      handle.classList.remove('dragging');
     }
   }
 
@@ -231,8 +235,8 @@ function cleanupDragStates() {
     p.classList.remove('drag-over-above', 'drag-over-below', 'dragging');
   });
 
-  document.querySelectorAll('.panel-number-badge').forEach(b => {
-    b.classList.remove('dragging');
+  document.querySelectorAll('.panel-drag-handle, .panel-number-badge').forEach(h => {
+    h.classList.remove('dragging');
   });
 
   // Reset state

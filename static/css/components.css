@@ -334,77 +334,18 @@
 }
 
 /* ============================================
-   TOP BAR BUTTONS
+   TOP BAR BUTTONS (structural only - styling in skins)
    ============================================ */
 
 .top-bar-btn {
-  /* No longer fixed - positioned in flexbox container */
   position: relative;
-  width: 87px;
-  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-family-base);
-  font-size: 13px;
-  font-weight: 400;
   text-decoration: none;
-  letter-spacing: 2px;
-  text-align: center;
   cursor: pointer;
-  transition: font-weight 0.1s ease, letter-spacing 0.1s ease, border 0.1s ease;
-  border-radius: 1px;
-
-  /* Borders: white+20% on top/left, gray+50% on bottom/right - 2px beveled effect */
-  border: 2px solid;
-  border-color: rgba(255, 255, 255, 0.2) rgba(128, 128, 128, 0.5) rgba(128, 128, 128, 0.5) rgba(255, 255, 255, 0.2);
-  border-top-color: rgba(255, 255, 255, 0.2);
-  border-left-color: rgba(255, 255, 255, 0.2);
-  border-bottom-color: rgba(128, 128, 128, 0.5);
-  border-right-color: rgba(128, 128, 128, 0.5);
-
-  /* Subtle shadow */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-
-  /* Electron app: not draggable */
   -webkit-app-region: no-drag;
   pointer-events: auto;
-}
-
-/* Hover effect */
-.top-bar-btn:hover {
-  font-weight: 700;
-  letter-spacing: 3px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-}
-
-/* Button press animation - invert borders and remove shadow */
-.top-bar-btn:active,
-.top-bar-btn.pressing {
-  border-top-color: rgba(128, 128, 128, 0.5);
-  border-left-color: rgba(128, 128, 128, 0.5);
-  border-bottom-color: rgba(255, 255, 255, 0.2);
-  border-right-color: rgba(255, 255, 255, 0.2);
-  box-shadow: none !important;
-  transform: translateY(1px);
-}
-
-/* Button type: orange */
-.top-bar-btn.btn-orange {
-  background: var(--burnt-red);
-  color: var(--pale-white);
-}
-
-/* Button type: white */
-.top-bar-btn.btn-white {
-  background: var(--pale-white);
-  color: var(--dark-green);
-}
-
-/* Button type: green */
-.top-bar-btn.btn-green {
-  background: var(--mid-green);
-  color: var(--pale-white);
 }
 
 /* ============================================

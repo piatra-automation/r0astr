@@ -980,7 +980,7 @@ export function savePanelStateWithMasterCode(masterCode, masterCompact = true) {
     if (masterCode !== undefined) {
       panelArray.push({
         id: MASTER_PANEL_ID,
-        title: 'Master Panel (Global Controls)',
+        title: 'Global Panel',
         code: masterCode,
         compact: masterCompact, // Save compact/expanded state
         position: null,

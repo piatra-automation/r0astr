@@ -310,15 +310,24 @@ body::before {
 }
 
 .top-bar-btn {
-  background: rgba(255, 255, 255, 0.1) !important;
+  width: 87px;
+  height: 36px;
+  font-family: var(--font-family-base);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 2px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: var(--text-primary) !important;
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
 }
 
 .top-bar-btn:hover {
-  background: rgba(0, 212, 255, 0.2) !important;
-  border-color: var(--primary-color) !important;
+  background: rgba(0, 212, 255, 0.2);
+  border-color: var(--primary-color);
   box-shadow: 0 4px 16px var(--primary-glow);
 }
 
