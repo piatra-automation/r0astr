@@ -5,6 +5,27 @@ All notable changes to r0astr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2025-12-30
+
+### Added
+- **Global Variables & Functions in Master Panel**
+  - Define variables (`let SCALE = "e:minor"`) in master panel, accessible in all cards
+  - Define functions (`function WHICH_PHASE()`) for orchestration logic
+  - Scheduler exposed globally for time-based orchestration (`scheduler.now()`)
+- **Cross-Panel Pattern References**
+  - Panels auto-register patterns under sanitized titles (e.g., "Bass" → `BASS`)
+  - Reference patterns from other panels: `stack(BASS, LEAD.fast(2))`
+  - Cascade re-evaluation when referenced patterns change
+  - Debounced pre-registration on code edit (no need to play first)
+- **Visualization Support**
+  - `pianoroll()`, `scope()`, `spectrum()` methods for full-page visualization
+  - `_pianoroll()`, `_scope()`, `_spectrum()` for in-panel canvas rendering
+  - Proper cleanup on panel stop
+
+### Fixed
+- Named pattern shortcuts (`.d1`, `.p(1)`) now correctly tracked for panel pause control
+- Global function registration preserves whitespace/indentation
+
 ## [0.9.0] - 2025-12-21
 
 ### Added
