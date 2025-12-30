@@ -151,6 +151,79 @@ Keep your mix clear by separating frequencies:
 
 ---
 
+## Cross-Panel Pattern References
+
+Cards can reference patterns from other cards by their title. This enables powerful orchestration where one card controls multiple patterns.
+
+### How It Works
+
+1. **Name your cards**: Double-click the card title to rename (e.g., "BASS", "LEAD")
+2. **Write patterns**: Each card's pattern is automatically registered under its title
+3. **Reference in other cards**: Use the title name to access the pattern
+
+### Example Setup
+
+**Card titled "BASS":**
+```javascript
+n("0 2 0 5").scale("E:minor").s("sawtooth").lpf(400)
+```
+
+**Card titled "LEAD":**
+```javascript
+n("0 4 7 11").scale("E:minor").s("triangle")
+```
+
+**Card titled "COMBO":**
+```javascript
+stack(BASS, LEAD.fast(2))
+```
+
+The COMBO card now plays both patterns stacked together, with LEAD playing twice as fast.
+
+### Evaluation Order
+
+Cards evaluate **top to bottom** based on their position in the panel list. This means:
+
+- A card can only reference patterns from cards **above** it
+- Drag cards to reorder if needed
+- The master panel always evaluates first
+
+### Dynamic Updates
+
+When you update a card's pattern:
+
+1. The pattern re-registers under its title
+2. Any playing cards below that reference it automatically re-evaluate
+3. Changes cascade through your arrangement
+
+### Pattern Manipulation
+
+Once referenced, you can transform patterns:
+
+```javascript
+// In a card titled "MIX"
+stack(
+  BASS.gain(0.7),
+  LEAD.fast(2),
+  DRUMS.slow(2)
+)
+```
+
+### Reactive Cross-References
+
+Use `ref()` for values that update continuously:
+
+```javascript
+stack(
+  BASS.gain(ref(() => WHICH_PHASE() === 0 ? 1 : 0)),
+  LEAD.gain(ref(() => WHICH_PHASE() === 1 ? 1 : 0))
+)
+```
+
+This creates patterns that fade in/out based on a function defined in the master panel.
+
+---
+
 ## Performance Tips
 
 ### Building Up

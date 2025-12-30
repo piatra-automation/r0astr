@@ -53,10 +53,22 @@ import {
 
 import {
   createEditorView,
-  handleEditorChange,
+  handleEditorChange as _handleEditorChange,
   updateAllEditorFontSizes,
   setUpdateAllButtonRef
 } from './panels/panelEditor.js';
+
+/**
+ * Wrapper for handleEditorChange that also schedules pattern pre-registration
+ * This enables cross-panel pattern references without needing to play first
+ */
+function handleEditorChange(code, panelId) {
+  _handleEditorChange(code, panelId);
+  // Schedule pattern registration (debounced) - defined later in file
+  if (typeof schedulePatternRegistration === 'function') {
+    schedulePatternRegistration(panelId);
+  }
+}
 
 // UI modules - utility functions only (initializeKeyboardShortcuts kept in main.js for complete logic)
 import {
@@ -122,6 +134,86 @@ function getEditorContainer(panelId) {
   return panelElement.querySelector('.code-editor');
 }
 
+/**
+ * Sanitize panel title to valid JavaScript identifier
+ * "My Bass" → "MY_BASS", "Lead 1!" → "LEAD_1"
+ * @param {string} title - Panel title
+ * @returns {string} Valid JS identifier (uppercase)
+ */
+function sanitizePanelTitle(title) {
+  if (!title) return null;
+  // Replace non-alphanumeric with underscore, uppercase, trim underscores
+  let safe = title.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  // Ensure doesn't start with number
+  if (/^[0-9]/.test(safe)) {
+    safe = '_' + safe;
+  }
+  return safe || null;
+}
+
+/**
+ * Get panels in DOM order (excludes master panel)
+ * @returns {Array} Array of {panelId, panel, number} sorted by display order
+ */
+function getPanelsInOrder() {
+  const panelTree = document.querySelector('.panel-tree');
+  if (!panelTree) return [];
+
+  const panelElements = Array.from(panelTree.querySelectorAll('.level-panel'));
+  return panelElements
+    .map(el => ({
+      panelId: el.dataset.panelId,
+      panel: getPanel(el.dataset.panelId),
+      number: parseInt(el.dataset.panelNumber, 10) || 0
+    }))
+    .filter(p => p.panel && p.panelId !== MASTER_PANEL_ID)
+    .sort((a, b) => a.number - b.number);
+}
+
+/**
+ * Register a panel's pattern globally under its sanitized title
+ * @param {string} panelId - Panel ID
+ * @param {Pattern} pattern - Strudel pattern object
+ */
+function registerPanelPattern(panelId, pattern) {
+  const panelData = getPanel(panelId);
+  if (!panelData || !panelData.title) return null;
+
+  const safeName = sanitizePanelTitle(panelData.title);
+  if (!safeName) return null;
+
+  window[safeName] = pattern;
+  console.log(`✓ Pattern registered as: ${safeName}`);
+  return safeName;
+}
+
+/**
+ * Cascade re-evaluate playing panels that are below the given panel in hierarchy
+ * This ensures panels referencing updated patterns get refreshed
+ * @param {string} panelId - Panel ID that was just updated
+ */
+async function cascadeReEvaluate(panelId) {
+  const panelData = getPanel(panelId);
+  if (!panelData) return;
+
+  const panelsInOrder = getPanelsInOrder();
+  const thisIndex = panelsInOrder.findIndex(p => p.panelId === panelId);
+  if (thisIndex === -1) return;
+
+  // Find all playing panels below this one
+  const dependentPanels = panelsInOrder
+    .slice(thisIndex + 1)
+    .filter(p => cardStates[p.panelId]?.playing);
+
+  if (dependentPanels.length > 0) {
+    console.log(`[Cascade] Re-evaluating ${dependentPanels.length} dependent panel(s)`);
+    for (const dep of dependentPanels) {
+      // Re-activate to pick up new pattern references
+      await activatePanel(dep.panelId);
+    }
+  }
+}
+
 // Audio context initialized in state.js (ctx)
 // Core state managed via state.js objects
 initAudioOnFirstClick();
@@ -160,6 +252,36 @@ function savePanelStateNow() {
 
 // Story 8.3: Debounce timers for title broadcasts (panel ID -> timer ID)
 const titleBroadcastTimers = {};
+
+// Debounce timers for pattern pre-registration (panel ID -> timer ID)
+const patternRegistrationTimers = {};
+
+/**
+ * Debounced pattern pre-registration on code change
+ * Validates code and registers pattern for cross-panel references
+ * @param {string} panelId - Panel ID
+ */
+async function schedulePatternRegistration(panelId) {
+  // Skip master panel
+  if (panelId === MASTER_PANEL_ID) return;
+
+  // Clear existing timer
+  if (patternRegistrationTimers[panelId]) {
+    clearTimeout(patternRegistrationTimers[panelId]);
+  }
+
+  // Debounce: wait 1 second after last keystroke
+  patternRegistrationTimers[panelId] = setTimeout(async () => {
+    try {
+      const result = await validateCode(panelId);
+      if (result.valid && result.pattern) {
+        registerPanelPattern(panelId, result.pattern);
+      }
+    } catch (error) {
+      // Silently ignore validation errors during typing
+    }
+  }, 1000);
+}
 
 // Application settings (loaded from localStorage)
 let appSettings = null;
@@ -314,10 +436,19 @@ async function evaluateMasterCode(reRenderSliders = true) {
 
     if (hasNonSliderCode) {
       try {
+        // Transform variable declarations to window assignments for global access
+        // This allows master panel globals to be accessible in other panels
+        // e.g., "let SCALE = 'e:minor'" becomes "window.SCALE = 'e:minor'"
+        let globalCode = hasNonSliderCode;
+
+        // Handle optional leading whitespace with capture groups
+        globalCode = globalCode.replace(/^(\s*)(let|const|var)\s+(\w+)\s*=/gm, '$1window.$3 =');
+        globalCode = globalCode.replace(/^(\s*)function\s+(\w+)\s*\(/gm, '$1window.$2 = function $2(');
+
         // Evaluate WITHOUT transpilation and WITHOUT .p() - just run the code globally
         // This allows register(), samples(), variable assignments, etc.
         // Append 'silence' to satisfy Strudel's pattern expectation (register() returns undefined)
-        await strudelCore.evaluate(hasNonSliderCode + '\nsilence', false, false);
+        await strudelCore.evaluate(globalCode + '\nsilence', false, false);
         console.log('✓ Master panel code evaluated globally');
       } catch (error) {
         // Show error in console - could enhance to show in UI later
@@ -1992,6 +2123,14 @@ async function activatePanel(panelId) {
     panel.lastEvaluatedCode = patternCode;
     updatePanel(panelId, { stale: false, lastEvaluatedCode: patternCode }); // Sync to panelManager
 
+    // Register pattern globally under panel's sanitized title
+    // e.g., panel titled "Bass" → window.BASS = pattern
+    if (evalResult && panelId !== MASTER_PANEL_ID) {
+      registerPanelPattern(panelId, evalResult);
+      // Cascade re-evaluate any playing panels below this one
+      await cascadeReEvaluate(panelId);
+    }
+
     // Story 7.3: Clear any previous error messages on successful playback
     clearErrorMessage(panelId);
 
@@ -2424,6 +2563,9 @@ async function initializeStrudel() {
   strudelCore.evaluate = replInstance.evaluate;
   strudelCore.scheduler = replInstance.scheduler;
 
+  // Expose scheduler globally for master panel functions (e.g., scheduler.now())
+  window.scheduler = strudelCore.scheduler;
+
   // Initialize metronome indicator
   initializeMetronome();
 
@@ -2460,23 +2602,31 @@ async function initializeStrudel() {
     btn.disabled = false;
   });
 
-  // Story 7.3: Run validation on all restored panels now that evaluate is available
-  document.querySelectorAll('.code-input').forEach(async (textarea) => {
-    const panelId = textarea.closest('.card')?.id;
-    if (panelId && panelId !== MASTER_PANEL_ID) {
-      const validation = await validateCode(panelId);
-      await updateActivateButton(panelId);
-      if (!validation.valid) {
-        displayError(panelId, validation.error, validation.line);
+  // Evaluate MASTER panel first (defines globals like SCALE, functions, etc.)
+  await evaluateMasterCode();
+
+  // Pre-register patterns for cross-panel references IN ORDER (top to bottom)
+  // This ensures panels can reference patterns from panels above them
+  const panelsInOrder = getPanelsInOrder();
+  for (const { panelId } of panelsInOrder) {
+    if (panelId && editorViews.has(panelId)) {
+      try {
+        const validation = await validateCode(panelId);
+        await updateActivateButton(panelId);
+        if (!validation.valid) {
+          displayError(panelId, validation.error, validation.line);
+        } else if (validation.pattern) {
+          // Pre-register pattern for cross-panel orchestration
+          registerPanelPattern(panelId, validation.pattern);
+        }
+      } catch (error) {
+        console.warn(`[Startup] Failed to validate panel ${panelId}:`, error);
       }
     }
-  });
+  }
 
   // Initialize WebSocket for remote control
   initializeWebSocket();
-
-  // Evaluate default master panel code (TEMPO slider)
-  evaluateMasterCode();
 }
 
 /**

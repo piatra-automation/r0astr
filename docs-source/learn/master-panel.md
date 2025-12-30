@@ -285,6 +285,81 @@ For detailed technical information, see the [Architecture documentation](../deve
 
 ---
 
+## Global Variables and Functions
+
+Beyond sliders, the master panel can define **variables, constants, and functions** that are accessible in all cards.
+
+### Defining Global Variables
+
+Use `let`, `const`, or `var` to define values available everywhere:
+
+```javascript
+// Master Panel
+let SCALE = "E:minor:pentatonic"
+const ROOT = "c3"
+let NOTES = [0, 2, 4, 5, 7]
+```
+
+Use them in any card:
+
+```javascript
+// Card 1
+n("0 2 4").scale(SCALE)
+
+// Card 2
+note(ROOT).s("bass")
+```
+
+### Defining Global Functions
+
+Create functions in the master panel for complex orchestration:
+
+```javascript
+// Master Panel
+function WHICH_PHASE() {
+  return Math.floor(scheduler.now() / 4) % 4;
+}
+
+function activeWhen(phase) {
+  return ref(() => WHICH_PHASE() === phase ? 1 : 0);
+}
+```
+
+Use in cards:
+
+```javascript
+// This pattern fades in only during phase 0
+n("0 2 4").scale(SCALE).gain(activeWhen(0))
+```
+
+### Example: Phase-Based Orchestration
+
+Master Panel:
+```javascript
+let SCALE = "E:minor:pentatonic"
+
+function WHICH_PHASE() {
+  return Math.floor(scheduler.now() / 4) % 4;
+}
+
+function activeWhen(phase) {
+  return ref(() => WHICH_PHASE() === phase ? 1 : 0);
+}
+```
+
+Cards can then create patterns that fade in/out based on the current phase:
+
+```javascript
+stack(
+  n("0 2 4").scale(SCALE).s("piano").gain(activeWhen(0)),
+  n("0 3 5").scale(SCALE).s("strings").gain(activeWhen(1)),
+  s("bd sd bd sd").gain(activeWhen(2)),
+  n("0 7 12").scale(SCALE).s("pad").gain(activeWhen(3))
+)
+```
+
+---
+
 ## Quick Reference
 
 ### Master Panel Syntax

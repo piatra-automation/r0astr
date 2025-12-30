@@ -9,6 +9,7 @@
 
 import { transpiler } from '@strudel/transpiler';
 import { highlightMiniLocations } from '@strudel/codemirror';
+import { evaluate as coreEvaluate } from '@strudel/core';
 import { cardStates, editorViews, strudelCore } from '../state.js';
 import { updatePanel } from '../managers/panelManager.js';
 
@@ -88,24 +89,13 @@ export async function validateCode(panelId) {
   }
 
   try {
-    // Step 1: Transpile (catches syntax errors)
-    const { output } = transpiler(code, { addReturn: false });
+    // Transpile and evaluate in one step using core evaluate
+    // This catches both syntax errors and runtime errors (undefined variables/functions)
+    // Returns the pattern object without starting playback
+    // Note: Don't pass addReturn:false - we need the pattern returned
+    const result = await coreEvaluate(code, transpiler);
 
-    // Step 2: Evaluate WITHOUT .p() (dry run - catches ReferenceErrors/TypeErrors)
-    // Suppress console errors during validation (prevents error spam in console)
-    const originalConsoleError = console.error;
-    console.error = () => { }; // Temporarily silence console.error
-
-    try {
-      // This executes the code and returns a Pattern, but doesn't start playback
-      // Catches: undefined variables, undefined functions, some type errors
-      await strudelCore.evaluate(output, false, false);
-    } finally {
-      // Restore console.error
-      console.error = originalConsoleError;
-    }
-
-    return { valid: true };
+    return { valid: true, pattern: result.pattern };
   } catch (error) {
     // Extract error details and clean up message
     let errorMessage = error.message || 'Unknown error';
