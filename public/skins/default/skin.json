@@ -5,6 +5,9 @@
   "description": "Clean tree-based panel layout with collapsible details",
   "layoutType": "tree",
   "cssVariables": {},
+  "css": {
+    "remote": "remote.css"
+  },
   "templates": {
     "panel": "panel.html",
     "slider": "slider.html",

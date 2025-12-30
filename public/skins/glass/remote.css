@@ -1,0 +1,198 @@
+/**
+ * Glass Skin - Remote Control Panel
+ *
+ * Modern glassmorphism design with frosted translucent panels
+ * Matches the glass theme's purple/blue gradient with cyan accents
+ */
+
+/* Deep purple gradient background */
+body {
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+}
+
+/* Header with glass effect */
+header {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+h1 {
+  background: linear-gradient(135deg, #00d4ff, #0095ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+/* Connection status - glass pill */
+.connection-status {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.connection-status.connected {
+  background: rgba(0, 212, 255, 0.15);
+  border-color: rgba(0, 212, 255, 0.4);
+  color: #00d4ff;
+}
+
+.connection-status.disconnected {
+  background: rgba(255, 82, 82, 0.15);
+  border-color: rgba(255, 82, 82, 0.4);
+  color: #ff5252;
+}
+
+/* Panel controls - frosted glass cards */
+.panel-control {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.panel-control:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+.panel-control.playing {
+  background: rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2),
+              0 0 40px rgba(0, 212, 255, 0.15),
+              inset 0 0 0 1px rgba(0, 212, 255, 0.1);
+}
+
+.panel-control.playing .panel-info .status {
+  color: #00d4ff;
+}
+
+/* Play button - glass circle */
+.panel-button {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.panel-button:hover {
+  background: rgba(0, 212, 255, 0.2);
+  border-color: rgba(0, 212, 255, 0.4);
+}
+
+.panel-control.playing .panel-button {
+  background: linear-gradient(135deg, #00d4ff 0%, #0095ff 100%);
+  border-color: #00d4ff;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5),
+              0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Master sliders section - glass panel */
+.master-sliders-remote {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 16px;
+}
+
+/* Slider styling - cyan accent */
+.remote-slider-control label {
+  color: #00d4ff;
+}
+
+.remote-slider-control input[type="range"]::-webkit-slider-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.remote-slider-control input[type="range"]::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #00d4ff, #0095ff);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.remote-slider-control input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.remote-slider-control input[type="range"]::-moz-range-thumb {
+  background: linear-gradient(135deg, #00d4ff, #0095ff);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+/* Panel sliders - cyan accent */
+.panel-slider-control .slider-value {
+  color: #00d4ff;
+}
+
+.panel-slider-control input[type="range"]::-webkit-slider-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.panel-slider-control input[type="range"]::-webkit-slider-thumb {
+  background: linear-gradient(135deg, #00d4ff, #0095ff);
+}
+
+.panel-slider-control input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.panel-slider-control input[type="range"]::-moz-range-thumb {
+  background: linear-gradient(135deg, #00d4ff, #0095ff);
+}
+
+/* Global buttons - glass with color tint */
+.stop-all-btn {
+  background: rgba(255, 82, 82, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 82, 82, 0.5);
+  box-shadow: 0 4px 20px rgba(255, 82, 82, 0.2);
+}
+
+.stop-all-btn:hover {
+  background: rgba(255, 82, 82, 0.3);
+  box-shadow: 0 4px 24px rgba(255, 82, 82, 0.3);
+}
+
+.stop-all-btn:active {
+  background: rgba(255, 82, 82, 0.4);
+}
+
+.update-all-btn {
+  background: rgba(255, 152, 0, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 152, 0, 0.5);
+  box-shadow: 0 4px 20px rgba(255, 152, 0, 0.2);
+}
+
+.update-all-btn:hover:not(:disabled) {
+  background: rgba(255, 152, 0, 0.3);
+  box-shadow: 0 4px 24px rgba(255, 152, 0, 0.3);
+}
+
+.update-all-btn:disabled {
+  background: rgba(100, 100, 100, 0.2);
+  border-color: rgba(150, 150, 150, 0.3);
+  box-shadow: none;
+}
+
+/* Title flash animation - cyan */
+@keyframes titleFlash {
+  0% { color: #fff; }
+  50% { color: #00d4ff; }
+  100% { color: #fff; }
+}

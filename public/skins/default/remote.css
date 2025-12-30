@@ -1,0 +1,79 @@
+/**
+ * Default Skin - Remote Control Panel
+ *
+ * Matches the default r0astr theme with synthwave gradient
+ */
+
+/* Synthwave gradient background */
+body {
+  background: linear-gradient(45deg, #2d1b4e 0%, #0a0a0a 50%, #0d3b3b 100%);
+}
+
+/* Header styling */
+h1 {
+  background: linear-gradient(135deg, #51cf66, #40c057);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Connection status badge */
+.connection-status {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.connection-status.connected {
+  background: rgba(76, 175, 80, 0.2);
+  border-color: rgba(76, 175, 80, 0.4);
+}
+
+.connection-status.disconnected {
+  background: rgba(244, 67, 54, 0.2);
+  border-color: rgba(244, 67, 54, 0.4);
+}
+
+/* Panel controls with subtle glow */
+.panel-control {
+  background: linear-gradient(135deg, rgba(45, 27, 78, 0.6) 0%, rgba(10, 10, 10, 0.8) 100%);
+  border-color: rgba(81, 207, 102, 0.3);
+}
+
+.panel-control.playing {
+  border-color: #51cf66;
+  box-shadow: 0 0 20px rgba(81, 207, 102, 0.3);
+}
+
+/* Play button glow effect */
+.panel-button {
+  background: rgba(45, 27, 78, 0.8);
+  border-color: rgba(81, 207, 102, 0.5);
+}
+
+.panel-control.playing .panel-button {
+  background: linear-gradient(135deg, #51cf66, #40c057);
+  border-color: #51cf66;
+  box-shadow: 0 0 15px rgba(81, 207, 102, 0.5);
+}
+
+/* Master sliders section */
+.master-sliders-remote {
+  background: rgba(45, 27, 78, 0.4);
+  border-color: rgba(81, 207, 102, 0.3);
+}
+
+/* Global control buttons */
+.stop-all-btn {
+  background: linear-gradient(135deg, #c62828, #b71c1c);
+  border-color: #ef5350;
+}
+
+.update-all-btn {
+  background: linear-gradient(135deg, #f57c00, #e65100);
+  border-color: #ffb74d;
+}
+
+.update-all-btn:disabled {
+  background: rgba(100, 100, 100, 0.5);
+  border-color: rgba(150, 150, 150, 0.5);
+}
