@@ -283,6 +283,93 @@ async function schedulePatternRegistration(panelId) {
   }, 1000);
 }
 
+/**
+ * Centralized cleanup function for panel resources
+ * MUST be called before deletePanel() to prevent memory leaks
+ *
+ * Cleans up:
+ * - CodeMirror EditorView (requires .destroy())
+ * - Pattern registration timers
+ * - Title broadcast timers
+ * - Window global pattern references
+ * - Slider values from global sliderValues object
+ * - Visualization contexts
+ * - Pattern highlighting locations
+ *
+ * @param {string} panelId - Panel ID to clean up
+ */
+function cleanupPanel(panelId) {
+  // Skip master panel (handled separately)
+  if (panelId === MASTER_PANEL_ID) return;
+
+  console.log(`[Cleanup] Starting cleanup for panel ${panelId}`);
+
+  // 1. Destroy CodeMirror EditorView (critical for memory)
+  const view = editorViews.get(panelId);
+  if (view) {
+    view.destroy();
+    editorViews.delete(panelId);
+    console.log(`[Cleanup] Destroyed EditorView for ${panelId}`);
+  }
+
+  // 2. Clear pattern registration timer
+  if (patternRegistrationTimers[panelId]) {
+    clearTimeout(patternRegistrationTimers[panelId]);
+    delete patternRegistrationTimers[panelId];
+    console.log(`[Cleanup] Cleared pattern registration timer for ${panelId}`);
+  }
+
+  // 3. Clear title broadcast timer
+  if (titleBroadcastTimers[panelId]) {
+    clearTimeout(titleBroadcastTimers[panelId]);
+    delete titleBroadcastTimers[panelId];
+    console.log(`[Cleanup] Cleared title broadcast timer for ${panelId}`);
+  }
+
+  // 4. Clear window global pattern reference
+  const panelData = getPanel(panelId);
+  if (panelData?.title) {
+    const safeName = sanitizePanelTitle(panelData.title);
+    if (safeName && window[safeName] !== undefined) {
+      delete window[safeName];
+      console.log(`[Cleanup] Deleted window.${safeName}`);
+    }
+  }
+
+  // 5. Clear slider values for this panel
+  const panelSlidersData = getPanelSliders(panelId);
+  if (panelSlidersData) {
+    panelSlidersData.forEach(({ sliderId }) => {
+      delete sliderValues[sliderId];
+    });
+    console.log(`[Cleanup] Cleared ${panelSlidersData.length} slider values for ${panelId}`);
+  }
+
+  // 6. Clear slider DOM and metadata via sliderManager
+  smClearSliders(panelId);
+
+  // 7. Clean up visualization contexts
+  if (window.visualizationContexts?.[panelId]) {
+    // Clean up any temporary globals
+    const safePanelId = panelId.replace(/-/g, '_');
+    window.visualizationContexts[panelId].forEach((_, i) => {
+      delete window[`__viz_${safePanelId}_${i}`];
+    });
+    delete window.visualizationContexts[panelId];
+    console.log(`[Cleanup] Cleared visualization contexts for ${panelId}`);
+  }
+
+  // 8. Clear pattern highlighting locations
+  panelMiniLocations.delete(panelId);
+
+  // 9. Stop visualization animations for this panel
+  if (window.cleanupDraw) {
+    window.cleanupDraw(false, panelId);
+  }
+
+  console.log(`[Cleanup] Completed cleanup for panel ${panelId}`);
+}
+
 // Application settings (loaded from localStorage)
 let appSettings = null;
 
@@ -855,14 +942,8 @@ async function restoreLayoutFromFile(layout) {
 
   for (const panelId of panelIds) {
     if (panelId !== MASTER_PANEL_ID) {
-      // Clean up editor view
-      const view = editorViews.get(panelId);
-      if (view) {
-        view.destroy();
-        editorViews.delete(panelId);
-      }
-      // Clean up highlighting data
-      panelMiniLocations.delete(panelId);
+      // Use centralized cleanup function
+      cleanupPanel(panelId);
       // Delete panel from manager (skip confirmation)
       deletePanel(panelId, null, cardStates, true);
     }
@@ -1267,6 +1348,8 @@ function initializeCards() {
         panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
       }
       if (panelId && panelId !== MASTER_PANEL_ID) {
+        // Clean up panel resources before deletion
+        cleanupPanel(panelId);
         deletePanel(panelId, null, cardStates);
       }
     }
@@ -1478,8 +1561,8 @@ function initializeCards() {
         pauseBtn.classList.add('hidden');
       }
 
-      // Clean up highlighting data before panel deletion
-      panelMiniLocations.delete(panelId);
+      // Clean up panel resources before deletion (handles EditorView, timers, sliders, etc.)
+      cleanupPanel(panelId);
 
       // Delete panel (skip confirmation since we already handled it)
       const deleted = deletePanel(panelId, null, cardStates, true);
@@ -2439,8 +2522,8 @@ function wireWebSocketEventListeners() {
       }
     }
 
-    // Clean up
-    panelMiniLocations.delete(panelId);
+    // Clean up panel resources before deletion
+    cleanupPanel(panelId);
     deletePanel(panelId, null, cardStates, true);
     console.log(`[WebSocket] Panel ${panelId} deleted from UI`);
   });
