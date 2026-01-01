@@ -1521,9 +1521,9 @@ function initializeCards() {
 
       console.log(`Attempting to delete panel '${panel.title}' (${panelId})`);
 
-      // Check if confirmation is needed
+      // Check if confirmation is needed (YOLO mode skips confirmations)
       const settings = getSettings();
-      const needsConfirmation = !settings.yolo && settings.behavior?.confirmationDialogs !== false;
+      const needsConfirmation = !settings.yolo;
 
       let confirmed = true;
       if (needsConfirmation) {
@@ -3148,7 +3148,7 @@ function initializeKeyboardShortcuts() {
             }
             console.log(`[Keyboard] Attempting to delete panel '${panelInfo.title}' (${focusedPanelW})`);
             const settings = getSettings();
-            const needsConfirmation = !settings.yolo && settings.behavior?.confirmationDialogs !== false;
+            const needsConfirmation = !settings.yolo;
             let confirmed = true;
             if (needsConfirmation) {
               const { showConfirmModal } = await import('./ui/confirmModal.js');

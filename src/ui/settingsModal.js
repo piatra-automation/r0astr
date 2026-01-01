@@ -227,7 +227,6 @@ async function loadSettingsIntoForm() {
   const yoloToggle = document.getElementById('yolo-toggle');
   const autoSaveSelect = document.getElementById('autosave-interval-select');
   const restoreSessionToggle = document.getElementById('restore-session-toggle');
-  const confirmationDialogsToggle = document.getElementById('confirmation-dialogs-toggle');
 
   if (yoloToggle) {
     yoloToggle.checked = settings.yolo || false;
@@ -241,21 +240,12 @@ async function loadSettingsIntoForm() {
     restoreSessionToggle.checked = settings.behavior?.restoreSession !== false;
   }
 
-  if (confirmationDialogsToggle) {
-    confirmationDialogsToggle.checked = settings.behavior?.confirmationDialogs !== false;
-  }
-
   // Story 4.6: Integration Settings Controls
   const snippetLocationInput = document.getElementById('snippet-location-input');
-  const remoteWSLayoutSelect = document.getElementById('remote-ws-layout-select');
   const skinPackInput = document.getElementById('skin-pack-input');
 
   if (snippetLocationInput) {
     snippetLocationInput.value = settings.snippetLocation || '';
-  }
-
-  if (remoteWSLayoutSelect) {
-    remoteWSLayoutSelect.value = settings.remoteWSLayout || 'side-panel';
   }
 
   if (skinPackInput) {
@@ -381,7 +371,6 @@ function collectSettingsFromForm() {
   const yoloToggle = document.getElementById('yolo-toggle');
   const autoSaveSelect = document.getElementById('autosave-interval-select');
   const restoreSessionToggle = document.getElementById('restore-session-toggle');
-  const confirmationDialogsToggle = document.getElementById('confirmation-dialogs-toggle');
 
   if (yoloToggle) {
     settings.yolo = yoloToggle.checked;
@@ -401,24 +390,12 @@ function collectSettingsFromForm() {
     settings.behavior.restoreSession = restoreSessionToggle.checked;
   }
 
-  if (confirmationDialogsToggle) {
-    if (!settings.behavior) {
-      settings.behavior = {};
-    }
-    settings.behavior.confirmationDialogs = confirmationDialogsToggle.checked;
-  }
-
   // Story 4.6: Integration Settings Controls
   const snippetLocationInput = document.getElementById('snippet-location-input');
-  const remoteWSLayoutSelect = document.getElementById('remote-ws-layout-select');
   const skinPackInput = document.getElementById('skin-pack-input');
 
   if (snippetLocationInput) {
     settings.snippetLocation = snippetLocationInput.value.trim();
-  }
-
-  if (remoteWSLayoutSelect) {
-    settings.remoteWSLayout = remoteWSLayoutSelect.value;
   }
 
   if (skinPackInput) {
@@ -719,7 +696,6 @@ export function initializeSettingsModal() {
 
   // Story 4.6: Integration Settings Event Handlers
   const snippetLocationInput = document.getElementById('snippet-location-input');
-  const remoteWSLayoutSelect = document.getElementById('remote-ws-layout-select');
   const skinPackInput = document.getElementById('skin-pack-input');
 
   // Snippet Location - validate and load snippets on blur
@@ -760,18 +736,6 @@ export function initializeSettingsModal() {
       console.log('Snippet location cleared');
       showSettingsNotification('Snippet location cleared', 'info');
     }
-  });
-
-  // Remote WebSocket Layout - save immediately
-  remoteWSLayoutSelect?.addEventListener('change', (e) => {
-    const layout = e.target.value;
-
-    const settings = getSettings();
-    settings.remoteWSLayout = layout;
-    saveSettings(settings);
-
-    console.log('Remote control layout saved:', layout);
-    console.log('(Layout will apply when WebSocket connects in Epic 5)');
   });
 
   // Projection margin sliders - live update with value display
@@ -879,6 +843,14 @@ export function initializeSettingsModal() {
   modal.querySelectorAll('input, select, textarea').forEach(input => {
     input.addEventListener('change', trackChanges);
     input.addEventListener('input', trackChanges);
+  });
+
+  // Collapsible settings sections
+  modal.querySelectorAll('.settings-section h3').forEach(header => {
+    header.addEventListener('click', () => {
+      const section = header.closest('.settings-section');
+      section.classList.toggle('collapsed');
+    });
   });
 
   console.log('✓ Settings modal initialized');

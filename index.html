@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Piatra REPL - Dual Card Interface</title>
+  <title>r0astr - Strudel Synth API</title>
   <!-- Core CSS (order matters) -->
   <link rel="stylesheet" href="/static/css/variables.css">
   <link rel="stylesheet" href="/static/css/base.css">
@@ -72,355 +72,307 @@
       </div>
 
       <div class="modal-body">
-        <!-- Appearance Section (Story 4.5) -->
-        <section class="settings-section" id="appearance-settings">
-          <h3>Appearance</h3>
+        <!-- GENERAL Section -->
+        <section class="settings-section collapsed" id="general-settings">
+          <h3>General</h3>
+          <div class="settings-section-content">
+            <!-- Restore Session Toggle -->
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="restore-session-toggle" class="toggle-input">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Restore Session on Load</span>
+              </label>
+              <p class="setting-description">
+                Automatically restore panels and code from previous session when opening the app
+              </p>
+            </div>
 
-          <!-- Font Size Slider (AC: 2) -->
-          <div class="setting-item">
-            <label for="font-size-slider">
-              Code Editor Font Size: <span id="font-size-value">14px</span>
-            </label>
-            <input type="range" id="font-size-slider" class="setting-slider" min="10" max="24" value="14" step="1">
-            <p class="setting-description">
-              Adjust font size for all code editors (10-24px)
-            </p>
-          </div>
+            <!-- YOLO Mode Toggle -->
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="yolo-toggle" class="toggle-input">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">YOLO Mode (Skip confirmations)</span>
+              </label>
+              <p class="setting-description">
+                Disable confirmation dialogs when deleting panels
+              </p>
+            </div>
 
-          <!-- Active Panel Opacity Slider -->
-          <div class="setting-item">
-            <label for="active-panel-opacity-slider">
-              Active Panel Opacity: <span id="active-panel-opacity-value">95%</span>
-            </label>
-            <input type="range" id="active-panel-opacity-slider" class="setting-slider" min="50" max="100" value="95"
-              step="5">
-            <p class="setting-description">
-              Opacity for the currently focused/active panel (50-100%)
-            </p>
-          </div>
-
-          <!-- Background Panel Opacity Slider -->
-          <div class="setting-item">
-            <label for="background-panel-opacity-slider">
-              Background Panels Opacity: <span id="background-panel-opacity-value">60%</span>
-            </label>
-            <input type="range" id="background-panel-opacity-slider" class="setting-slider" min="20" max="100"
-              value="60" step="5">
-            <p class="setting-description">
-              Cumulative opacity for unfocused panels (includes text, borders, everything) (20-100%)
-            </p>
-          </div>
-
-          <!-- Collapse on Blur Toggle -->
-          <div class="setting-item">
-            <label class="toggle-label">
-              <input type="checkbox" id="collapse-on-blur-toggle" class="toggle-input">
-              <span class="toggle-slider"></span>
-              <span class="toggle-text">Collapse unfocused panels</span>
-            </label>
-            <p class="setting-description">
-              When enabled, background panels collapse to show only header (badge, title, buttons)
-            </p>
-          </div>
-
-          <!-- Show Controls When Collapsed Toggle -->
-          <div class="setting-item">
-            <label class="toggle-label">
-              <input type="checkbox" id="show-controls-collapsed-toggle" class="toggle-input">
-              <span class="toggle-slider"></span>
-              <span class="toggle-text">Show controls when panel collapsed</span>
-            </label>
-            <p class="setting-description">
-              When a playing panel is collapsed, keep sliders and visualizers visible. Only hides the code editor.
-            </p>
-          </div>
-
-          <!-- Wrap Lines Toggle (Story 7.1) -->
-          <div class="setting-item">
-            <label class="toggle-label">
-              <input type="checkbox" id="wrap-lines-toggle" class="toggle-input">
-              <span class="toggle-slider"></span>
-              <span class="toggle-text">Wrap long lines in code panels</span>
-            </label>
-            <p class="setting-description">
-              When enabled, long lines wrap to next line instead of scrolling horizontally
-            </p>
-          </div>
-
-          <!-- Auto-Format Toggle (Story 7.4) -->
-          <div class="setting-item">
-            <label class="toggle-label">
-              <input type="checkbox" id="auto-format-toggle" class="toggle-input">
-              <span class="toggle-slider"></span>
-              <span class="toggle-text">Auto-format code on PLAY/UPDATE</span>
-            </label>
-            <p class="setting-description">
-              Automatically formats code for readability when pressing PLAY or UPDATE. Does not change code behavior.
-            </p>
-          </div>
-
-          <!-- Syntax Highlighting Toggle (Story 7.6) -->
-          <div class="setting-item">
-            <label class="toggle-label">
-              <input type="checkbox" id="syntax-highlight-toggle" class="toggle-input">
-              <span class="toggle-slider"></span>
-              <span class="toggle-text">Enable syntax highlighting</span>
-            </label>
-            <p class="setting-description">
-              Use CodeMirror for syntax highlighting. Disable for plain text editor (better performance on very long
-              files).
-            </p>
-          </div>
-
-          <!-- Pattern Highlighting Toggle -->
-          <div class="setting-item">
-            <label class="toggle-label">
-              <input type="checkbox" id="pattern-highlighting-toggle" class="toggle-input">
-              <span class="toggle-slider"></span>
-              <span class="toggle-text">Real-time Pattern Highlighting</span>
-            </label>
-            <p class="setting-description">
-              Highlight active pattern elements during playback. Shows which code segments are currently playing.
-            </p>
-          </div>
-
-          <!-- Editor Theme Selection (Story 7.6) -->
-          <div class="setting-item">
-            <label for="editor-theme-select">
-              Editor Theme
-            </label>
-            <select id="editor-theme-select" class="setting-select">
-              <option value="atomone">Atom One Dark</option>
-              <option value="abcdef">Abcdef</option>
-              <option value="bespin">Bespin</option>
-              <option value="dracula">Dracula</option>
-              <option value="gruvboxDark">Gruvbox Dark</option>
-              <option value="materialDark">Material Dark</option>
-              <option value="nord">Nord</option>
-              <option value="solarizedDark">Solarized Dark</option>
-            </select>
-            <p class="setting-description">
-              Color theme for code editor (requires syntax highlighting enabled)
-            </p>
-          </div>
-
-        </section>
-
-        <!-- Behavior Section (Story 4.4) -->
-        <section class="settings-section" id="behavior-settings">
-          <h3>Behavior</h3>
-
-          <!-- YOLO Mode Toggle (AC: 1) -->
-          <div class="setting-item">
-            <label class="toggle-label">
-              <input type="checkbox" id="yolo-toggle" class="toggle-input">
-              <span class="toggle-slider"></span>
-              <span class="toggle-text">YOLO Mode (Skip deletion confirmations)</span>
-            </label>
-            <p class="setting-description">
-              Disable confirmation dialogs when deleting panels. For users who like to live dangerously.
-            </p>
-          </div>
-
-          <!-- Auto-save Interval (AC: 2) -->
-          <div class="setting-item">
-            <label for="autosave-interval-select">Auto-save Panel State</label>
-            <select id="autosave-interval-select" class="setting-select">
-              <option value="manual">Manual (on panel change)</option>
-              <option value="30s">Every 30 seconds</option>
-              <option value="1min">Every 1 minute</option>
-              <option value="5min">Every 5 minutes</option>
-            </select>
-            <p class="setting-description">
-              How frequently to save panel state to localStorage
-            </p>
-          </div>
-
-          <!-- Restore Session Toggle (AC: 3) -->
-          <div class="setting-item">
-            <label class="toggle-label">
-              <input type="checkbox" id="restore-session-toggle" class="toggle-input">
-              <span class="toggle-slider"></span>
-              <span class="toggle-text">Restore Session on Load</span>
-            </label>
-            <p class="setting-description">
-              Automatically restore panels and code from previous session when opening the app
-            </p>
-          </div>
-
-          <!-- Confirmation Dialogs Toggle (AC: 4) -->
-          <div class="setting-item">
-            <label class="toggle-label">
-              <input type="checkbox" id="confirmation-dialogs-toggle" class="toggle-input">
-              <span class="toggle-slider"></span>
-              <span class="toggle-text">Show Confirmation Dialogs</span>
-            </label>
-            <p class="setting-description">
-              Show confirmation prompts for destructive actions (overrides YOLO mode if disabled)
-            </p>
+            <!-- Auto-save Interval -->
+            <div class="setting-item">
+              <label for="autosave-interval-select">Auto-save Panel State</label>
+              <select id="autosave-interval-select" class="setting-select">
+                <option value="manual">Manual (on panel change)</option>
+                <option value="30s">Every 30 seconds</option>
+                <option value="1min">Every 1 minute</option>
+                <option value="5min">Every 5 minutes</option>
+              </select>
+              <p class="setting-description">
+                How frequently to save panel state to localStorage
+              </p>
+            </div>
           </div>
         </section>
 
-        <!-- Integrations Section (Story 4.6) -->
-        <section class="settings-section" id="integration-settings">
+        <!-- EDITOR Section -->
+        <section class="settings-section collapsed" id="editor-settings">
+          <h3>Editor</h3>
+          <div class="settings-section-content">
+            <!-- Font Size Slider -->
+            <div class="setting-item">
+              <label for="font-size-slider">
+                Code Editor Font Size: <span id="font-size-value">14px</span>
+              </label>
+              <input type="range" id="font-size-slider" class="setting-slider" min="10" max="24" value="14" step="1">
+              <p class="setting-description">
+                Adjust font size for all code editors (10-24px)
+              </p>
+            </div>
+
+            <!-- Editor Theme Selection -->
+            <div class="setting-item">
+              <label for="editor-theme-select">Editor Theme</label>
+              <select id="editor-theme-select" class="setting-select">
+                <option value="atomone">Atom One Dark</option>
+                <option value="abcdef">Abcdef</option>
+                <option value="bespin">Bespin</option>
+                <option value="dracula">Dracula</option>
+                <option value="gruvboxDark">Gruvbox Dark</option>
+                <option value="materialDark">Material Dark</option>
+                <option value="nord">Nord</option>
+                <option value="solarizedDark">Solarized Dark</option>
+              </select>
+              <p class="setting-description">
+                Color theme for code editor (requires syntax highlighting enabled)
+              </p>
+            </div>
+
+            <!-- Wrap Lines Toggle -->
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="wrap-lines-toggle" class="toggle-input">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Wrap long lines in code panels</span>
+              </label>
+              <p class="setting-description">
+                When enabled, long lines wrap to next line instead of scrolling horizontally
+              </p>
+            </div>
+
+            <!-- Auto-Format Toggle -->
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="auto-format-toggle" class="toggle-input">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Auto-format code on PLAY/UPDATE</span>
+              </label>
+              <p class="setting-description">
+                Automatically formats code for readability when pressing PLAY or UPDATE
+              </p>
+            </div>
+
+            <!-- Syntax Highlighting Toggle -->
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="syntax-highlight-toggle" class="toggle-input">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Enable syntax highlighting</span>
+              </label>
+              <p class="setting-description">
+                Use CodeMirror for syntax highlighting. Disable for plain text editor.
+              </p>
+            </div>
+
+            <!-- Pattern Highlighting Toggle -->
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="pattern-highlighting-toggle" class="toggle-input">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Real-time Pattern Highlighting</span>
+              </label>
+              <p class="setting-description">
+                Highlight active pattern elements during playback
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- BEHAVIOUR Section -->
+        <section class="settings-section collapsed" id="behaviour-settings">
+          <h3>Behaviour</h3>
+          <div class="settings-section-content">
+            <!-- Active Panel Opacity Slider -->
+            <div class="setting-item">
+              <label for="active-panel-opacity-slider">
+                Active Panel Opacity: <span id="active-panel-opacity-value">95%</span>
+              </label>
+              <input type="range" id="active-panel-opacity-slider" class="setting-slider" min="50" max="100" value="95" step="5">
+              <p class="setting-description">
+                Opacity for the currently focused/active panel (50-100%)
+              </p>
+            </div>
+
+            <!-- Background Panel Opacity Slider -->
+            <div class="setting-item">
+              <label for="background-panel-opacity-slider">
+                Background Panels Opacity: <span id="background-panel-opacity-value">60%</span>
+              </label>
+              <input type="range" id="background-panel-opacity-slider" class="setting-slider" min="20" max="100" value="60" step="5">
+              <p class="setting-description">
+                Cumulative opacity for unfocused panels (20-100%)
+              </p>
+            </div>
+
+            <!-- Collapse on Blur Toggle -->
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="collapse-on-blur-toggle" class="toggle-input">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Collapse unfocused panels</span>
+              </label>
+              <p class="setting-description">
+                When enabled, background panels collapse to show only header
+              </p>
+            </div>
+
+            <!-- Show Controls When Collapsed Toggle -->
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="show-controls-collapsed-toggle" class="toggle-input">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Show controls when panel collapsed</span>
+              </label>
+              <p class="setting-description">
+                Keep sliders and visualizers visible when panel is collapsed
+              </p>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- INTEGRATIONS Section -->
+        <section class="settings-section collapsed" id="integration-settings">
           <h3>Integrations</h3>
-
-          <!-- Snippet Location Input (AC: 1) -->
-          <div class="setting-item">
-            <label for="snippet-location-input">Snippet Library URL/Path</label>
-            <input type="text" id="snippet-location-input" class="setting-text-input"
-              placeholder="https://example.com/snippets.json">
-            <p class="setting-description">
-              URL or file path to external snippet library (JSON format). Leave empty to disable.
-            </p>
-          </div>
-
-          <!-- Remote WebSocket Layout Dropdown (AC: 2) -->
-          <div class="setting-item">
-            <label for="remote-ws-layout-select">Remote Control Panel Layout</label>
-            <select id="remote-ws-layout-select" class="setting-select">
-              <option value="side-panel">Side Panel (Default)</option>
-              <option value="modal">Modal Overlay</option>
-              <option value="hidden">Hidden</option>
-            </select>
-            <p class="setting-description">
-              Where to display remote control panel (requires WebSocket server from Epic 5)
-            </p>
-          </div>
-
-          <!-- UI Skin Selector -->
-          <div class="setting-item">
-            <label for="skin-select">UI Skin / Theme</label>
-            <select id="skin-select" class="setting-select">
-              <!-- Options populated dynamically from bundled + custom skins -->
-            </select>
-            <p class="setting-description">
-              Choose UI skin (layout + visual theme). Requires page reload to take effect.
-            </p>
-          </div>
-
-          <!-- Import Custom Skin -->
-          <div class="setting-item">
-            <label>Import Custom Skin</label>
-            <div class="skin-import-controls">
-              <input type="file" id="skin-import-file" accept=".zip" style="display: none;">
-              <button class="btn-hole btn-slim-md" id="skin-import-btn" type="button">
-                <span class="btn-surface">
-                  <span class="material-icons">upload_file</span>
-                  <span>Import Skin (ZIP)</span>
-                </span>
-              </button>
-              <div id="skin-import-status" class="import-status" style="display: none;"></div>
+          <div class="settings-section-content">
+            <!-- UI Skin Selector -->
+            <div class="setting-item">
+              <label for="skin-select">UI Skin / Theme</label>
+              <select id="skin-select" class="setting-select">
+                <!-- Options populated dynamically from bundled + custom skins -->
+              </select>
+              <p class="setting-description">
+                Choose UI skin. Requires page reload to take effect.
+              </p>
             </div>
-            <p class="setting-description">
-              Import custom skins from ZIP files. Skins must include skin.json manifest and theme.css.
-            </p>
-          </div>
 
-          <!-- Manage Custom Skins -->
-          <div class="setting-item" id="custom-skins-manager">
-            <label>Installed Custom Skins</label>
-            <div id="custom-skins-list" class="custom-skins-list">
-              <!-- Populated dynamically -->
+            <!-- Import Custom Skin -->
+            <div class="setting-item">
+              <label>Import Custom Skin</label>
+              <div class="skin-import-controls">
+                <input type="file" id="skin-import-file" accept=".zip" style="display: none;">
+                <button class="btn-hole btn-slim-md" id="skin-import-btn" type="button">
+                  <span class="btn-surface">
+                    <span class="material-icons">upload_file</span>
+                    <span>Import Skin (ZIP)</span>
+                  </span>
+                </button>
+                <div id="skin-import-status" class="import-status" style="display: none;"></div>
+              </div>
+              <p class="setting-description">
+                Import custom skins from ZIP files
+              </p>
             </div>
-            <p class="setting-description">
-              Manage your imported custom skins.
-            </p>
+
+            <!-- Manage Custom Skins -->
+            <div class="setting-item" id="custom-skins-manager">
+              <label>Installed Custom Skins</label>
+              <div id="custom-skins-list" class="custom-skins-list">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- Snippet Location Input -->
+            <div class="setting-item">
+              <label for="snippet-location-input">Snippet Library URL/Path</label>
+              <input type="text" id="snippet-location-input" class="setting-text-input"
+                placeholder="https://example.com/snippets.json">
+              <p class="setting-description">
+                URL or file path to external snippet library (JSON format)
+              </p>
+            </div>
+
           </div>
         </section>
 
-        <!-- Projection Tweaks Section -->
-        <section class="settings-section" id="projection-settings">
-          <h3>Projection Tweaks</h3>
-          <p class="setting-description">
-            Add margins to the entire UI for projection or screen sharing adjustments
-          </p>
-
-          <div class="notice-box notice-info">
-            <span class="material-icons">info</span>
-            <span>Changing projection margins requires a page reload to take effect</span>
-          </div>
-
-          <!-- Top Margin -->
-          <div class="setting-item">
-            <label for="projection-margin-top">
-              Top Margin: <span id="projection-margin-top-value">0px</span>
-            </label>
-            <input type="range" id="projection-margin-top" class="setting-slider" min="0" max="200" value="0" step="5">
-            <p class="setting-description">
-              Top margin in pixels (0-200px)
-            </p>
-          </div>
-
-          <!-- Right Margin -->
-          <div class="setting-item">
-            <label for="projection-margin-right">
-              Right Margin: <span id="projection-margin-right-value">0px</span>
-            </label>
-            <input type="range" id="projection-margin-right" class="setting-slider" min="0" max="200" value="0"
-              step="5">
-            <p class="setting-description">
-              Right margin in pixels (0-200px)
-            </p>
-          </div>
-
-          <!-- Bottom Margin -->
-          <div class="setting-item">
-            <label for="projection-margin-bottom">
-              Bottom Margin: <span id="projection-margin-bottom-value">0px</span>
-            </label>
-            <input type="range" id="projection-margin-bottom" class="setting-slider" min="0" max="200" value="0"
-              step="5">
-            <p class="setting-description">
-              Bottom margin in pixels (0-200px)
-            </p>
-          </div>
-
-          <!-- Left Margin -->
-          <div class="setting-item">
-            <label for="projection-margin-left">
-              Left Margin: <span id="projection-margin-left-value">0px</span>
-            </label>
-            <input type="range" id="projection-margin-left" class="setting-slider" min="0" max="200" value="0" step="5">
-            <p class="setting-description">
-              Left margin in pixels (0-200px)
-            </p>
-          </div>
-        </section>
-
-        <!-- Advanced Settings Section -->
-        <section class="settings-section" id="advanced-settings">
+        <!-- ADVANCED Section -->
+        <section class="settings-section collapsed" id="advanced-settings">
           <h3>Advanced</h3>
-          <p class="setting-description">
-            Advanced playback and tempo controls
-          </p>
-
-          <!-- Show Tempo Knob -->
-          <div class="setting-item">
-            <label class="toggle-label">
-              <span class="setting-label-text">Automatic TEMPO Control</span>
-              <div class="toggle-switch">
+          <div class="settings-section-content">
+            <!-- Show Tempo Knob -->
+            <div class="setting-item">
+              <label class="toggle-label">
                 <input type="checkbox" id="show-tempo-knob" class="toggle-input">
                 <span class="toggle-slider"></span>
-              </div>
-            </label>
-            <p class="setting-description">
-              Automatically adds a global tempo slider controlling playback speed
-            </p>
-          </div>
+                <span class="toggle-text">Automatic TEMPO Control</span>
+              </label>
+              <p class="setting-description">
+                Automatically adds a global tempo slider controlling playback speed
+              </p>
+            </div>
 
-          <!-- Show CPM -->
-          <div class="setting-item">
-            <label class="toggle-label">
-              <span class="setting-label-text">Display as CPM (Cycles Per Minute)</span>
-              <div class="toggle-switch">
+            <!-- Show CPM -->
+            <div class="setting-item">
+              <label class="toggle-label">
                 <input type="checkbox" id="show-cpm" class="toggle-input">
                 <span class="toggle-slider"></span>
-              </div>
-            </label>
-            <p class="setting-description">
-              Show tempo as CPM instead of BPM (BPM = CPM × 4)
-            </p>
+                <span class="toggle-text">Display as CPM (Cycles Per Minute)</span>
+              </label>
+              <p class="setting-description">
+                Show tempo as CPM instead of BPM (BPM = CPM × 4)
+              </p>
+            </div>
+
+            <!-- Projection Tweaks Sub-section -->
+            <div class="setting-item">
+              <label>Projection Margins</label>
+              <p class="setting-description">
+                Add margins to the entire UI for projection adjustments. Requires page reload.
+              </p>
+            </div>
+
+            <!-- Top Margin -->
+            <div class="setting-item">
+              <label for="projection-margin-top">
+                Top: <span id="projection-margin-top-value">0px</span>
+              </label>
+              <input type="range" id="projection-margin-top" class="setting-slider" min="0" max="200" value="0" step="5">
+            </div>
+
+            <!-- Right Margin -->
+            <div class="setting-item">
+              <label for="projection-margin-right">
+                Right: <span id="projection-margin-right-value">0px</span>
+              </label>
+              <input type="range" id="projection-margin-right" class="setting-slider" min="0" max="200" value="0" step="5">
+            </div>
+
+            <!-- Bottom Margin -->
+            <div class="setting-item">
+              <label for="projection-margin-bottom">
+                Bottom: <span id="projection-margin-bottom-value">0px</span>
+              </label>
+              <input type="range" id="projection-margin-bottom" class="setting-slider" min="0" max="200" value="0" step="5">
+            </div>
+
+            <!-- Left Margin -->
+            <div class="setting-item">
+              <label for="projection-margin-left">
+                Left: <span id="projection-margin-left-value">0px</span>
+              </label>
+              <input type="range" id="projection-margin-left" class="setting-slider" min="0" max="200" value="0" step="5">
+            </div>
           </div>
         </section>
       </div>

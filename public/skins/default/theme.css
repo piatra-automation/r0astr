@@ -337,13 +337,81 @@ body::before {
   letter-spacing: 0.5px;
 }
 
-/* Setting items */
+/* Setting items - bright text for dark background */
 .setting-item label {
-  color: #bbb;
+  color: #eee;
+}
+
+/* Override specific selector from components.css */
+.setting-item > label:not(.toggle-label) {
+  color: #eee;
 }
 
 .setting-item .setting-description {
-  color: #777;
+  color: #999;
+}
+
+/* Toggle text and label text - bright for contrast */
+.settings-panel .toggle-text,
+.settings-panel .setting-label-text,
+.settings-panel .toggle-label {
+  color: #eee;
+}
+
+/* Collapsible section headers */
+.settings-section h3 {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  margin: 0;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.settings-section h3:hover {
+  color: #fff;
+}
+
+/* CSS triangle chevron - no font dependency */
+.settings-section h3::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid #aaa;
+  transition: transform 0.2s ease;
+  margin-right: 4px;
+}
+
+.settings-section h3:hover::before {
+  border-top-color: #fff;
+}
+
+.settings-section.collapsed h3::before {
+  transform: rotate(-90deg);
+}
+
+/* Sections collapsed by default */
+.settings-section-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 3em;
+}
+
+/* Expanded state (not collapsed) */
+.settings-section:not(.collapsed) .settings-section-content {
+  max-height: 2000px;
+  opacity: 1;
+  padding-top: 0;
+  padding-bottom: 16px;
 }
 
 /* Form controls */

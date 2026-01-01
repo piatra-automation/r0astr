@@ -38,40 +38,40 @@
 </head>
 
 <body>
+  <!-- Banner Bar -->
+  <div class="remote-banner">
+    <h1>r0astr</h1>
+    <div class="connection-status disconnected" id="status">Connecting...</div>
+  </div>
+
+  <!-- Metronome - flush under banner -->
+  <div class="remote-metronome" id="remote-metronome">
+    <div class="step-box" data-step="0"></div>
+    <div class="step-box" data-step="1"></div>
+    <div class="step-box" data-step="2"></div>
+    <div class="step-box" data-step="3"></div>
+    <div class="step-box" data-step="4"></div>
+    <div class="step-box" data-step="5"></div>
+    <div class="step-box" data-step="6"></div>
+    <div class="step-box" data-step="7"></div>
+    <div class="step-box" data-step="8"></div>
+    <div class="step-box" data-step="9"></div>
+    <div class="step-box" data-step="10"></div>
+    <div class="step-box" data-step="11"></div>
+    <div class="step-box" data-step="12"></div>
+    <div class="step-box" data-step="13"></div>
+    <div class="step-box" data-step="14"></div>
+    <div class="step-box" data-step="15"></div>
+  </div>
+
   <div class="container">
-    <header>
-      <h1>r0astr</h1>
-      <div class="connection-status disconnected" id="status">Connecting...</div>
-      <div style="font-size: 10px; color: #666; margin-top: 5px;">v8.4.0-full-state-sync</div>
-    </header>
-
-    <!-- Metronome - 16 step sequencer visualization -->
-    <div class="remote-metronome" id="remote-metronome">
-      <div class="step-box" data-step="0"></div>
-      <div class="step-box" data-step="1"></div>
-      <div class="step-box" data-step="2"></div>
-      <div class="step-box" data-step="3"></div>
-      <div class="step-box" data-step="4"></div>
-      <div class="step-box" data-step="5"></div>
-      <div class="step-box" data-step="6"></div>
-      <div class="step-box" data-step="7"></div>
-      <div class="step-box" data-step="8"></div>
-      <div class="step-box" data-step="9"></div>
-      <div class="step-box" data-step="10"></div>
-      <div class="step-box" data-step="11"></div>
-      <div class="step-box" data-step="12"></div>
-      <div class="step-box" data-step="13"></div>
-      <div class="step-box" data-step="14"></div>
-      <div class="step-box" data-step="15"></div>
-    </div>
-
     <div class="master-sliders-remote" id="master-sliders-remote">
       <!-- Master panel sliders appear here dynamically -->
     </div>
 
-    <div class="panels">
-      <!-- Story 8.4: Panels are now dynamically created from full_state WebSocket message -->
-      <!-- This empty container will be populated by rebuildRemoteUI() on connection -->
+    <!-- Masonry grid for panels -->
+    <div class="panels-grid" id="panels-grid">
+      <!-- Panels populated dynamically - use data-size="1" for plain, data-size="3" for sliders -->
     </div>
 
     <div class="global-controls">
@@ -104,16 +104,19 @@
 
     /**
      * Story 8.1: Create remote panel control element
-     * @param {Object} panel - Panel data {id, title, position}
+     * Grid item: size-1 (square) for plain, size-3 (wide) for panels with sliders
+     * @param {Object} panel - Panel data {id, title, position, hasSliders}
      * @returns {HTMLElement} Panel control element
      */
     function createRemotePanelControl(panel) {
-      const { id, title, playing = false, stale = false } = panel;
+      const { id, title, playing = false, stale = false, hasSliders = false } = panel;
 
       const div = document.createElement('div');
-      div.className = 'panel-control panel-control-new';
+      // Default to size-1 (square), will be upgraded to size-3 when sliders arrive
+      div.className = `panel-control panel-control-new ${hasSliders ? 'size-3' : 'size-1'}`;
       div.id = `remote-${id}`;
       div.dataset.panelId = id;
+      div.dataset.size = hasSliders ? '3' : '1';
 
       // Story 8.4: Add playing class if panel is playing
       if (playing) {
@@ -126,15 +129,11 @@
       }
 
       const playIcon = playing ? '⏸' : '▶';
-      const statusText = playing ? 'Playing' : 'Stopped';
 
+      // Grid layout: button on left, sliders on right (for size-3)
       div.innerHTML = `
-          <div class="panel-info">
-            <h3>${escapeHtml(title)}</h3>
-            <div class="status">${statusText}</div>
-            <div class="panel-sliders-remote" id="panel-sliders-${id}"></div>
-          </div>
-          <button class="panel-button" data-panel="${id}">${playIcon}</button>
+          <button class="panel-button" data-panel="${id}" title="${escapeHtml(title)}">${playIcon}</button>
+          <div class="panel-sliders-remote" id="panel-sliders-${id}"></div>
         `;
 
       // Remove animation class after transition completes
@@ -146,12 +145,40 @@
     }
 
     /**
-     * Story 8.1: Insert panel at correct position in list
+     * Upgrade panel to size-3 when sliders are received
+     * @param {string} panelId - Panel ID
+     */
+    function upgradePanelToWide(panelId) {
+      const panel = document.getElementById(`remote-${panelId}`);
+      if (panel && panel.dataset.size !== '3') {
+        panel.classList.remove('size-1');
+        panel.classList.add('size-3');
+        panel.dataset.size = '3';
+        console.log(`[Remote] Panel ${panelId} upgraded to wide layout`);
+      }
+    }
+
+    /**
+     * Downgrade panel to size-1 when sliders are cleared
+     * @param {string} panelId - Panel ID
+     */
+    function downgradePanelToSquare(panelId) {
+      const panel = document.getElementById(`remote-${panelId}`);
+      if (panel && panel.dataset.size !== '1') {
+        panel.classList.remove('size-3');
+        panel.classList.add('size-1');
+        panel.dataset.size = '1';
+        console.log(`[Remote] Panel ${panelId} downgraded to square layout`);
+      }
+    }
+
+    /**
+     * Story 8.1: Insert panel at correct position in grid
      * @param {HTMLElement} panelElement - Panel element to insert
      * @param {number} position - Position in list (1-indexed)
      */
     function insertPanelAtPosition(panelElement, position) {
-      const container = document.querySelector('.panels');
+      const container = document.getElementById('panels-grid');
       const existingPanels = Array.from(container.querySelectorAll('.panel-control'));
 
       // Find insertion point based on position
@@ -249,14 +276,14 @@
     function rebuildRemoteUI(panels) {
       console.log('[Remote] Rebuilding UI with', panels.length, 'panels');
 
-      // Task 4: Clear existing panels (keep .panels container)
-      const panelsContainer = document.querySelector('.panels');
+      // Clear existing panels (keep grid container)
+      const panelsContainer = document.getElementById('panels-grid');
       panelsContainer.innerHTML = '';
 
-      // Task 4: Clear state tracking
+      // Clear state tracking
       Object.keys(panelStates).forEach(key => delete panelStates[key]);
 
-      // Task 5 & 6: Create panel control for each panel in state
+      // Create panel control for each panel in state
       panels.forEach(panel => {
         const panelElement = createRemotePanelControl(panel);
 
@@ -531,10 +558,11 @@
         if (buttonEl) buttonEl.textContent = '▶';
         if (statusEl) statusEl.textContent = 'Stopped';
 
-        // Clear sliders when panel stops
+        // Clear sliders when panel stops and downgrade to square
         const slidersContainer = document.getElementById(`panel-sliders-${panelId}`);
         if (slidersContainer) {
           slidersContainer.innerHTML = '';
+          downgradePanelToSquare(panelId);
         }
       }
     }
@@ -642,9 +670,13 @@
       container.innerHTML = '';
 
       if (!sliders || sliders.length === 0) {
-        // console.log(`[Remote SLIDER DEBUG] No sliders to render for ${panelId}`);
+        // No sliders - downgrade to square
+        downgradePanelToSquare(panelId);
         return;
       }
+
+      // Has sliders - upgrade to wide layout
+      upgradePanelToWide(panelId);
 
       // console.log(`[Remote SLIDER DEBUG] Rendering ${sliders.length} sliders for ${panelId}:`, sliders);
 
@@ -737,7 +769,7 @@
     }
 
     // Story 8.1 Task 5: Use event delegation for panel buttons (supports dynamic panels)
-    document.querySelector('.panels').addEventListener('click', (e) => {
+    document.getElementById('panels-grid').addEventListener('click', (e) => {
       const button = e.target.closest('.panel-button');
       if (button) {
         const panelId = button.dataset.panel;

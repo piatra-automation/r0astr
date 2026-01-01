@@ -293,11 +293,11 @@ export function deletePanel(panelId, scheduler = null, cardStates = null, skipCo
     return false;
   }
 
-  // Story 4.4: Check YOLO mode and confirmation dialogs settings
-  // Skip confirmation in server environment or when explicitly requested (e.g., API deletions)
+  // Check YOLO mode - skip confirmation when enabled
+  // Also skip in server environment or when explicitly requested (e.g., API deletions)
   if (!skipConfirmation && typeof window !== 'undefined' && typeof confirm !== 'undefined') {
     const settings = getSettings();
-    if (!settings.yolo && settings.behavior?.confirmationDialogs !== false) {
+    if (!settings.yolo) {
       const confirmed = confirm('Are you sure you want to delete this panel?');
       if (!confirmed) {
         console.log('Panel deletion cancelled by user');
