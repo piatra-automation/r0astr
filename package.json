@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "server": "node src/server/index.js",
     "electron:dev": "concurrently -k \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:dev:debug": "concurrently -k \"npm run dev\" \"wait-on http://localhost:5173 && ELECTRON_DEV_TOOLS=1 electron .\"",
     "electron:build": "npm run build && electron-builder",
     "electron:build:mac": "npm run build && electron-builder --mac",
     "electron:build:win": "npm run build && electron-builder --win",

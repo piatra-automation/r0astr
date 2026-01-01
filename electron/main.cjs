@@ -228,7 +228,10 @@ function createWindow() {
   if (isDev) {
     // In dev mode, load from Vite dev server
     mainWindow.loadURL(`http://localhost:${PORT}`);
-    mainWindow.webContents.openDevTools();
+    // Only open DevTools if ELECTRON_DEV_TOOLS env is set
+    if (process.env.ELECTRON_DEV_TOOLS === '1') {
+      mainWindow.webContents.openDevTools();
+    }
   } else {
     // In production, load from built files via our Express server
     mainWindow.loadURL(`http://localhost:${PORT}`);
@@ -419,7 +422,10 @@ function setupIpcHandlers() {
 
 // App lifecycle
 app.whenReady().then(() => {
-  createWebSocketAndHttpServer();
+  // Only start server in production - in dev mode, Vite handles this
+  if (!isDev) {
+    createWebSocketAndHttpServer();
+  }
   createWindow();
   registerGlobalShortcuts();
   setupIpcHandlers();
