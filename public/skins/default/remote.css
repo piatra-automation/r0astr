@@ -77,3 +77,37 @@ h1 {
   background: rgba(100, 100, 100, 0.5);
   border-color: rgba(150, 150, 150, 0.5);
 }
+
+/* Metronome - synthwave style */
+.remote-metronome {
+  background: rgba(45, 27, 78, 0.5);
+  border: 1px solid rgba(81, 207, 102, 0.2);
+}
+
+.remote-metronome .step-box {
+  background: rgba(45, 27, 78, 0.8);
+}
+
+.remote-metronome .step-box[data-step="0"],
+.remote-metronome .step-box[data-step="4"],
+.remote-metronome .step-box[data-step="8"],
+.remote-metronome .step-box[data-step="12"] {
+  background: rgba(81, 207, 102, 0.3);
+}
+
+.remote-metronome .step-box.active {
+  background: #51cf66;
+  box-shadow: 0 0 12px rgba(81, 207, 102, 0.7);
+}
+
+.remote-metronome .step-box[data-step="0"].active,
+.remote-metronome .step-box[data-step="4"].active,
+.remote-metronome .step-box[data-step="8"].active,
+.remote-metronome .step-box[data-step="12"].active {
+  background: #69db7c;
+  box-shadow: 0 0 18px rgba(105, 219, 124, 0.9);
+}
+
+.remote-metronome.downbeat {
+  background: rgba(81, 207, 102, 0.15);
+}

@@ -96,6 +96,11 @@ export function createWebSocketServer(server) {
 function handleMessage(ws, message) {
   const { type, panel, data, clientType } = message;
 
+  // Debug: log all message types (throttle metronome)
+  if (type !== 'metronome.step' || message.step === 0) {
+    console.log(`[WebSocket] handleMessage type='${type}'`);
+  }
+
   // Handle client registration
   if (type === 'client.register') {
     const client = clients.get(ws);
@@ -229,6 +234,17 @@ function handleMessage(ws, message) {
     return;
   }
 
+  // Handle metronome step updates from main -> broadcast to remotes
+  if (type === 'metronome.step') {
+    // Debug: log step 0 to confirm server is receiving
+    if (message.step === 0) {
+      const remoteCount = [...clients.values()].filter(c => c.type === 'remote').length;
+      console.log(`[WebSocket] Server received step 0, broadcasting to ${remoteCount} remotes`);
+    }
+    broadcastToRemote(message);
+    return;
+  }
+
   // Log command
   console.log(`[WebSocket] Command: ${type}`, panel ? `panel ${panel}` : '');
 
@@ -258,6 +274,7 @@ function broadcastToRemote(message) {
   if (!wss) return;
 
   const messageStr = JSON.stringify(message);
+  let sentCount = 0;
 
   wss.clients.forEach((client) => {
     if (client.readyState === 1) {
@@ -265,9 +282,15 @@ function broadcastToRemote(message) {
       // Send to remote controls only
       if (clientInfo?.type === 'remote') {
         client.send(messageStr);
+        sentCount++;
       }
     }
   });
+
+  // Debug: log metronome step 0 broadcasts
+  if (message.type === 'metronome.step' && message.step === 0) {
+    console.log(`[WebSocket] broadcastToRemote sent to ${sentCount} clients`);
+  }
 }
 
 /**

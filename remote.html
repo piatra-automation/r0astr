@@ -45,6 +45,26 @@
       <div style="font-size: 10px; color: #666; margin-top: 5px;">v8.4.0-full-state-sync</div>
     </header>
 
+    <!-- Metronome - 16 step sequencer visualization -->
+    <div class="remote-metronome" id="remote-metronome">
+      <div class="step-box" data-step="0"></div>
+      <div class="step-box" data-step="1"></div>
+      <div class="step-box" data-step="2"></div>
+      <div class="step-box" data-step="3"></div>
+      <div class="step-box" data-step="4"></div>
+      <div class="step-box" data-step="5"></div>
+      <div class="step-box" data-step="6"></div>
+      <div class="step-box" data-step="7"></div>
+      <div class="step-box" data-step="8"></div>
+      <div class="step-box" data-step="9"></div>
+      <div class="step-box" data-step="10"></div>
+      <div class="step-box" data-step="11"></div>
+      <div class="step-box" data-step="12"></div>
+      <div class="step-box" data-step="13"></div>
+      <div class="step-box" data-step="14"></div>
+      <div class="step-box" data-step="15"></div>
+    </div>
+
     <div class="master-sliders-remote" id="master-sliders-remote">
       <!-- Master panel sliders appear here dynamically -->
     </div>
@@ -288,6 +308,10 @@
       ws.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
+          // Debug: log raw metronome messages
+          if (message.type === 'metronome.step' && message.step === 0) {
+            console.log('[Remote] RAW ws.onmessage metronome.step:', message);
+          }
           handleMessage(message);
         } catch (error) {
           console.error('[Remote] Failed to parse message:', error);
@@ -313,7 +337,10 @@
     function handleMessage(message) {
       const { type, panels } = message;
 
-      console.log('[Remote] Received:', type);
+      // Don't log every metronome step to avoid spam
+      if (type !== 'metronome.step') {
+        console.log('[Remote] Received:', type);
+      }
 
       switch (type) {
         case 'server.hello':
@@ -405,6 +432,62 @@
             updatePanelSliderValue(message.panelId, message.sliderId, message.value);
           }
           break;
+
+        case 'metronome.step':
+          // Update metronome visualization
+          // Debug: log every 4th step to avoid spam
+          if (message.step % 4 === 0) {
+            console.log('[Remote] Metronome step:', message.step);
+          }
+          updateMetronome(message.step, message.isDownbeat, message.active);
+          break;
+      }
+    }
+
+    /**
+     * Update metronome step visualization
+     * @param {number} step - Current step (0-15), or -1 if stopped
+     * @param {boolean} isDownbeat - True if this is a downbeat (0, 4, 8, 12)
+     * @param {boolean} active - False when metronome is stopped
+     */
+    let lastMetronomeStep = -1;
+    function updateMetronome(step, isDownbeat, active) {
+      const metronome = document.getElementById('remote-metronome');
+      if (!metronome) return;
+
+      const stepBoxes = metronome.querySelectorAll('.step-box');
+
+      // Handle stop state
+      if (step === -1 || active === false) {
+        metronome.classList.remove('active');
+        stepBoxes.forEach(box => box.classList.remove('active', 'beat'));
+        lastMetronomeStep = -1;
+        return;
+      }
+
+      // Activate metronome
+      metronome.classList.add('active');
+
+      // Only update if step changed
+      if (step === lastMetronomeStep) return;
+      lastMetronomeStep = step;
+
+      // Update step boxes
+      stepBoxes.forEach((box, index) => {
+        if (index === step) {
+          box.classList.add('active');
+          // Brief beat flash
+          box.classList.add('beat');
+          setTimeout(() => box.classList.remove('beat'), 50);
+        } else {
+          box.classList.remove('active');
+        }
+      });
+
+      // Downbeat emphasis
+      if (isDownbeat) {
+        metronome.classList.add('downbeat');
+        setTimeout(() => metronome.classList.remove('downbeat'), 80);
       }
     }
 

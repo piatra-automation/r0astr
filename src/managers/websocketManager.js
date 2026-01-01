@@ -38,7 +38,8 @@ export const MESSAGE_TYPES = {
   STATE_SYNC: 'full_state',
   STATE_UPDATE: 'state.update',
   CLIENT_REGISTER: 'client.register',
-  CLIENT_SYNC_PANELS: 'client.syncPanels'
+  CLIENT_SYNC_PANELS: 'client.syncPanels',
+  METRONOME_STEP: 'metronome.step'
 };
 
 // Module-private WebSocket instance
@@ -312,6 +313,17 @@ function setupOutgoingListeners() {
       panelId: data.panelId,
       sliders: data.sliders
     });
+  });
+
+  // Metronome step broadcast
+  eventBus.on('metronome:step', (data) => {
+    // Debug: log step 0 to confirm listener is receiving events
+    if (data.step === 0) {
+      const sent = send(MESSAGE_TYPES.METRONOME_STEP, data);
+      console.log('[WebSocket] Step 0 send result:', sent, 'wsState:', ws?.readyState);
+    } else {
+      send(MESSAGE_TYPES.METRONOME_STEP, data);
+    }
   });
 
   console.log('[WebSocket] Outgoing event listeners setup complete');

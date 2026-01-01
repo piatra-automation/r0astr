@@ -385,3 +385,64 @@ h1 {
     transform: translateX(20px);
   }
 }
+
+/* =====================
+   Metronome - 16 Step Sequencer
+   ===================== */
+
+.remote-metronome {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px;
+  margin-bottom: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.remote-metronome.active {
+  opacity: 1;
+}
+
+.remote-metronome .step-box {
+  width: 16px;
+  height: 24px;
+  background: #333;
+  border-radius: 3px;
+  transition: background 0.1s ease, transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+/* Downbeat markers (quarters) - slightly different base color */
+.remote-metronome .step-box[data-step="0"],
+.remote-metronome .step-box[data-step="4"],
+.remote-metronome .step-box[data-step="8"],
+.remote-metronome .step-box[data-step="12"] {
+  background: #444;
+}
+
+/* Active step */
+.remote-metronome .step-box.active {
+  background: #4CAF50;
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
+}
+
+/* Active downbeat - brighter */
+.remote-metronome .step-box[data-step="0"].active,
+.remote-metronome .step-box[data-step="4"].active,
+.remote-metronome .step-box[data-step="8"].active,
+.remote-metronome .step-box[data-step="12"].active {
+  background: #66bb6a;
+  box-shadow: 0 0 15px rgba(102, 187, 106, 0.8);
+}
+
+/* Beat flash effect */
+.remote-metronome .step-box.beat {
+  transform: scaleY(1.2);
+}
+
+/* Downbeat container flash */
+.remote-metronome.downbeat {
+  background: rgba(76, 175, 80, 0.1);
+}

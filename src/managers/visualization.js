@@ -7,6 +7,7 @@ import { cardStates, editorViews, strudelCore } from '../state.js';
 import { getSettings } from './settingsManager.js';
 import { highlightMiniLocations } from '@strudel/codemirror';
 import { MASTER_PANEL_ID } from './panelManager.js';
+import { eventBus } from '../utils/eventBus.js';
 
 /**
  * Initialize 16-step sequencer indicator
@@ -47,6 +48,8 @@ export function initializeMetronome() {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
       }
+      // Notify remote clients that metronome stopped
+      eventBus.emit('metronome:step', { step: -1, active: false });
     }
   }
 
@@ -84,6 +87,16 @@ export function initializeMetronome() {
         }
 
         lastStep = currentStep;
+
+        // Broadcast step to remote clients on every step change
+        // Debug: log every 16th step to confirm emission
+        if (currentStep === 0) {
+          console.log('[Metronome] Emitting step 0');
+        }
+        eventBus.emit('metronome:step', {
+          step: currentStep,
+          isDownbeat: currentStep % 4 === 0
+        });
       }
 
       animationFrameId = requestAnimationFrame(loop);

@@ -196,3 +196,59 @@ h1 {
   50% { color: #00d4ff; }
   100% { color: #fff; }
 }
+
+/* =====================
+   Metronome - Glass Style
+   ===================== */
+
+.remote-metronome {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.remote-metronome .step-box {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  width: 18px;
+  height: 28px;
+}
+
+/* Downbeat markers - cyan tint */
+.remote-metronome .step-box[data-step="0"],
+.remote-metronome .step-box[data-step="4"],
+.remote-metronome .step-box[data-step="8"],
+.remote-metronome .step-box[data-step="12"] {
+  background: rgba(0, 212, 255, 0.15);
+}
+
+/* Active step - cyan glow */
+.remote-metronome .step-box.active {
+  background: linear-gradient(135deg, #00d4ff, #0095ff);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.6),
+              0 0 24px rgba(0, 212, 255, 0.3);
+}
+
+/* Active downbeat - stronger glow */
+.remote-metronome .step-box[data-step="0"].active,
+.remote-metronome .step-box[data-step="4"].active,
+.remote-metronome .step-box[data-step="8"].active,
+.remote-metronome .step-box[data-step="12"].active {
+  background: linear-gradient(135deg, #40e0ff, #00d4ff);
+  box-shadow: 0 0 16px rgba(0, 212, 255, 0.8),
+              0 0 32px rgba(0, 212, 255, 0.4);
+}
+
+/* Beat flash */
+.remote-metronome .step-box.beat {
+  transform: scaleY(1.15);
+}
+
+/* Downbeat container pulse */
+.remote-metronome.downbeat {
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.4);
+}
