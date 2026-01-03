@@ -5,6 +5,33 @@ All notable changes to r0astr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2026-01-03
+
+### Added
+- **Electron App Improvements**
+  - Simpler keyboard shortcuts in Electron (Cmd+N, Cmd+W, Cmd+P vs Cmd+Opt+N in browser)
+  - Settings menu item (Cmd+,) in app menu
+  - Custom About dialog with logo and app details
+  - App name shows "r0astr" in menu bar instead of "Electron"
+  - File and Playback menus with documented accelerators
+
+### Changed
+- **Settings Panel Reorganization**
+  - Collapsible sections: General, Editor, Behaviour, Integrations, Advanced
+  - Improved text contrast for dark theme
+  - Removed redundant "Show Confirmation Dialogs" (YOLO mode covers this)
+  - YOLO mode moved to General section
+- **Panel Reordering**
+  - Drag order now persists after reload
+  - Panels saved and loaded in correct number order
+
+### Fixed
+- Memory leaks in panel deletion lifecycle
+- Electron app port conflict on restart
+- Remote panel metronome synchronization
+- Settings section chevron icons (CSS-only, no font dependency)
+- Remote panel masonry grid layout
+
 ## [0.10.0] - 2025-12-30
 
 ### Added
