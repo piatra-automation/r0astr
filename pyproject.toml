@@ -1,6 +1,6 @@
 [project]
 name = "r0astr"
-version = "0.9.0"
+version = "0.10.2"
 description = "r0astr - Multi-instrument live coding interface built on Strudel"
 authors = [
     {name = "Peter Kalt",email = "peter.kalt@piatra.com.au"}

@@ -5,6 +5,20 @@ All notable changes to r0astr will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.10.2] - 2026-01-03
+
+### Changed
+
+  
+  - **deploy-pages.yml:**Uses npm ci --ignore-scripts (lite build doesn't need native deps)
+  - **deploy-pages.yml:**Pinned Python to 3.11 as fallback
+
+### Added
+
+  release.yml:
+  - Added Python 3.11 setup for Linux build (needed for node-gyp/serialport)
+
 ## [0.10.1] - 2026-01-03
 
 ### Added

@@ -1,6 +1,6 @@
 {
   "name": "r0astr",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "r0astr - Multi-instrument live coding interface built on Strudel",
   "type": "module",
   "private": true,
@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "electron": "^33.0.0",
+    "electron": "^39.2.7",
     "electron-builder": "^25.1.8",
     "vite": "^6.0.11",
     "vite-plugin-bundle-audioworklet": "^0.1.1",

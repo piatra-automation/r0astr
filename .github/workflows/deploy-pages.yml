@@ -40,11 +40,11 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.11'  # 3.12+ removed distutils, breaks node-gyp
 
-      # Install Node dependencies
+      # Install Node dependencies (skip postinstall - no native deps needed for lite build)
       - name: Install Node dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       # Install Python dependencies
       - name: Install MkDocs Material
