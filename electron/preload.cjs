@@ -40,6 +40,35 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('play-all-panels', () => callback());
   },
 
+  // Menu shortcut handlers (Cmd+N, Cmd+W, Cmd+P, etc.)
+  onShortcutNewPanel: (callback) => {
+    ipcRenderer.on('shortcut-new-panel', () => callback());
+  },
+
+  onShortcutDeletePanel: (callback) => {
+    ipcRenderer.on('shortcut-delete-panel', () => callback());
+  },
+
+  onShortcutTogglePlayback: (callback) => {
+    ipcRenderer.on('shortcut-toggle-playback', () => callback());
+  },
+
+  onShortcutUpdatePanel: (callback) => {
+    ipcRenderer.on('shortcut-update-panel', () => callback());
+  },
+
+  onShortcutUpdateAll: (callback) => {
+    ipcRenderer.on('shortcut-update-all', () => callback());
+  },
+
+  onShortcutStopAll: (callback) => {
+    ipcRenderer.on('shortcut-stop-all', () => callback());
+  },
+
+  onShortcutOpenSettings: (callback) => {
+    ipcRenderer.on('shortcut-open-settings', () => callback());
+  },
+
   // Platform info
   platform: process.platform,
 

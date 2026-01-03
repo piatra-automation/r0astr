@@ -13,13 +13,20 @@ export const isElectron = typeof window !== 'undefined' &&
 /**
  * Initialize Electron event handlers
  * Call this once from main.js after your app is initialized
- * 
+ *
  * @param {Object} handlers - Event handler callbacks
  * @param {Function} handlers.onPanicStopAll - Called when panic shortcut triggered
  * @param {Function} handlers.onTogglePanel - Called with panel number (1-8)
  * @param {Function} handlers.onStopAllPanels - Called when stop-all triggered
  * @param {Function} handlers.onPlayAllPanels - Called when play-all triggered
  * @param {Function} handlers.onPerformanceModeChanged - Called with boolean
+ * @param {Function} handlers.onNewPanel - Called when Cmd+N pressed (Electron menu)
+ * @param {Function} handlers.onDeletePanel - Called when Cmd+W pressed (Electron menu)
+ * @param {Function} handlers.onTogglePlayback - Called when Cmd+P pressed (Electron menu)
+ * @param {Function} handlers.onUpdatePanel - Called when Cmd+Up pressed (Electron menu)
+ * @param {Function} handlers.onUpdateAll - Called when Cmd+U pressed (Electron menu)
+ * @param {Function} handlers.onStopAll - Called when Cmd+. pressed (Electron menu)
+ * @param {Function} handlers.onOpenSettings - Called when Cmd+, pressed (Electron menu)
  */
 export function initElectronHandlers(handlers) {
   if (!isElectron) {
@@ -28,7 +35,7 @@ export function initElectronHandlers(handlers) {
   }
 
   console.log('[Electron] Initializing event handlers');
-  
+
   const api = window.electronAPI;
 
   if (handlers.onPanicStopAll) {
@@ -49,6 +56,35 @@ export function initElectronHandlers(handlers) {
 
   if (handlers.onPerformanceModeChanged) {
     api.onPerformanceModeChanged(handlers.onPerformanceModeChanged);
+  }
+
+  // Menu shortcut handlers (Cmd+N, Cmd+W, Cmd+P, etc.)
+  if (handlers.onNewPanel) {
+    api.onShortcutNewPanel(handlers.onNewPanel);
+  }
+
+  if (handlers.onDeletePanel) {
+    api.onShortcutDeletePanel(handlers.onDeletePanel);
+  }
+
+  if (handlers.onTogglePlayback) {
+    api.onShortcutTogglePlayback(handlers.onTogglePlayback);
+  }
+
+  if (handlers.onUpdatePanel) {
+    api.onShortcutUpdatePanel(handlers.onUpdatePanel);
+  }
+
+  if (handlers.onUpdateAll) {
+    api.onShortcutUpdateAll(handlers.onUpdateAll);
+  }
+
+  if (handlers.onStopAll) {
+    api.onShortcutStopAll(handlers.onStopAll);
+  }
+
+  if (handlers.onOpenSettings) {
+    api.onShortcutOpenSettings(handlers.onOpenSettings);
   }
 
   console.log('[Electron] Event handlers registered');

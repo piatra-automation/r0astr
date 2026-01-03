@@ -8,11 +8,14 @@
  * - Performance mode protection
  */
 
-const { app, BrowserWindow, globalShortcut, ipcMain, dialog, Menu } = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain, dialog, Menu, nativeImage } = require('electron');
 const path = require('path');
 const { createServer } = require('http');
 const { WebSocketServer } = require('ws');
 const express = require('express');
+
+// Set app name (shows in menu bar instead of "Electron")
+app.setName('r0astr');
 
 // Keep a global reference of the window object
 let mainWindow = null;
@@ -268,14 +271,50 @@ function createWindow() {
 
 /**
  * Create application menu
+ *
+ * Note: We intercept Cmd+N, Cmd+W, Cmd+P to use as app shortcuts instead of
+ * the default "new window", "close window", "print" behaviors.
+ * These are handled in the renderer via keyboard.js
  */
 function createApplicationMenu() {
+  // Configure About panel with logo and details
+  // Logo is in public/images (copied to dist/images during build)
+  const logoPath = isDev
+    ? path.join(__dirname, '../public/images/logo.png')
+    : path.join(__dirname, '../dist/images/logo.png');
+
+  // Try to load the logo, fall back gracefully if not found
+  let aboutIcon = null;
+  try {
+    aboutIcon = nativeImage.createFromPath(logoPath);
+    if (aboutIcon.isEmpty()) {
+      console.warn('[App] Logo not found at:', logoPath);
+      aboutIcon = null;
+    }
+  } catch (e) {
+    console.warn('[App] Could not load logo:', e.message);
+  }
+
+  app.setAboutPanelOptions({
+    applicationName: 'r0astr',
+    applicationVersion: require('../package.json').version,
+    version: 'Multi-instrument live coding interface',
+    copyright: '© 2024-2025 Peter Kalt / Piatra Engineering\nBuilt on Strudel by Felix Roos',
+    credits: 'https://strudel.cc | https://piatra.com.au',
+    iconPath: logoPath
+  });
+
   const template = [
     {
       label: 'r0astr',
       submenu: [
         { role: 'about' },
         { type: 'separator' },
+        {
+          label: 'Settings...',
+          accelerator: 'CmdOrCtrl+,',
+          click: () => mainWindow?.webContents.send('shortcut-open-settings')
+        },
         {
           label: 'Performance Mode',
           type: 'checkbox',
@@ -296,6 +335,30 @@ function createApplicationMenu() {
       ]
     },
     {
+      label: 'File',
+      submenu: [
+        // Cmd+N = New Panel (handled in renderer)
+        {
+          label: 'New Panel',
+          accelerator: 'CmdOrCtrl+N',
+          click: () => mainWindow?.webContents.send('shortcut-new-panel')
+        },
+        // Cmd+W = Delete Panel (handled in renderer, NOT close window)
+        {
+          label: 'Delete Panel',
+          accelerator: 'CmdOrCtrl+W',
+          click: () => mainWindow?.webContents.send('shortcut-delete-panel')
+        },
+        { type: 'separator' },
+        // Keep Cmd+Shift+W for actual close window
+        {
+          label: 'Close Window',
+          accelerator: 'CmdOrCtrl+Shift+W',
+          click: () => mainWindow?.close()
+        }
+      ]
+    },
+    {
       label: 'Edit',
       submenu: [
         { role: 'undo' },
@@ -305,6 +368,33 @@ function createApplicationMenu() {
         { role: 'copy' },
         { role: 'paste' },
         { role: 'selectAll' }
+      ]
+    },
+    {
+      label: 'Playback',
+      submenu: [
+        // Cmd+P = Toggle Play/Pause (NOT print)
+        {
+          label: 'Toggle Play/Pause',
+          accelerator: 'CmdOrCtrl+P',
+          click: () => mainWindow?.webContents.send('shortcut-toggle-playback')
+        },
+        {
+          label: 'Update Panel',
+          accelerator: 'CmdOrCtrl+Up',
+          click: () => mainWindow?.webContents.send('shortcut-update-panel')
+        },
+        { type: 'separator' },
+        {
+          label: 'Update All',
+          accelerator: 'CmdOrCtrl+U',
+          click: () => mainWindow?.webContents.send('shortcut-update-all')
+        },
+        {
+          label: 'Stop All',
+          accelerator: 'CmdOrCtrl+.',
+          click: () => mainWindow?.webContents.send('shortcut-stop-all')
+        }
       ]
     },
     {

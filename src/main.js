@@ -21,6 +21,7 @@ import { eventBus } from './utils/eventBus.js';
 import { renderSliders as smRenderSliders, renderCollapsedSliders as smRenderCollapsedSliders, updateSliderValue as smUpdateSliderValue, clearSliders as smClearSliders, getPanelSliders } from './managers/sliderManager.js';
 import { prebake } from './managers/splash.js';
 import { initializeMetronome, initializePatternHighlighting } from './managers/visualization.js';
+import { initElectronHandlers, isElectron } from './utils/electronHelper.js';
 import {
   cardStates,
   editorViews,
@@ -837,7 +838,11 @@ function restorePanels() {
 
   console.log(`Restoring ${savedPanels.length} panels from saved state`);
 
-  savedPanels.forEach((panelState) => {
+  // Sort panels by number to restore in correct order
+  // Master panel (number 0) first, then regular panels in their saved order
+  const sortedPanels = [...savedPanels].sort((a, b) => (a.number || 0) - (b.number || 0));
+
+  sortedPanels.forEach((panelState) => {
     if (panelState.id === MASTER_PANEL_ID) {
       // Store master panel code and compact state to be set when EditorView initializes
       masterCode = panelState.code || '';
@@ -2974,8 +2979,11 @@ function initializeKeyboardShortcuts() {
 
   // Handle keydown for button press animation
   document.addEventListener('keydown', (e) => {
-    // Check for Cmd+Option (Mac) or Ctrl+Alt (Windows/Linux)
-    const modifier = (e.metaKey || e.ctrlKey) && e.altKey;
+    // In Electron: Cmd only (simpler shortcuts, no browser conflicts)
+    // In Browser: Cmd+Option (to avoid browser reserved shortcuts)
+    const modifier = isElectron
+      ? (e.metaKey || e.ctrlKey) && !e.altKey
+      : (e.metaKey || e.ctrlKey) && e.altKey;
 
     if (!modifier) {
       return;
@@ -3228,21 +3236,21 @@ function initializeKeyboardShortcuts() {
     }
   });
 
-  console.log('✓ Keyboard shortcuts initialized (keydown with simulated press/release):');
-  console.log('  Cmd+Opt+0-9: Activate panel (0=master, 1-9=panels)');
-  console.log('  Cmd+Opt+N: Create new panel');
-  console.log('  Cmd+Opt+W: Delete focused panel');
-  console.log('  Cmd+Opt+P: Toggle Play/Pause focused panel');
-  console.log('  Cmd+Opt+↑: Update focused panel');
-  console.log('  Cmd+Opt+=: Insert snippet');
-  console.log('  Cmd+Opt+U: Update All');
-  console.log('  Cmd+Opt+.: Stop All');
+  const mod = isElectron ? 'Cmd' : 'Cmd+Opt';
+  console.log(`✓ Keyboard shortcuts initialized (${isElectron ? 'Electron' : 'Browser'} mode):`);
+  console.log(`  ${mod}+0-9: Activate panel (0=master, 1-9=panels)`);
+  console.log(`  ${mod}+N: Create new panel`);
+  console.log(`  ${mod}+W: Delete focused panel`);
+  console.log(`  ${mod}+P: Toggle Play/Pause focused panel`);
+  console.log(`  ${mod}+↑: Update focused panel`);
+  console.log(`  ${mod}+=: Insert snippet`);
+  console.log(`  ${mod}+U: Update All`);
+  console.log(`  ${mod}+.: Stop All`);
 }
 
 // Initialize when DOM is ready
 async function init() {
   // Detect Electron environment and add class to body
-  const isElectron = navigator.userAgent.toLowerCase().includes('electron');
   if (isElectron) {
     document.body.classList.add('electron-app');
     console.log('✓ Electron environment detected');
@@ -3293,6 +3301,57 @@ setTimeout(() => {
 initializeCards();
 initializeSettingsModal();
 initializeKeyboardShortcuts();
+
+// Initialize Electron menu shortcut handlers (Cmd+N, Cmd+W, Cmd+P, etc.)
+// These fire from the Electron menu, not DOM keydown events
+initElectronHandlers({
+  onPanicStopAll: stopAll,
+  onStopAllPanels: stopAll,
+  onPlayAllPanels: updateAllPanels,
+  onTogglePanel: (panelNumber) => {
+    // F1-F8 toggle panel playback
+    const allPanels = getAllPanels();
+    const panelArray = Array.from(allPanels.values()).sort((a, b) => a.number - b.number);
+    const panel = panelArray[panelNumber]; // panelNumber is 1-based from F keys
+    if (panel) {
+      // Simulate clicking the playback button
+      const btn = document.querySelector(`[data-panel-id="${panel.id}"] .btn-playback`);
+      if (btn) btn.click();
+    }
+  },
+  onNewPanel: createNewPanelAndFocus,
+  onDeletePanel: () => {
+    // Simulate Cmd+W keypress by triggering same logic
+    const focusedPanel = findFocusedPanel();
+    if (focusedPanel && focusedPanel !== MASTER_PANEL_ID) {
+      // Trigger click on delete button if exists, or dispatch keyboard event
+      const deleteBtn = document.querySelector(`[data-panel-id="${focusedPanel}"] .btn-delete`);
+      if (deleteBtn) {
+        deleteBtn.click();
+      }
+    }
+  },
+  onTogglePlayback: () => {
+    const focusedPanel = findFocusedPanel();
+    if (focusedPanel) {
+      const btn = document.querySelector(`[data-panel-id="${focusedPanel}"] .btn-playback`) ||
+                  document.querySelector(`#${focusedPanel} .btn-playback`);
+      if (btn) btn.click();
+    }
+  },
+  onUpdatePanel: () => {
+    const focusedPanel = findFocusedPanel();
+    if (focusedPanel) {
+      const btn = document.querySelector(`[data-panel-id="${focusedPanel}"] .btn-playback`) ||
+                  document.querySelector(`#${focusedPanel} .btn-playback`) ||
+                  document.querySelector(`#${focusedPanel} .activate-btn`);
+      if (btn) btn.click();
+    }
+  },
+  onUpdateAll: () => document.getElementById('update-all-btn')?.click(),
+  onStopAll: stopAll,
+  onOpenSettings: openSettingsModal
+});
 
 // Initialize drag-to-reorder for panel tree
 if (document.querySelector('.panel-tree')) {

@@ -2,6 +2,15 @@
  * Keyboard Shortcuts Module
  *
  * Handles global keyboard shortcuts for r0astr:
+ *
+ * In Electron (simpler - Cmd only):
+ * - Panel activation (Cmd+0-9)
+ * - Create/delete panels (Cmd+N/W)
+ * - Play/pause controls (Cmd+P/↑)
+ * - Update/Stop all (Cmd+U/.)
+ * - Snippet insertion (Cmd+=)
+ *
+ * In Browser (Cmd+Option to avoid conflicts):
  * - Panel activation (Cmd+Opt+0-9)
  * - Create/delete panels (Cmd+Opt+N/W)
  * - Play/pause controls (Cmd+Opt+P/↑)
@@ -10,6 +19,7 @@
  */
 
 import { editorViews } from '../state.js';
+import { isElectron } from '../utils/electronHelper.js';
 
 /**
  * Find which panel currently has focus
@@ -118,8 +128,11 @@ export function initializeKeyboardShortcuts(handlers) {
 
   // Handle keydown for button press animation
   document.addEventListener('keydown', (e) => {
-    // Check for Cmd+Option (Mac) or Ctrl+Alt (Windows/Linux)
-    const modifier = (e.metaKey || e.ctrlKey) && e.altKey;
+    // In Electron: Cmd only (simpler shortcuts, no browser conflicts)
+    // In Browser: Cmd+Option (to avoid browser reserved shortcuts)
+    const modifier = isElectron
+      ? (e.metaKey || e.ctrlKey) && !e.altKey
+      : (e.metaKey || e.ctrlKey) && e.altKey;
 
     if (!modifier) {
       return;
@@ -269,13 +282,14 @@ export function initializeKeyboardShortcuts(handlers) {
     }
   });
 
-  console.log('✓ Keyboard shortcuts initialized (keydown with simulated press/release):');
-  console.log('  Cmd+Opt+0-9: Activate panel (0=master, 1-9=panels)');
-  console.log('  Cmd+Opt+N: Create new panel');
-  console.log('  Cmd+Opt+W: Delete focused panel');
-  console.log('  Cmd+Opt+P: Toggle Play/Pause focused panel');
-  console.log('  Cmd+Opt+↑: Update focused panel');
-  console.log('  Cmd+Opt+=: Insert snippet');
-  console.log('  Cmd+Opt+U: Update All');
-  console.log('  Cmd+Opt+.: Stop All');
+  const mod = isElectron ? 'Cmd' : 'Cmd+Opt';
+  console.log(`✓ Keyboard shortcuts initialized (${isElectron ? 'Electron' : 'Browser'} mode):`);
+  console.log(`  ${mod}+0-9: Activate panel (0=master, 1-9=panels)`);
+  console.log(`  ${mod}+N: Create new panel`);
+  console.log(`  ${mod}+W: Delete focused panel`);
+  console.log(`  ${mod}+P: Toggle Play/Pause focused panel`);
+  console.log(`  ${mod}+↑: Update focused panel`);
+  console.log(`  ${mod}+=: Insert snippet`);
+  console.log(`  ${mod}+U: Update All`);
+  console.log(`  ${mod}+.: Stop All`);
 }

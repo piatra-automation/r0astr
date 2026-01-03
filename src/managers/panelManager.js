@@ -189,6 +189,9 @@ export function renumberPanels() {
   });
 
   console.log(`Renumbered ${panelElements.length} panels in tree`);
+
+  // Save state to persist new order
+  savePanelStateNow();
 }
 
 /**
@@ -822,6 +825,9 @@ export function savePanelState() {
     } catch (e) {
       console.warn('Failed to preserve master panel state:', e);
     }
+
+    // Sort panels by number for consistent ordering in saved state
+    panelArray.sort((a, b) => (a.number || 0) - (b.number || 0));
 
     const state = { panels: panelArray };
     const json = JSON.stringify(state, null, 2);
