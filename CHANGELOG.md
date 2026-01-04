@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.10.9] - 2026-01-04
+## [0.10.10] - 2026-01-04
 
 ### Fixed
 - **Electron Build**
@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Let electron-builder handle node_modules bundling automatically
   - Fixed race condition: window now waits for HTTP server to be ready
   - Fixed crash when quitting second instance before app ready
+  - Fixed Express 5 wildcard route incompatibility (path-to-regexp error)
 - **API**
   - Fixed /health endpoint URL matching in Vite middleware
   - Added CORS headers for external API access

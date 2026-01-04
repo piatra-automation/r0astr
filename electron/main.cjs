@@ -45,15 +45,16 @@ function createWebSocketAndHttpServer() {
   if (!isDev) {
     expressApp.use(express.static(path.join(__dirname, '../dist')));
 
-    // SPA fallback
-    expressApp.get('*', (req, res) => {
-      // Don't serve index.html for API routes or remote.html
+    // SPA fallback (Express 5 requires middleware instead of '*' wildcard)
+    expressApp.use((req, res, next) => {
+      // Don't serve index.html for API routes or WebSocket
       if (req.path.startsWith('/api') || req.path === '/ws') {
         return res.status(404).send('Not found');
       }
       if (req.path === '/remote.html') {
         return res.sendFile(path.join(__dirname, '../dist/remote.html'));
       }
+      // Serve index.html for all other routes (SPA)
       res.sendFile(path.join(__dirname, '../dist/index.html'));
     });
   }
