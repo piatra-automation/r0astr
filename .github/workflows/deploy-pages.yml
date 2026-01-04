@@ -46,9 +46,11 @@ jobs:
       - name: Install setuptools
         run: pip install setuptools
 
-      # Install Node dependencies
+      # Install Node dependencies (clean install to fix rollup optional deps bug)
       - name: Install Node dependencies
-        run: npm ci
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
 
       # Install Python dependencies
       - name: Install MkDocs Material
