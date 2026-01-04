@@ -23,8 +23,7 @@ export const isElectron = typeof window !== 'undefined' &&
  * @param {Function} handlers.onNewPanel - Called when Cmd+N pressed (Electron menu)
  * @param {Function} handlers.onDeletePanel - Called when Cmd+W pressed (Electron menu)
  * @param {Function} handlers.onTogglePlayback - Called when Cmd+P pressed (Electron menu)
- * @param {Function} handlers.onUpdatePanel - Called when Cmd+Up pressed (Electron menu)
- * @param {Function} handlers.onUpdateAll - Called when Cmd+U pressed (Electron menu)
+ * @param {Function} handlers.onUpdateAll - Called when Cmd+Up pressed (Electron menu)
  * @param {Function} handlers.onStopAll - Called when Cmd+. pressed (Electron menu)
  * @param {Function} handlers.onOpenSettings - Called when Cmd+, pressed (Electron menu)
  */
@@ -69,10 +68,6 @@ export function initElectronHandlers(handlers) {
 
   if (handlers.onTogglePlayback) {
     api.onShortcutTogglePlayback(handlers.onTogglePlayback);
-  }
-
-  if (handlers.onUpdatePanel) {
-    api.onShortcutUpdatePanel(handlers.onUpdatePanel);
   }
 
   if (handlers.onUpdateAll) {

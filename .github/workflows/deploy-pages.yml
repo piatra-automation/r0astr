@@ -36,15 +36,19 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      # Setup Python for MkDocs
+      # Setup Python for MkDocs and node-gyp (3.12+ removed distutils)
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'  # 3.12+ removed distutils, breaks node-gyp
+          python-version: '3.11'
 
-      # Install Node dependencies (skip postinstall - no native deps needed for lite build)
+      # Install setuptools for distutils compatibility (needed by node-gyp)
+      - name: Install setuptools
+        run: pip install setuptools
+
+      # Install Node dependencies
       - name: Install Node dependencies
-        run: npm ci --ignore-scripts
+        run: npm ci
 
       # Install Python dependencies
       - name: Install MkDocs Material

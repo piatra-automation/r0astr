@@ -3074,25 +3074,16 @@ function initializeKeyboardShortcuts() {
 
       case 'ArrowUp':
         e.preventDefault();
-        const focusedPanelUp = findFocusedPanel();
-        if (focusedPanelUp) {
-          // Try contextual button first, then legacy
-          pressedButton = document.querySelector(`[data-panel-id="${focusedPanelUp}"] .btn-playback`) ||
-                          document.querySelector(`#${focusedPanelUp} .btn-playback`) ||
-                          document.querySelector(`#${focusedPanelUp} .activate-btn`) ||
-                          document.querySelector(`#${focusedPanelUp} .btn-play`) ||
-                          document.querySelector(`[data-panel-id="${focusedPanelUp}"] .btn-play`);
-          if (pressedButton && !pressedButton.disabled) {
-            animatePressStart(pressedButton);
-            const btnToClick = pressedButton; // Capture in closure
-            setTimeout(() => {
-              animatePressRelease(btnToClick);
-              btnToClick.click();
-              console.log('[Keyboard] Updated panel:', focusedPanelUp);
-              pressedKey = null;
-              pressedButton = null;
-            }, 150);
-          }
+        pressedButton = document.getElementById('update-all-btn');
+        if (pressedButton && !pressedButton.disabled) {
+          animatePressStart(pressedButton);
+          setTimeout(() => {
+            animatePressRelease(pressedButton);
+            pressedButton.click();
+            console.log('[Keyboard] Update All triggered');
+            pressedKey = null;
+            pressedButton = null;
+          }, 150);
         }
         break;
 
@@ -3242,9 +3233,8 @@ function initializeKeyboardShortcuts() {
   console.log(`  ${mod}+N: Create new panel`);
   console.log(`  ${mod}+W: Delete focused panel`);
   console.log(`  ${mod}+P: Toggle Play/Pause focused panel`);
-  console.log(`  ${mod}+↑: Update focused panel`);
+  console.log(`  ${mod}+↑: Update All`);
   console.log(`  ${mod}+=: Insert snippet`);
-  console.log(`  ${mod}+U: Update All`);
   console.log(`  ${mod}+.: Stop All`);
 }
 
@@ -3336,15 +3326,6 @@ initElectronHandlers({
     if (focusedPanel) {
       const btn = document.querySelector(`[data-panel-id="${focusedPanel}"] .btn-playback`) ||
                   document.querySelector(`#${focusedPanel} .btn-playback`);
-      if (btn) btn.click();
-    }
-  },
-  onUpdatePanel: () => {
-    const focusedPanel = findFocusedPanel();
-    if (focusedPanel) {
-      const btn = document.querySelector(`[data-panel-id="${focusedPanel}"] .btn-playback`) ||
-                  document.querySelector(`#${focusedPanel} .btn-playback`) ||
-                  document.querySelector(`#${focusedPanel} .activate-btn`);
       if (btn) btn.click();
     }
   },

@@ -6,18 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.10.2] - 2026-01-03
+## [0.10.3] - 2026-01-04
+
+### Fixed
+- **CI/CD Workflows**
+  - Fixed rollup native module error by removing `--ignore-scripts` from npm ci
+  - Added setuptools installation for node-gyp distutils compatibility
+  - Pinned Python to 3.11 across all workflows
 
 ### Changed
+- **Keyboard Shortcuts**
+  - `Cmd+↑` now triggers Update All (was Update Panel)
+  - Removed `Cmd+U` shortcut (conflicts with CodeMirror undo)
 
-  
-  - **deploy-pages.yml:**Uses npm ci --ignore-scripts (lite build doesn't need native deps)
-  - **deploy-pages.yml:**Pinned Python to 3.11 as fallback
+## [0.10.2] - 2026-01-03
 
-### Added
-
-  release.yml:
-  - Added Python 3.11 setup for Linux build (needed for node-gyp/serialport)
+### Fixed
+- CI/CD workflow Python 3.11 pinning for node-gyp compatibility
 
 ## [0.10.1] - 2026-01-03
 

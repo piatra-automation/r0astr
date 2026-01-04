@@ -53,10 +53,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('shortcut-toggle-playback', () => callback());
   },
 
-  onShortcutUpdatePanel: (callback) => {
-    ipcRenderer.on('shortcut-update-panel', () => callback());
-  },
-
   onShortcutUpdateAll: (callback) => {
     ipcRenderer.on('shortcut-update-all', () => callback());
   },

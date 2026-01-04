@@ -380,14 +380,8 @@ function createApplicationMenu() {
           click: () => mainWindow?.webContents.send('shortcut-toggle-playback')
         },
         {
-          label: 'Update Panel',
-          accelerator: 'CmdOrCtrl+Up',
-          click: () => mainWindow?.webContents.send('shortcut-update-panel')
-        },
-        { type: 'separator' },
-        {
           label: 'Update All',
-          accelerator: 'CmdOrCtrl+U',
+          accelerator: 'CmdOrCtrl+Up',
           click: () => mainWindow?.webContents.send('shortcut-update-all')
         },
         {
