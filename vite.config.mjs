@@ -16,6 +16,24 @@ const websocketAndApiPlugin = () => ({
       setPanelManager(module);
     });
 
+    // CORS middleware for API endpoints
+    server.middlewares.use((req, res, next) => {
+      // Only apply CORS to /api and /health endpoints
+      if (req.url?.startsWith('/api') || req.url?.startsWith('/health')) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+
+        // Handle preflight requests
+        if (req.method === 'OPTIONS') {
+          res.statusCode = 204;
+          res.end();
+          return;
+        }
+      }
+      next();
+    });
+
     // API middleware - runs before Vite's default middleware
     server.middlewares.use('/api/panels', async (req, res, next) => {
       // Only handle POST requests to /api/panels (not sub-paths like /api/panels/:id/code)
