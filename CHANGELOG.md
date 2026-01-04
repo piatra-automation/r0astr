@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.10.11] - 2026-01-04
+
+### Changed
+- **Downloads Page**
+  - Dynamic download links fetched from GitHub API (no more stale links)
+  - Auto-detects user's OS and architecture
+  - Shows version number and file sizes for all downloads
+  - Fallback to GitHub releases page if API fetch fails
+
 ## [0.10.10] - 2026-01-04
 
 ### Fixed

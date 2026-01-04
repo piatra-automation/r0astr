@@ -1,6 +1,6 @@
 {
   "name": "r0astr",
-  "version": "0.10.10",
+  "version": "0.10.11",
   "description": "r0astr - Multi-instrument live coding interface built on Strudel",
   "type": "module",
   "private": true,
