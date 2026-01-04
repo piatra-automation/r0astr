@@ -38,7 +38,8 @@ const PORT = 5173;
  * Create the WebSocket and HTTP server
  */
 function createWebSocketAndHttpServer() {
-  const expressApp = express();
+  return new Promise((resolve) => {
+    const expressApp = express();
 
   // Serve static files from dist in production
   if (!isDev) {
@@ -123,6 +124,10 @@ function createWebSocketAndHttpServer() {
         }
       });
     });
+
+    // Server is ready
+    resolve();
+  });
   });
 }
 
@@ -505,10 +510,10 @@ function setupIpcHandlers() {
 }
 
 // App lifecycle
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Only start server in production - in dev mode, Vite handles this
   if (!isDev) {
-    createWebSocketAndHttpServer();
+    await createWebSocketAndHttpServer();
   }
   createWindow();
   registerGlobalShortcuts();
@@ -528,8 +533,10 @@ app.on('window-all-closed', () => {
 });
 
 app.on('will-quit', () => {
-  // Unregister all shortcuts
-  globalShortcut.unregisterAll();
+  // Unregister all shortcuts (only if app was ready)
+  if (app.isReady()) {
+    globalShortcut.unregisterAll();
+  }
 
   // Close WebSocket server
   if (wss) {
