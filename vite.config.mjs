@@ -370,7 +370,7 @@ const websocketAndApiPlugin = () => ({
 
     // Health check endpoint
     server.middlewares.use('/health', (req, res, next) => {
-      if (req.url === '/health' && req.method === 'GET') {
+      if ((req.url === '/' || req.url === '') && req.method === 'GET') {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({
