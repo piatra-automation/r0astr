@@ -151,7 +151,9 @@ class SkinManager {
    * @returns {Promise<Object>} Skin manifest
    */
   async loadBundledSkin(skinName) {
-    const skinPath = `/skins/${skinName}`;
+    // Use Vite's BASE_URL to support subdirectory deployments (e.g., /app/ for lite)
+    const base = import.meta.env.BASE_URL || '/';
+    const skinPath = `${base}skins/${skinName}`;
 
     try {
       // 1. Load manifest
