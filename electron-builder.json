@@ -10,10 +10,7 @@
   "files": [
     "dist/**/*",
     "electron/**/*",
-    "!node_modules/**/*",
-    "node_modules/express/**/*",
-    "node_modules/ws/**/*",
-    "node_modules/cors/**/*"
+    "package.json"
   ],
   "extraMetadata": {
     "main": "electron/main.cjs"
