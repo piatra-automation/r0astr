@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.10.5] - 2026-01-04
+
+### Fixed
+- **Lite Build**
+  - Skins now load correctly when deployed to subdirectory (uses Vite BASE_URL)
+- **CI/CD Release Workflow**
+  - Fixed npm dependency installation across all platforms (macOS, Windows, Linux)
+  - Resolved rollup optional dependency issues in release builds
+
 ## [0.10.3] - 2026-01-04
 
 ### Fixed
