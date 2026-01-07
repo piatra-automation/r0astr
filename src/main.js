@@ -22,6 +22,7 @@ import { renderSliders as smRenderSliders, renderCollapsedSliders as smRenderCol
 import { prebake } from './managers/splash.js';
 import { initializeMetronome, initializePatternHighlighting } from './managers/visualization.js';
 import { initElectronHandlers, isElectron } from './utils/electronHelper.js';
+import { enableAudioCaching } from './utils/audioCache.js';
 import {
   cardStates,
   editorViews,
@@ -3240,6 +3241,10 @@ function initializeKeyboardShortcuts() {
 
 // Initialize when DOM is ready
 async function init() {
+  // Enable audio caching immediately (before any samples load)
+  // This wraps fetch() to cache audio files in IndexedDB
+  await enableAudioCaching();
+
   // Detect Electron environment and add class to body
   if (isElectron) {
     document.body.classList.add('electron-app');
