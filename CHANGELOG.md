@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.10.12] - 2026-01-07
+
+### Added
+- **Audio Caching**
+  - IndexedDB-based persistent cache for audio samples and soundfonts
+  - Samples cached between app restarts (no re-downloading on subsequent launches)
+  - Automatic caching for Strudel CDN, GitHub raw content, and soundfont hosts
+
+### Changed
+- **Performance: Local Fonts**
+  - Bundled Noto Sans and Material Icons locally (no Google Fonts CDN)
+  - Added `font-display: swap` for faster initial paint
+  - Eliminates render-blocking network requests on slow connections
+
 ## [0.10.11] - 2026-01-04
 
 ### Changed
