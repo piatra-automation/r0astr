@@ -25,7 +25,7 @@ Implement a comprehensive settings system that allows plugins to declare configu
 - Settings API for plugins
 - Migration support for settings changes
 
----
+
 
 ## Story 4.1: Define Settings Schema Specification
 
@@ -44,91 +44,91 @@ Define a JSON schema format that plugins use to declare their configurable setti
 
 ```json
 {
-  "settings": {
-    "connection": {
-      "type": "group",
-      "title": "Connection Settings",
-      "description": "Configure the server connection",
-      "fields": {
-        "serverUrl": {
-          "type": "string",
-          "title": "Server URL",
-          "description": "The MQTT broker address",
-          "default": "localhost:1883",
-          "placeholder": "host:port",
-          "validation": {
-            "required": true,
-            "pattern": "^[\\w.-]+:\\d+$",
-            "message": "Must be in format host:port"
-          }
-        },
-        "useTLS": {
-          "type": "boolean",
-          "title": "Use TLS",
-          "description": "Enable secure connection",
-          "default": false
-        },
-        "username": {
-          "type": "string",
-          "title": "Username",
-          "description": "Authentication username",
-          "default": "",
-          "showIf": { "field": "requiresAuth", "equals": true }
-        },
-        "password": {
-          "type": "string",
-          "title": "Password",
-          "inputType": "password",
-          "default": "",
-          "showIf": { "field": "requiresAuth", "equals": true }
-        }
-      }
-    },
-    "behavior": {
-      "type": "group",
-      "title": "Behavior",
-      "fields": {
-        "autoConnect": {
-          "type": "boolean",
-          "title": "Auto-connect on startup",
-          "default": true
-        },
-        "reconnectInterval": {
-          "type": "number",
-          "title": "Reconnect interval (seconds)",
-          "default": 5,
-          "min": 1,
-          "max": 60,
-          "step": 1
-        },
-        "logLevel": {
-          "type": "select",
-          "title": "Log Level",
-          "default": "info",
-          "options": [
-            { "value": "debug", "label": "Debug" },
-            { "value": "info", "label": "Info" },
-            { "value": "warn", "label": "Warning" },
-            { "value": "error", "label": "Error" }
-          ]
-        }
-      }
-    },
-    "topics": {
-      "type": "group",
-      "title": "Topic Configuration",
-      "fields": {
-        "subscribeTopics": {
-          "type": "array",
-          "title": "Subscribe Topics",
-          "description": "Topics to subscribe to",
-          "itemType": "string",
-          "default": ["r0astr/#"],
-          "minItems": 1
-        }
-      }
-    }
-  }
+ "settings": {
+ "connection": {
+ "type": "group",
+ "title": "Connection Settings",
+ "description": "Configure the server connection",
+ "fields": {
+ "serverUrl": {
+ "type": "string",
+ "title": "Server URL",
+ "description": "The MQTT broker address",
+ "default": "localhost:1883",
+ "placeholder": "host:port",
+ "validation": {
+ "required": true,
+ "pattern": "^[\\w.-]+:\\d+$",
+ "message": "Must be in format host:port"
+ }
+ },
+ "useTLS": {
+ "type": "boolean",
+ "title": "Use TLS",
+ "description": "Enable secure connection",
+ "default": false
+ },
+ "username": {
+ "type": "string",
+ "title": "Username",
+ "description": "Authentication username",
+ "default": "",
+ "showIf": { "field": "requiresAuth", "equals": true }
+ },
+ "password": {
+ "type": "string",
+ "title": "Password",
+ "inputType": "password",
+ "default": "",
+ "showIf": { "field": "requiresAuth", "equals": true }
+ }
+ }
+ },
+ "behavior": {
+ "type": "group",
+ "title": "Behavior",
+ "fields": {
+ "autoConnect": {
+ "type": "boolean",
+ "title": "Auto-connect on startup",
+ "default": true
+ },
+ "reconnectInterval": {
+ "type": "number",
+ "title": "Reconnect interval (seconds)",
+ "default": 5,
+ "min": 1,
+ "max": 60,
+ "step": 1
+ },
+ "logLevel": {
+ "type": "select",
+ "title": "Log Level",
+ "default": "info",
+ "options": [
+ { "value": "debug", "label": "Debug" },
+ { "value": "info", "label": "Info" },
+ { "value": "warn", "label": "Warning" },
+ { "value": "error", "label": "Error" }
+ ]
+ }
+ }
+ },
+ "topics": {
+ "type": "group",
+ "title": "Topic Configuration",
+ "fields": {
+ "subscribeTopics": {
+ "type": "array",
+ "title": "Subscribe Topics",
+ "description": "Topics to subscribe to",
+ "itemType": "string",
+ "default": ["r0astr/#"],
+ "minItems": 1
+ }
+ }
+ }
+ }
 }
 ```
 
@@ -151,15 +151,15 @@ Define a JSON schema format that plugins use to declare their configurable setti
 
 ```json
 {
-  "validation": {
-    "required": true,
-    "min": 0,
-    "max": 100,
-    "minLength": 1,
-    "maxLength": 255,
-    "pattern": "^[a-z]+$",
-    "message": "Custom error message"
-  }
+ "validation": {
+ "required": true,
+ "min": 0,
+ "max": 100,
+ "minLength": 1,
+ "maxLength": 255,
+ "pattern": "^[a-z]+$",
+ "message": "Custom error message"
+ }
 }
 ```
 
@@ -167,9 +167,9 @@ Define a JSON schema format that plugins use to declare their configurable setti
 
 ```json
 {
-  "showIf": { "field": "enableAdvanced", "equals": true },
-  "hideIf": { "field": "simpleMode", "equals": true },
-  "enableIf": { "field": "isConnected", "equals": true }
+ "showIf": { "field": "enableAdvanced", "equals": true },
+ "hideIf": { "field": "simpleMode", "equals": true },
+ "enableIf": { "field": "isConnected", "equals": true }
 }
 ```
 
@@ -183,7 +183,7 @@ Define a JSON schema format that plugins use to declare their configurable setti
 - `/schemas/plugin-settings-v1.json`
 - `/docs/plugin-settings.md`
 
----
+
 
 ## Story 4.2: Implement Settings Storage
 
@@ -200,23 +200,23 @@ Implement persistent storage for plugin settings, separate from plugin data stor
 ### Storage Location
 ```
 {userData}/plugins/{pluginId}/
-├── settings.json       # User's settings values
-├── settings.version    # Settings schema version (for migrations)
+├── settings.json # User's settings values
+├── settings.version # Settings schema version (for migrations)
 └── data/
-    └── storage.json    # Plugin data (separate)
+ └── storage.json # Plugin data (separate)
 ```
 
 ### Settings File Format
 ```json
 // settings.json
 {
-  "version": "1.0.0",
-  "values": {
-    "serverUrl": "mqtt.example.com:1883",
-    "autoConnect": true,
-    "logLevel": "debug"
-  },
-  "lastModified": "2024-01-15T10:30:00Z"
+ "version": "1.0.0",
+ "values": {
+ "serverUrl": "mqtt.example.com:1883",
+ "autoConnect": true,
+ "logLevel": "debug"
+ },
+ "lastModified": "2024-01-15T10:30:00Z"
 }
 ```
 
@@ -225,53 +225,53 @@ Implement persistent storage for plugin settings, separate from plugin data stor
 // src/managers/pluginSettings.js
 
 class PluginSettingsManager {
-  constructor(pluginId, schema) {
-    this.pluginId = pluginId;
-    this.schema = schema;
-    this.values = {};
-    this.listeners = new Set();
-  }
-  
-  async load() {
-    // Load from disk, merge with defaults
-    const saved = await this.readSettingsFile();
-    this.values = this.mergeWithDefaults(saved);
-  }
-  
-  get(key) {
-    return this.values[key] ?? this.getDefault(key);
-  }
-  
-  async set(key, value) {
-    const oldValue = this.values[key];
-    this.values[key] = value;
-    await this.persist();
-    this.notifyListeners(key, value, oldValue);
-  }
-  
-  async setMultiple(updates) {
-    const changes = [];
-    for (const [key, value] of Object.entries(updates)) {
-      const oldValue = this.values[key];
-      this.values[key] = value;
-      changes.push({ key, value, oldValue });
-    }
-    await this.persist();
-    changes.forEach(c => this.notifyListeners(c.key, c.value, c.oldValue));
-  }
-  
-  getAll() {
-    return { ...this.values };
-  }
-  
-  reset(key) {
-    return this.set(key, this.getDefault(key));
-  }
-  
-  resetAll() {
-    this.values = this.extractDefaults(this.schema);
-    return this.persist();
-  }
+ constructor(pluginId, schema) {
+ this.pluginId = pluginId;
+ this.schema = schema;
+ this.values = {};
+ this.listeners = new Set();
+ }
+ 
+ async load() {
+ // Load from disk, merge with defaults
+ const saved = await this.readSettingsFile();
+ this.values = this.mergeWithDefaults(saved);
+ }
+ 
+ get(key) {
+ return this.values[key] ?? this.getDefault(key);
+ }
+ 
+ async set(key, value) {
+ const oldValue = this.values[key];
+ this.values[key] = value;
+ await this.persist();
+ this.notifyListeners(key, value, oldValue);
+ }
+ 
+ async setMultiple(updates) {
+ const changes = [];
+ for (const [key, value] of Object.entries(updates)) {
+ const oldValue = this.values[key];
+ this.values[key] = value;
+ changes.push({ key, value, oldValue });
+ }
+ await this.persist();
+ changes.forEach(c => this.notifyListeners(c.key, c.value, c.oldValue));
+ }
+ 
+ getAll() {
+ return { ...this.values };
+ }
+ 
+ reset(key) {
+ return this.set(key, this.getDefault(key));
+ }
+ 
+ resetAll() {
+ this.values = this.extractDefaults(this.schema);
+ return this.persist();
+ }
 }
 ```
 
@@ -285,18 +285,18 @@ class PluginSettingsManager {
 ### Test Cases
 ```javascript
 describe('PluginSettingsManager', () => {
-  it('should load settings from disk', async () => { });
-  it('should apply defaults for missing values', () => { });
-  it('should persist changes', async () => { });
-  it('should notify listeners on change', async () => { });
-  it('should reset to defaults', async () => { });
+ it('should load settings from disk', async () => { });
+ it('should apply defaults for missing values', () => { });
+ it('should persist changes', async () => { });
+ it('should notify listeners on change', async () => { });
+ it('should reset to defaults', async () => { });
 });
 ```
 
 ### Deliverables
 - `/src/managers/pluginSettings.js`
 
----
+
 
 ## Story 4.3: Implement Settings API
 
@@ -306,96 +306,96 @@ Expose settings API to plugins for reading and modifying their settings programm
 ### API Specification
 ```javascript
 r0astr.settings = {
-  /**
-   * Get a setting value
-   * @param {string} key
-   * @param {*} defaultValue - Fallback if not set
-   * @returns {*}
-   */
-  get: (key, defaultValue) => { },
-  
-  /**
-   * Set a setting value
-   * @param {string} key
-   * @param {*} value
-   * @returns {Promise<void>}
-   */
-  set: async (key, value) => { },
-  
-  /**
-   * Set multiple values at once
-   * @param {Object} updates
-   * @returns {Promise<void>}
-   */
-  setMultiple: async (updates) => { },
-  
-  /**
-   * Get all settings
-   * @returns {Object}
-   */
-  getAll: () => { },
-  
-  /**
-   * Reset a setting to default
-   * @param {string} key
-   * @returns {Promise<void>}
-   */
-  reset: async (key) => { },
-  
-  /**
-   * Reset all settings to defaults
-   * @returns {Promise<void>}
-   */
-  resetAll: async () => { },
-  
-  /**
-   * Subscribe to setting changes
-   * @param {string} key - Key or '*' for all
-   * @param {Function} callback
-   * @returns {Function} unsubscribe
-   */
-  onChange: (key, callback) => {
-    // callback receives: { key, value, oldValue }
-    return () => { /* unsubscribe */ };
-  },
-  
-  /**
-   * Open the settings UI for this plugin
-   */
-  openUI: () => { },
-  
-  /**
-   * Validate a value against the schema
-   * @param {string} key
-   * @param {*} value
-   * @returns {{ valid: boolean, error?: string }}
-   */
-  validate: (key, value) => { }
+ /**
+ * Get a setting value
+ * @param {string} key
+ * @param {*} defaultValue - Fallback if not set
+ * @returns {*}
+ */
+ get: (key, defaultValue) => { },
+ 
+ /**
+ * Set a setting value
+ * @param {string} key
+ * @param {*} value
+ * @returns {Promise<void>}
+ */
+ set: async (key, value) => { },
+ 
+ /**
+ * Set multiple values at once
+ * @param {Object} updates
+ * @returns {Promise<void>}
+ */
+ setMultiple: async (updates) => { },
+ 
+ /**
+ * Get all settings
+ * @returns {Object}
+ */
+ getAll: () => { },
+ 
+ /**
+ * Reset a setting to default
+ * @param {string} key
+ * @returns {Promise<void>}
+ */
+ reset: async (key) => { },
+ 
+ /**
+ * Reset all settings to defaults
+ * @returns {Promise<void>}
+ */
+ resetAll: async () => { },
+ 
+ /**
+ * Subscribe to setting changes
+ * @param {string} key - Key or '*' for all
+ * @param {Function} callback
+ * @returns {Function} unsubscribe
+ */
+ onChange: (key, callback) => {
+ // callback receives: { key, value, oldValue }
+ return () => { /* unsubscribe */ };
+ },
+ 
+ /**
+ * Open the settings UI for this plugin
+ */
+ openUI: () => { },
+ 
+ /**
+ * Validate a value against the schema
+ * @param {string} key
+ * @param {*} value
+ * @returns {{ valid: boolean, error?: string }}
+ */
+ validate: (key, value) => { }
 };
 ```
 
 ### Usage in Plugin
 ```javascript
 class MyPlugin {
-  async onEnable(api, settings) {
-    // Initial settings passed to onEnable
-    this.serverUrl = settings.serverUrl;
-    
-    // Can also read via API
-    const level = api.settings.get('logLevel', 'info');
-    
-    // Subscribe to changes
-    api.settings.onChange('serverUrl', ({ value }) => {
-      this.reconnect(value);
-    });
-  }
-  
-  // Alternative: use lifecycle hook
-  onSettingsChange(newSettings, oldSettings) {
-    if (newSettings.serverUrl !== oldSettings.serverUrl) {
-      this.reconnect(newSettings.serverUrl);
-    }
-  }
+ async onEnable(api, settings) {
+ // Initial settings passed to onEnable
+ this.serverUrl = settings.serverUrl;
+ 
+ // Can also read via API
+ const level = api.settings.get('logLevel', 'info');
+ 
+ // Subscribe to changes
+ api.settings.onChange('serverUrl', ({ value }) => {
+ this.reconnect(value);
+ });
+ }
+ 
+ // Alternative: use lifecycle hook
+ onSettingsChange(newSettings, oldSettings) {
+ if (newSettings.serverUrl !== oldSettings.serverUrl) {
+ this.reconnect(newSettings.serverUrl);
+ }
+ }
 }
 ```
 
@@ -409,7 +409,7 @@ class MyPlugin {
 ### Deliverables
 - `/src/api/settings.js`
 
----
+
 
 ## Story 4.4: Implement Settings UI Renderer
 
@@ -428,40 +428,40 @@ Create a UI component that automatically renders settings forms based on plugin 
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│  MQTT Bridge Settings                              [X] │
+│ MQTT Bridge Settings [X] │
 ├────────────────────────────────────────────────────────┤
-│                                                        │
-│  ▼ Connection Settings                                 │
-│  ──────────────────────────────────────────────────    │
-│                                                        │
-│  Server URL                                            │
-│  ┌────────────────────────────────────────────────┐    │
-│  │ mqtt.example.com:1883                          │    │
-│  └────────────────────────────────────────────────┘    │
-│  The MQTT broker address                               │
-│                                                        │
-│  ☑ Use TLS                                             │
-│    Enable secure connection                            │
-│                                                        │
-│  ▼ Behavior                                            │
-│  ──────────────────────────────────────────────────    │
-│                                                        │
-│  ☑ Auto-connect on startup                             │
-│                                                        │
-│  Reconnect interval (seconds)                          │
-│  [═══════●══════════════════════] 5                    │
-│                                                        │
-│  Log Level                                             │
-│  ┌────────────────────────────────────────────── ▼┐    │
-│  │ Info                                           │    │
-│  └────────────────────────────────────────────────┘    │
-│                                                        │
-│  ▶ Topic Configuration (collapsed)                     │
-│                                                        │
-│  ──────────────────────────────────────────────────    │
-│                                                        │
-│              [Reset to Defaults]    [Save]             │
-│                                                        │
+│ │
+│ ▼ Connection Settings │
+│ ────────────────────────────────────────────────── │
+│ │
+│ Server URL │
+│ ┌────────────────────────────────────────────────┐ │
+│ │ mqtt.example.com:1883 │ │
+│ └────────────────────────────────────────────────┘ │
+│ The MQTT broker address │
+│ │
+│ ☑ Use TLS │
+│ Enable secure connection │
+│ │
+│ ▼ Behavior │
+│ ────────────────────────────────────────────────── │
+│ │
+│ ☑ Auto-connect on startup │
+│ │
+│ Reconnect interval (seconds) │
+│ [═══════●══════════════════════] 5 │
+│ │
+│ Log Level │
+│ ┌────────────────────────────────────────────── ▼┐ │
+│ │ Info │ │
+│ └────────────────────────────────────────────────┘ │
+│ │
+│ ▶ Topic Configuration (collapsed) │
+│ │
+│ ────────────────────────────────────────────────── │
+│ │
+│ [Reset to Defaults] [Save] │
+│ │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -470,82 +470,82 @@ Create a UI component that automatically renders settings forms based on plugin 
 // src/ui/settingsRenderer.js
 
 class SettingsRenderer {
-  constructor(schema, values, onChange) {
-    this.schema = schema;
-    this.values = values;
-    this.onChange = onChange;
-    this.errors = {};
-  }
-  
-  render(container) {
-    container.innerHTML = '';
-    
-    for (const [key, field] of Object.entries(this.schema)) {
-      if (field.type === 'group') {
-        this.renderGroup(container, key, field);
-      } else {
-        this.renderField(container, key, field);
-      }
-    }
-    
-    this.renderActions(container);
-  }
-  
-  renderField(container, key, field) {
-    // Check visibility conditions
-    if (!this.shouldShow(field)) return;
-    
-    const wrapper = document.createElement('div');
-    wrapper.className = 'settings-field';
-    
-    // Render based on type
-    switch (field.type) {
-      case 'string': this.renderString(wrapper, key, field); break;
-      case 'number': this.renderNumber(wrapper, key, field); break;
-      case 'boolean': this.renderBoolean(wrapper, key, field); break;
-      case 'select': this.renderSelect(wrapper, key, field); break;
-      case 'range': this.renderRange(wrapper, key, field); break;
-      case 'color': this.renderColor(wrapper, key, field); break;
-      case 'array': this.renderArray(wrapper, key, field); break;
-    }
-    
-    // Add error display
-    if (this.errors[key]) {
-      const error = document.createElement('div');
-      error.className = 'settings-error';
-      error.textContent = this.errors[key];
-      wrapper.appendChild(error);
-    }
-    
-    container.appendChild(wrapper);
-  }
-  
-  renderGroup(container, key, group) {
-    const section = document.createElement('details');
-    section.className = 'settings-group';
-    section.open = true;
-    
-    const summary = document.createElement('summary');
-    summary.textContent = group.title;
-    section.appendChild(summary);
-    
-    if (group.description) {
-      const desc = document.createElement('p');
-      desc.className = 'settings-group-description';
-      desc.textContent = group.description;
-      section.appendChild(desc);
-    }
-    
-    const content = document.createElement('div');
-    content.className = 'settings-group-content';
-    
-    for (const [fieldKey, field] of Object.entries(group.fields)) {
-      this.renderField(content, fieldKey, field);
-    }
-    
-    section.appendChild(content);
-    container.appendChild(section);
-  }
+ constructor(schema, values, onChange) {
+ this.schema = schema;
+ this.values = values;
+ this.onChange = onChange;
+ this.errors = {};
+ }
+ 
+ render(container) {
+ container.innerHTML = '';
+ 
+ for (const [key, field] of Object.entries(this.schema)) {
+ if (field.type === 'group') {
+ this.renderGroup(container, key, field);
+ } else {
+ this.renderField(container, key, field);
+ }
+ }
+ 
+ this.renderActions(container);
+ }
+ 
+ renderField(container, key, field) {
+ // Check visibility conditions
+ if (!this.shouldShow(field)) return;
+ 
+ const wrapper = document.createElement('div');
+ wrapper.className = 'settings-field';
+ 
+ // Render based on type
+ switch (field.type) {
+ case 'string': this.renderString(wrapper, key, field); break;
+ case 'number': this.renderNumber(wrapper, key, field); break;
+ case 'boolean': this.renderBoolean(wrapper, key, field); break;
+ case 'select': this.renderSelect(wrapper, key, field); break;
+ case 'range': this.renderRange(wrapper, key, field); break;
+ case 'color': this.renderColor(wrapper, key, field); break;
+ case 'array': this.renderArray(wrapper, key, field); break;
+ }
+ 
+ // Add error display
+ if (this.errors[key]) {
+ const error = document.createElement('div');
+ error.className = 'settings-error';
+ error.textContent = this.errors[key];
+ wrapper.appendChild(error);
+ }
+ 
+ container.appendChild(wrapper);
+ }
+ 
+ renderGroup(container, key, group) {
+ const section = document.createElement('details');
+ section.className = 'settings-group';
+ section.open = true;
+ 
+ const summary = document.createElement('summary');
+ summary.textContent = group.title;
+ section.appendChild(summary);
+ 
+ if (group.description) {
+ const desc = document.createElement('p');
+ desc.className = 'settings-group-description';
+ desc.textContent = group.description;
+ section.appendChild(desc);
+ }
+ 
+ const content = document.createElement('div');
+ content.className = 'settings-group-content';
+ 
+ for (const [fieldKey, field] of Object.entries(group.fields)) {
+ this.renderField(content, fieldKey, field);
+ }
+ 
+ section.appendChild(content);
+ container.appendChild(section);
+ }
 }
 ```
 
@@ -560,11 +560,11 @@ class SettingsRenderer {
 ### Test Cases
 ```javascript
 describe('SettingsRenderer', () => {
-  it('should render string fields', () => { });
-  it('should render boolean fields', () => { });
-  it('should render select fields', () => { });
-  it('should show validation errors', () => { });
-  it('should handle conditional visibility', () => { });
+ it('should render string fields', () => { });
+ it('should render boolean fields', () => { });
+ it('should render select fields', () => { });
+ it('should show validation errors', () => { });
+ it('should handle conditional visibility', () => { });
 });
 ```
 
@@ -572,7 +572,7 @@ describe('SettingsRenderer', () => {
 - `/src/ui/settingsRenderer.js`
 - `/src/ui/settingsRenderer.css`
 
----
+
 
 ## Story 4.5: Integrate Settings into Plugin Manager UI
 
@@ -590,17 +590,17 @@ Add settings access to the Plugin Manager UI, allowing users to configure plugin
 ### UI Flow
 ```
 Plugin Manager
-    │
-    ▼ Click "Settings" on plugin card
-    │
+ │
+ ▼ Click "Settings" on plugin card
+ │
 ┌───────────────────────────────────┐
-│ Plugin Name Settings          [X] │
+│ Plugin Name Settings [X] │
 ├───────────────────────────────────┤
-│                                   │
-│   [Settings Renderer Here]        │
-│                                   │
+│ │
+│ [Settings Renderer Here] │
+│ │
 ├───────────────────────────────────┤
-│  [Reset]         [Cancel] [Save]  │
+│ [Reset] [Cancel] [Save] │
 └───────────────────────────────────┘
 ```
 
@@ -608,37 +608,37 @@ Plugin Manager
 ```javascript
 // In PluginCard component
 function renderSettingsButton(plugin) {
-  if (!plugin.manifest.settings || Object.keys(plugin.manifest.settings).length === 0) {
-    return null; // No settings defined
-  }
-  
-  const button = document.createElement('button');
-  button.className = 'plugin-settings-btn';
-  button.innerHTML = '⚙ Settings';
-  button.onclick = () => openPluginSettings(plugin.id);
-  return button;
+ if (!plugin.manifest.settings || Object.keys(plugin.manifest.settings).length === 0) {
+ return null; // No settings defined
+ }
+ 
+ const button = document.createElement('button');
+ button.className = 'plugin-settings-btn';
+ button.innerHTML = ' Settings';
+ button.onclick = () => openPluginSettings(plugin.id);
+ return button;
 }
 
 function openPluginSettings(pluginId) {
-  const plugin = getPlugin(pluginId);
-  const modal = createModal({
-    title: `${plugin.manifest.displayName} Settings`,
-    content: (container) => {
-      const renderer = new SettingsRenderer(
-        plugin.manifest.settings,
-        plugin.settingsManager.getAll(),
-        (key, value) => {
-          pendingChanges[key] = value;
-        }
-      );
-      renderer.render(container);
-    },
-    actions: [
-      { label: 'Reset', onClick: () => resetSettings() },
-      { label: 'Cancel', onClick: () => modal.close() },
-      { label: 'Save', primary: true, onClick: () => saveSettings() }
-    ]
-  });
+ const plugin = getPlugin(pluginId);
+ const modal = createModal({
+ title: `${plugin.manifest.displayName} Settings`,
+ content: (container) => {
+ const renderer = new SettingsRenderer(
+ plugin.manifest.settings,
+ plugin.settingsManager.getAll(),
+ (key, value) => {
+ pendingChanges[key] = value;
+ }
+ );
+ renderer.render(container);
+ },
+ actions: [
+ { label: 'Reset', onClick: () => resetSettings() },
+ { label: 'Cancel', onClick: () => modal.close() },
+ { label: 'Save', primary: true, onClick: () => saveSettings() }
+ ]
+ });
 }
 ```
 
@@ -653,7 +653,7 @@ function openPluginSettings(pluginId) {
 ### Deliverables
 - Updated `/src/ui/pluginManager.js`
 
----
+
 
 ## Story 4.6: Implement Settings Migration
 
@@ -671,24 +671,24 @@ Support schema versioning and automatic migration when plugins update their sett
 ```javascript
 // In plugin manifest
 {
-  "settings": { ... },
-  "settingsVersion": "2.0.0",
-  "settingsMigrations": {
-    "1.0.0->2.0.0": "migrations/v1-to-v2.js"
-  }
+ "settings": { ... },
+ "settingsVersion": "2.0.0",
+ "settingsMigrations": {
+ "1.0.0->2.0.0": "migrations/v1-to-v2.js"
+ }
 }
 
 // migrations/v1-to-v2.js
 export default function migrate(oldSettings) {
-  return {
-    ...oldSettings,
-    // Rename 'server' to 'serverUrl'
-    serverUrl: oldSettings.server,
-    // Add new field with default
-    timeout: 30,
-    // Remove obsolete field
-    // (don't include 'legacyField')
-  };
+ return {
+ ...oldSettings,
+ // Rename 'server' to 'serverUrl'
+ serverUrl: oldSettings.server,
+ // Add new field with default
+ timeout: 30,
+ // Remove obsolete field
+ // (don't include 'legacyField')
+ };
 }
 ```
 
@@ -713,7 +713,7 @@ export default function migrate(oldSettings) {
 ### Deliverables
 - Updated `/src/managers/pluginSettings.js`
 
----
+
 
 ## Testing Matrix
 
@@ -726,7 +726,7 @@ export default function migrate(oldSettings) {
 | Conditional | | | | | | | |
 | Reset | | | | | | | |
 
----
+
 
 ## Definition of Done
 
@@ -738,7 +738,7 @@ export default function migrate(oldSettings) {
 - [ ] Migration support working
 - [ ] Tests passing
 
----
+
 
 ## Estimated Effort
 

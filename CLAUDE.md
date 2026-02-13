@@ -235,23 +235,70 @@ npm update @strudel/core @strudel/mini @strudel/transpiler @strudel/webaudio
 
 ```
 r0astr/
-├── index.html              # Main interface (4 instrument cards + master panel)
+├── index.html              # Main interface (dynamic panel system)
 ├── src/
-│   └── main.js            # App logic, Strudel integration
+│   ├── main.js            # App initialization
+│   ├── managers/          # Feature managers (panels, settings, WebSocket, etc.)
+│   ├── panels/            # Panel-specific logic
+│   ├── ui/                # UI components and interactions
+│   └── utils/             # Shared utilities (eventBus, etc.)
+├── static/
+│   └── css/               # Stylesheets (base.css, CSS variables)
+├── public/
+│   └── skins/             # Skin system templates
 ├── docs/
 │   ├── brownfield-architecture.md           # Original architecture notes
 │   └── architecture/
 │       └── strudel-integration-gotchas.md  # ⚠️ CRITICAL: Integration pitfalls
+├── .automaker/            # Feature management system
+│   ├── features/          # Feature definitions (158 features)
+│   ├── categories.json    # Feature categories
+│   ├── app_spec.txt       # Project specification
+│   └── bmad-migration-log.json  # BMAD migration mapping
+├── bmad-archive/          # Historical BMAD documentation (read-only)
+│   ├── README.md          # Archive documentation
+│   └── bmad/              # Original epics, stories, architecture docs
 ├── package.json           # npm dependencies
 ├── vite.config.mjs        # Build configuration
 ├── .claude/
 │   └── piatra.json        # Project metadata
-├── .vscode/               # VSCode settings
 ├── LICENSE                # AGPL-3.0
 ├── README.md              # User documentation
 ├── CLAUDE.md              # This file
 └── delete_me/             # Legacy Strudel monorepo (safe to delete)
 ```
+
+## Feature Management
+
+### Automaker System
+
+r0astr uses the Automaker feature management system for tracking development:
+
+**Structure:**
+- `.automaker/features/{feature-id}/feature.json` - Individual feature definitions
+- `.automaker/categories.json` - 35 feature categories
+- `.automaker/app_spec.txt` - Project specification
+- `.automaker/bmad-migration-log.json` - Migration history
+
+**Feature Status:**
+- `backlog` - Not started
+- `in_progress` - Currently being implemented
+- `completed` - Finished and integrated
+
+**Total Features:** 158 (52 from BMAD migration + 106 future features)
+
+### BMAD Archive
+
+The `bmad-archive/` directory contains historical documentation from the original BMAD (Brownfield-Managed Agile Development) system used during initial development:
+
+**Contents:**
+- **Epics (1-10):** Product requirements documents
+- **Stories (73 total):** Detailed implementation specs with acceptance criteria, QA results
+- **Architecture Docs:** Brownfield analysis, design decisions
+
+**Status:** Read-only archive for reference. All active development uses Automaker.
+
+See `bmad-archive/README.md` for migration details and how to reference archived stories.
 
 ## delete_me/ Folder
 

@@ -25,7 +25,7 @@ Define and implement the comprehensive API surface that plugins use to interact 
 - Events API implementation
 - API documentation with examples
 
----
+
 
 ## Story 3.1: Define API Architecture
 
@@ -42,24 +42,24 @@ Design the overall API architecture, including namespacing, versioning, and acce
 ### API Structure
 ```javascript
 window.r0astr = {
-  // API version
-  version: '1.0.0',
-  
-  // Namespaced APIs
-  panels: { ... },      // Panel management
-  audio: { ... },       // Audio access
-  ui: { ... },          // UI manipulation
-  storage: { ... },     // Plugin storage
-  events: { ... },      // Event system
-  network: { ... },     // Network access
-  settings: { ... },    // Plugin settings
-  
-  // Metadata
-  app: {
-    version: '0.7.0',
-    platform: 'darwin',
-    isElectron: true
-  }
+ // API version
+ version: '1.0.0',
+ 
+ // Namespaced APIs
+ panels: { ... }, // Panel management
+ audio: { ... }, // Audio access
+ ui: { ... }, // UI manipulation
+ storage: { ... }, // Plugin storage
+ events: { ... }, // Event system
+ network: { ... }, // Network access
+ settings: { ... }, // Plugin settings
+ 
+ // Metadata
+ app: {
+ version: '0.7.0',
+ platform: 'darwin',
+ isElectron: true
+ }
 };
 ```
 
@@ -67,21 +67,21 @@ window.r0astr = {
 ```javascript
 // All async methods return consistent error format
 try {
-  const result = await r0astr.panels.create({ title: 'Test' });
+ const result = await r0astr.panels.create({ title: 'Test' });
 } catch (error) {
-  // error.code - Machine-readable code
-  // error.message - Human-readable message
-  // error.details - Additional context
+ // error.code - Machine-readable code
+ // error.message - Human-readable message
+ // error.details - Additional context
 }
 
 // Error codes
 const ErrorCodes = {
-  PERMISSION_DENIED: 'PERMISSION_DENIED',
-  NOT_FOUND: 'NOT_FOUND',
-  INVALID_ARGUMENT: 'INVALID_ARGUMENT',
-  QUOTA_EXCEEDED: 'QUOTA_EXCEEDED',
-  NETWORK_ERROR: 'NETWORK_ERROR',
-  INTERNAL_ERROR: 'INTERNAL_ERROR'
+ PERMISSION_DENIED: 'PERMISSION_DENIED',
+ NOT_FOUND: 'NOT_FOUND',
+ INVALID_ARGUMENT: 'INVALID_ARGUMENT',
+ QUOTA_EXCEEDED: 'QUOTA_EXCEEDED',
+ NETWORK_ERROR: 'NETWORK_ERROR',
+ INTERNAL_ERROR: 'INTERNAL_ERROR'
 };
 ```
 
@@ -96,7 +96,7 @@ const ErrorCodes = {
 - `/src/api/types.d.ts`
 - `/docs/plugin-api.md`
 
----
+
 
 ## Story 3.2: Implement Panels API (Read)
 
@@ -109,63 +109,63 @@ Implement the read-only portions of the Panels API for listing, querying, and ob
 ### API Specification
 ```javascript
 r0astr.panels = {
-  /**
-   * Get list of all panel IDs
-   * @returns {Promise<string[]>}
-   */
-  list: async () => ['panel-1', 'panel-2', 'master-panel'],
-  
-  /**
-   * Get panel by ID
-   * @param {string} panelId
-   * @returns {Promise<PanelInfo | null>}
-   */
-  get: async (panelId) => ({
-    id: 'panel-1',
-    title: 'Bass',
-    code: 'note("c2 e2 g2").s("sawtooth")',
-    playing: true,
-    position: { x: 100, y: 100 },
-    size: { w: 600, h: 200 }
-  }),
-  
-  /**
-   * Get all panels
-   * @returns {Promise<Map<string, PanelInfo>>}
-   */
-  getAll: async () => new Map([...]),
-  
-  /**
-   * Check if panel exists
-   * @param {string} panelId
-   * @returns {Promise<boolean>}
-   */
-  exists: async (panelId) => true,
-  
-  /**
-   * Subscribe to panel state changes
-   * @param {string} panelId - Panel ID or '*' for all
-   * @param {Function} callback
-   * @returns {Function} unsubscribe
-   */
-  onStateChange: (panelId, callback) => {
-    // callback receives: { panelId, property, oldValue, newValue }
-    return () => { /* unsubscribe */ };
-  },
-  
-  /**
-   * Subscribe to panel created events
-   * @param {Function} callback
-   * @returns {Function} unsubscribe
-   */
-  onCreated: (callback) => { },
-  
-  /**
-   * Subscribe to panel deleted events
-   * @param {Function} callback
-   * @returns {Function} unsubscribe
-   */
-  onDeleted: (callback) => { }
+ /**
+ * Get list of all panel IDs
+ * @returns {Promise<string[]>}
+ */
+ list: async () => ['panel-1', 'panel-2', 'master-panel'],
+ 
+ /**
+ * Get panel by ID
+ * @param {string} panelId
+ * @returns {Promise<PanelInfo | null>}
+ */
+ get: async (panelId) => ({
+ id: 'panel-1',
+ title: 'Bass',
+ code: 'note("c2 e2 g2").s("sawtooth")',
+ playing: true,
+ position: { x: 100, y: 100 },
+ size: { w: 600, h: 200 }
+ }),
+ 
+ /**
+ * Get all panels
+ * @returns {Promise<Map<string, PanelInfo>>}
+ */
+ getAll: async () => new Map([...]),
+ 
+ /**
+ * Check if panel exists
+ * @param {string} panelId
+ * @returns {Promise<boolean>}
+ */
+ exists: async (panelId) => true,
+ 
+ /**
+ * Subscribe to panel state changes
+ * @param {string} panelId - Panel ID or '*' for all
+ * @param {Function} callback
+ * @returns {Function} unsubscribe
+ */
+ onStateChange: (panelId, callback) => {
+ // callback receives: { panelId, property, oldValue, newValue }
+ return () => { /* unsubscribe */ };
+ },
+ 
+ /**
+ * Subscribe to panel created events
+ * @param {Function} callback
+ * @returns {Function} unsubscribe
+ */
+ onCreated: (callback) => { },
+ 
+ /**
+ * Subscribe to panel deleted events
+ * @param {Function} callback
+ * @returns {Function} unsubscribe
+ */
+ onDeleted: (callback) => { }
 };
 ```
 
@@ -180,11 +180,11 @@ r0astr.panels = {
 ### Test Cases
 ```javascript
 describe('panels read API', () => {
-  it('should list all panels', async () => { });
-  it('should get panel by ID', async () => { });
-  it('should return null for missing panel', async () => { });
-  it('should emit state changes', async () => { });
-  it('should require panels:read permission', async () => { });
+ it('should list all panels', async () => { });
+ it('should get panel by ID', async () => { });
+ it('should return null for missing panel', async () => { });
+ it('should emit state changes', async () => { });
+ it('should require panels:read permission', async () => { });
 });
 ```
 
@@ -192,7 +192,7 @@ describe('panels read API', () => {
 - `/src/api/panels.js`
 - `/src/api/__tests__/panels.test.js`
 
----
+
 
 ## Story 3.3: Implement Panels API (Write)
 
@@ -206,89 +206,89 @@ Implement the write portions of the Panels API for creating, modifying, and cont
 ```javascript
 // Extends panels API from 3.2
 Object.assign(r0astr.panels, {
-  /**
-   * Create a new panel
-   * @param {PanelConfig} config
-   * @returns {Promise<string>} New panel ID
-   */
-  create: async (config) => 'panel-new-123',
-  
-  /**
-   * Delete a panel
-   * @param {string} panelId
-   * @returns {Promise<boolean>}
-   */
-  delete: async (panelId) => true,
-  
-  /**
-   * Update panel code
-   * @param {string} panelId
-   * @param {string} code
-   * @returns {Promise<void>}
-   */
-  updateCode: async (panelId, code) => { },
-  
-  /**
-   * Update panel title
-   * @param {string} panelId
-   * @param {string} title
-   * @returns {Promise<void>}
-   */
-  updateTitle: async (panelId, title) => { },
-  
-  /**
-   * Start playing a panel
-   * @param {string} panelId
-   * @returns {Promise<void>}
-   */
-  play: async (panelId) => { },
-  
-  /**
-   * Pause a panel
-   * @param {string} panelId
-   * @returns {Promise<void>}
-   */
-  pause: async (panelId) => { },
-  
-  /**
-   * Toggle panel playback
-   * @param {string} panelId
-   * @returns {Promise<boolean>} New playing state
-   */
-  toggle: async (panelId) => true,
-  
-  /**
-   * Stop all panels
-   * @returns {Promise<void>}
-   */
-  stopAll: async () => { },
-  
-  /**
-   * Move panel to position
-   * @param {string} panelId
-   * @param {{x: number, y: number}} position
-   * @returns {Promise<void>}
-   */
-  move: async (panelId, position) => { },
-  
-  /**
-   * Resize panel
-   * @param {string} panelId
-   * @param {{w: number, h: number}} size
-   * @returns {Promise<void>}
-   */
-  resize: async (panelId, size) => { }
+ /**
+ * Create a new panel
+ * @param {PanelConfig} config
+ * @returns {Promise<string>} New panel ID
+ */
+ create: async (config) => 'panel-new-123',
+ 
+ /**
+ * Delete a panel
+ * @param {string} panelId
+ * @returns {Promise<boolean>}
+ */
+ delete: async (panelId) => true,
+ 
+ /**
+ * Update panel code
+ * @param {string} panelId
+ * @param {string} code
+ * @returns {Promise<void>}
+ */
+ updateCode: async (panelId, code) => { },
+ 
+ /**
+ * Update panel title
+ * @param {string} panelId
+ * @param {string} title
+ * @returns {Promise<void>}
+ */
+ updateTitle: async (panelId, title) => { },
+ 
+ /**
+ * Start playing a panel
+ * @param {string} panelId
+ * @returns {Promise<void>}
+ */
+ play: async (panelId) => { },
+ 
+ /**
+ * Pause a panel
+ * @param {string} panelId
+ * @returns {Promise<void>}
+ */
+ pause: async (panelId) => { },
+ 
+ /**
+ * Toggle panel playback
+ * @param {string} panelId
+ * @returns {Promise<boolean>} New playing state
+ */
+ toggle: async (panelId) => true,
+ 
+ /**
+ * Stop all panels
+ * @returns {Promise<void>}
+ */
+ stopAll: async () => { },
+ 
+ /**
+ * Move panel to position
+ * @param {string} panelId
+ * @param {{x: number, y: number}} position
+ * @returns {Promise<void>}
+ */
+ move: async (panelId, position) => { },
+ 
+ /**
+ * Resize panel
+ * @param {string} panelId
+ * @param {{w: number, h: number}} size
+ * @returns {Promise<void>}
+ */
+ resize: async (panelId, size) => { }
 });
 ```
 
 ### PanelConfig Type
 ```typescript
 interface PanelConfig {
-  title?: string;          // Default: auto-generated
-  code?: string;           // Default: ''
-  position?: { x: number, y: number };  // Default: auto-positioned
-  size?: { w: number, h: number };      // Default: 600x200
-  autoPlay?: boolean;      // Default: false
+ title?: string; // Default: auto-generated
+ code?: string; // Default: ''
+ position?: { x: number, y: number }; // Default: auto-positioned
+ size?: { w: number, h: number }; // Default: 600x200
+ autoPlay?: boolean; // Default: false
 }
 ```
 
@@ -304,19 +304,19 @@ interface PanelConfig {
 ### Test Cases
 ```javascript
 describe('panels write API', () => {
-  it('should create panel', async () => { });
-  it('should delete panel', async () => { });
-  it('should prevent master panel deletion', async () => { });
-  it('should update panel code', async () => { });
-  it('should control playback', async () => { });
-  it('should require panels:write permission', async () => { });
+ it('should create panel', async () => { });
+ it('should delete panel', async () => { });
+ it('should prevent master panel deletion', async () => { });
+ it('should update panel code', async () => { });
+ it('should control playback', async () => { });
+ it('should require panels:write permission', async () => { });
 });
 ```
 
 ### Deliverables
 - Updated `/src/api/panels.js`
 
----
+
 
 ## Story 3.4: Implement Audio API (Read)
 
@@ -329,70 +329,70 @@ Implement read-only audio API for accessing audio analysis data (FFT, waveform, 
 ### API Specification
 ```javascript
 r0astr.audio = {
-  /**
-   * Get the Web Audio context
-   * @returns {AudioContext}
-   */
-  getContext: () => audioContext,
-  
-  /**
-   * Get the master analyser node
-   * @returns {AnalyserNode}
-   */
-  getAnalyser: () => analyserNode,
-  
-  /**
-   * Get current frequency data
-   * @returns {Uint8Array}
-   */
-  getFrequencyData: () => {
-    const data = new Uint8Array(analyser.frequencyBinCount);
-    analyser.getByteFrequencyData(data);
-    return data;
-  },
-  
-  /**
-   * Get current time domain data (waveform)
-   * @returns {Uint8Array}
-   */
-  getTimeDomainData: () => {
-    const data = new Uint8Array(analyser.fftSize);
-    analyser.getByteTimeDomainData(data);
-    return data;
-  },
-  
-  /**
-   * Get current RMS level (0-1)
-   * @returns {number}
-   */
-  getLevel: () => 0.75,
-  
-  /**
-   * Get current BPM (if detected)
-   * @returns {number | null}
-   */
-  getBPM: () => 120,
-  
-  /**
-   * Subscribe to beat events
-   * @param {Function} callback
-   * @returns {Function} unsubscribe
-   */
-  onBeat: (callback) => {
-    // callback receives: { time, strength }
-    return () => { };
-  },
-  
-  /**
-   * Get current transport state
-   * @returns {TransportState}
-   */
-  getTransport: () => ({
-    playing: true,
-    bpm: 120,
-    cycle: 4,
-    position: 2.5
-  })
+ /**
+ * Get the Web Audio context
+ * @returns {AudioContext}
+ */
+ getContext: () => audioContext,
+ 
+ /**
+ * Get the master analyser node
+ * @returns {AnalyserNode}
+ */
+ getAnalyser: () => analyserNode,
+ 
+ /**
+ * Get current frequency data
+ * @returns {Uint8Array}
+ */
+ getFrequencyData: () => {
+ const data = new Uint8Array(analyser.frequencyBinCount);
+ analyser.getByteFrequencyData(data);
+ return data;
+ },
+ 
+ /**
+ * Get current time domain data (waveform)
+ * @returns {Uint8Array}
+ */
+ getTimeDomainData: () => {
+ const data = new Uint8Array(analyser.fftSize);
+ analyser.getByteTimeDomainData(data);
+ return data;
+ },
+ 
+ /**
+ * Get current RMS level (0-1)
+ * @returns {number}
+ */
+ getLevel: () => 0.75,
+ 
+ /**
+ * Get current BPM (if detected)
+ * @returns {number | null}
+ */
+ getBPM: () => 120,
+ 
+ /**
+ * Subscribe to beat events
+ * @param {Function} callback
+ * @returns {Function} unsubscribe
+ */
+ onBeat: (callback) => {
+ // callback receives: { time, strength }
+ return () => { };
+ },
+ 
+ /**
+ * Get current transport state
+ * @returns {TransportState}
+ */
+ getTransport: () => ({
+ playing: true,
+ bpm: 120,
+ cycle: 4,
+ position: 2.5
+ })
 };
 ```
 
@@ -407,18 +407,18 @@ r0astr.audio = {
 ### Test Cases
 ```javascript
 describe('audio read API', () => {
-  it('should return AudioContext', () => { });
-  it('should return frequency data', () => { });
-  it('should return normalized level', () => { });
-  it('should emit beat events', async () => { });
-  it('should require audio:read permission', () => { });
+ it('should return AudioContext', () => { });
+ it('should return frequency data', () => { });
+ it('should return normalized level', () => { });
+ it('should emit beat events', async () => { });
+ it('should require audio:read permission', () => { });
 });
 ```
 
 ### Deliverables
 - `/src/api/audio.js`
 
----
+
 
 ## Story 3.5: Implement Audio API (Write)
 
@@ -431,34 +431,34 @@ Implement write audio API for injecting audio nodes into the signal chain.
 ### API Specification
 ```javascript
 Object.assign(r0astr.audio, {
-  /**
-   * Connect an audio node to the output
-   * @param {AudioNode} node
-   * @returns {Function} disconnect
-   */
-  connect: (node) => {
-    // Connect to master output
-    return () => { /* disconnect */ };
-  },
-  
-  /**
-   * Create a gain node connected to output
-   * @param {number} initialGain
-   * @returns {{ node: GainNode, disconnect: Function }}
-   */
-  createOutput: (initialGain = 1.0) => { },
-  
-  /**
-   * Set master volume
-   * @param {number} volume 0-1
-   */
-  setVolume: (volume) => { },
-  
-  /**
-   * Get master volume
-   * @returns {number}
-   */
-  getVolume: () => 0.8
+ /**
+ * Connect an audio node to the output
+ * @param {AudioNode} node
+ * @returns {Function} disconnect
+ */
+ connect: (node) => {
+ // Connect to master output
+ return () => { /* disconnect */ };
+ },
+ 
+ /**
+ * Create a gain node connected to output
+ * @param {number} initialGain
+ * @returns {{ node: GainNode, disconnect: Function }}
+ */
+ createOutput: (initialGain = 1.0) => { },
+ 
+ /**
+ * Set master volume
+ * @param {number} volume 0-1
+ */
+ setVolume: (volume) => { },
+ 
+ /**
+ * Get master volume
+ * @returns {number}
+ */
+ getVolume: () => 0.8
 });
 ```
 
@@ -471,7 +471,7 @@ Object.assign(r0astr.audio, {
 ### Deliverables
 - Updated `/src/api/audio.js`
 
----
+
 
 ## Story 3.6: Implement UI API
 
@@ -486,59 +486,59 @@ Implement UI API for plugins to show notifications, register menu items, and cre
 ### API Specification
 ```javascript
 r0astr.ui = {
-  /**
-   * Show a toast notification
-   * @param {string} message
-   * @param {NotificationOptions} options
-   */
-  notify: (message, options = {}) => {
-    // options: { type: 'info'|'success'|'warning'|'error', duration: 3000 }
-  },
-  
-  /**
-   * Show a confirmation dialog
-   * @param {string} message
-   * @param {ConfirmOptions} options
-   * @returns {Promise<boolean>}
-   */
-  confirm: async (message, options = {}) => true,
-  
-  /**
-   * Register a menu item
-   * @param {MenuLocation} location
-   * @param {MenuItem} item
-   * @returns {Function} remove
-   */
-  registerMenuItem: (location, item) => {
-    // location: 'file' | 'edit' | 'view' | 'plugins' | 'help'
-    // item: { label, accelerator?, click, enabled?, checked? }
-    return () => { /* remove */ };
-  },
-  
-  /**
-   * Register a custom panel type
-   * @param {PanelTypeConfig} config
-   * @returns {Function} unregister
-   */
-  registerPanelType: (config) => {
-    // config: { id, title, icon, render: (container) => {} }
-    return () => { /* unregister */ };
-  },
-  
-  /**
-   * Open plugin's settings panel
-   */
-  openSettings: () => { },
-  
-  /**
-   * Register a settings section
-   * @param {SettingsSection} section
-   * @returns {Function} unregister
-   */
-  registerSettingsSection: (section) => {
-    // section: { id, title, render: (container) => {} }
-    return () => { };
-  }
+ /**
+ * Show a toast notification
+ * @param {string} message
+ * @param {NotificationOptions} options
+ */
+ notify: (message, options = {}) => {
+ // options: { type: 'info'|'success'|'warning'|'error', duration: 3000 }
+ },
+ 
+ /**
+ * Show a confirmation dialog
+ * @param {string} message
+ * @param {ConfirmOptions} options
+ * @returns {Promise<boolean>}
+ */
+ confirm: async (message, options = {}) => true,
+ 
+ /**
+ * Register a menu item
+ * @param {MenuLocation} location
+ * @param {MenuItem} item
+ * @returns {Function} remove
+ */
+ registerMenuItem: (location, item) => {
+ // location: 'file' | 'edit' | 'view' | 'plugins' | 'help'
+ // item: { label, accelerator?, click, enabled?, checked? }
+ return () => { /* remove */ };
+ },
+ 
+ /**
+ * Register a custom panel type
+ * @param {PanelTypeConfig} config
+ * @returns {Function} unregister
+ */
+ registerPanelType: (config) => {
+ // config: { id, title, icon, render: (container) => {} }
+ return () => { /* unregister */ };
+ },
+ 
+ /**
+ * Open plugin's settings panel
+ */
+ openSettings: () => { },
+ 
+ /**
+ * Register a settings section
+ * @param {SettingsSection} section
+ * @returns {Function} unregister
+ */
+ registerSettingsSection: (section) => {
+ // section: { id, title, render: (container) => {} }
+ return () => { };
+ }
 };
 ```
 
@@ -546,24 +546,24 @@ r0astr.ui = {
 ```javascript
 // Example: Spectrum visualizer plugin
 r0astr.ui.registerPanelType({
-  id: 'spectrum-visualizer',
-  title: 'Spectrum',
-  icon: '📊',
-  render: (container, api) => {
-    const canvas = document.createElement('canvas');
-    container.appendChild(canvas);
-    
-    function draw() {
-      const data = api.audio.getFrequencyData();
-      // ... draw visualization
-      requestAnimationFrame(draw);
-    }
-    draw();
-    
-    return () => {
-      // Cleanup function
-    };
-  }
+ id: 'spectrum-visualizer',
+ title: 'Spectrum',
+ icon: '',
+ render: (container, api) => {
+ const canvas = document.createElement('canvas');
+ container.appendChild(canvas);
+ 
+ function draw() {
+ const data = api.audio.getFrequencyData();
+ // ... draw visualization
+ requestAnimationFrame(draw);
+ }
+ draw();
+ 
+ return () => {
+ // Cleanup function
+ };
+ }
 });
 ```
 
@@ -578,7 +578,7 @@ r0astr.ui.registerPanelType({
 ### Deliverables
 - `/src/api/ui.js`
 
----
+
 
 ## Story 3.7: Implement Events API
 
@@ -591,58 +591,58 @@ Implement a pub/sub event system for inter-plugin communication and app events.
 ### API Specification
 ```javascript
 r0astr.events = {
-  /**
-   * Subscribe to an event
-   * @param {string} event - Event name
-   * @param {Function} callback
-   * @returns {Function} unsubscribe
-   */
-  on: (event, callback) => {
-    return () => { /* unsubscribe */ };
-  },
-  
-  /**
-   * Subscribe to an event (once)
-   * @param {string} event
-   * @param {Function} callback
-   * @returns {Function} unsubscribe
-   */
-  once: (event, callback) => { },
-  
-  /**
-   * Emit an event
-   * @param {string} event
-   * @param {*} data
-   */
-  emit: (event, data) => { },
-  
-  /**
-   * Remove all listeners for an event
-   * @param {string} event
-   */
-  off: (event) => { }
+ /**
+ * Subscribe to an event
+ * @param {string} event - Event name
+ * @param {Function} callback
+ * @returns {Function} unsubscribe
+ */
+ on: (event, callback) => {
+ return () => { /* unsubscribe */ };
+ },
+ 
+ /**
+ * Subscribe to an event (once)
+ * @param {string} event
+ * @param {Function} callback
+ * @returns {Function} unsubscribe
+ */
+ once: (event, callback) => { },
+ 
+ /**
+ * Emit an event
+ * @param {string} event
+ * @param {*} data
+ */
+ emit: (event, data) => { },
+ 
+ /**
+ * Remove all listeners for an event
+ * @param {string} event
+ */
+ off: (event) => { }
 };
 ```
 
 ### Built-in Events
 ```javascript
 // App lifecycle
-'app:ready'           // App fully initialized
-'app:beforeQuit'      // App about to quit
+'app:ready' // App fully initialized
+'app:beforeQuit' // App about to quit
 
 // Panel events (also available via panels.onX)
-'panel:created'       // { panelId }
-'panel:deleted'       // { panelId }
-'panel:stateChange'   // { panelId, property, value }
+'panel:created' // { panelId }
+'panel:deleted' // { panelId }
+'panel:stateChange' // { panelId, property, value }
 
 // Audio events
-'audio:play'          // Transport started
-'audio:pause'         // Transport stopped
-'audio:beat'          // Beat detected
+'audio:play' // Transport started
+'audio:pause' // Transport stopped
+'audio:beat' // Beat detected
 
 // Plugin events
-'plugin:enabled'      // { pluginId }
-'plugin:disabled'     // { pluginId }
+'plugin:enabled' // { pluginId }
+'plugin:disabled' // { pluginId }
 ```
 
 ### Event Namespacing
@@ -662,7 +662,7 @@ r0astr.events.emit('mqtt-bridge:message', { topic: '...', payload: '...' });
 ### Deliverables
 - `/src/api/events.js`
 
----
+
 
 ## Story 3.8: API Documentation
 
@@ -683,12 +683,12 @@ Create comprehensive API documentation with examples for plugin developers.
 ## Overview
 ## Getting Started
 ## API Reference
-  ### r0astr.panels
-  ### r0astr.audio
-  ### r0astr.ui
-  ### r0astr.storage
-  ### r0astr.events
-  ### r0astr.network
+ ### r0astr.panels
+ ### r0astr.audio
+ ### r0astr.ui
+ ### r0astr.storage
+ ### r0astr.events
+ ### r0astr.network
 ## Permissions
 ## Error Handling
 ## Examples
@@ -700,7 +700,7 @@ Create comprehensive API documentation with examples for plugin developers.
 - `/docs/plugin-api.md`
 - `/src/api/types.d.ts` (complete)
 
----
+
 
 ## Story 3.9: Create Example Plugin
 
@@ -720,61 +720,61 @@ Create a well-documented example plugin demonstrating all API features.
 // Shows statistics about panel usage
 
 export default class PanelStats {
-  constructor() {
-    this.totalPlays = 0;
-    this.panelPlays = new Map();
-  }
-  
-  async onEnable(api, settings) {
-    // Load saved stats
-    this.totalPlays = await api.storage.get('totalPlays', 0);
-    
-    // Subscribe to panel events
-    this.unsubscribe = api.panels.onStateChange('*', (change) => {
-      if (change.property === 'playing' && change.newValue === true) {
-        this.recordPlay(change.panelId);
-      }
-    });
-    
-    // Register stats panel
-    this.unregisterPanel = api.ui.registerPanelType({
-      id: 'panel-stats',
-      title: 'Stats',
-      render: (container) => this.renderStats(container)
-    });
-    
-    // Add menu item
-    this.removeMenuItem = api.ui.registerMenuItem('view', {
-      label: 'Show Panel Stats',
-      click: () => api.ui.notify(`Total plays: ${this.totalPlays}`)
-    });
-  }
-  
-  async onDisable() {
-    this.unsubscribe?.();
-    this.unregisterPanel?.();
-    this.removeMenuItem?.();
-  }
-  
-  recordPlay(panelId) {
-    this.totalPlays++;
-    const count = this.panelPlays.get(panelId) || 0;
-    this.panelPlays.set(panelId, count + 1);
-    this.api.storage.set('totalPlays', this.totalPlays);
-  }
-  
-  renderStats(container) {
-    container.innerHTML = `
-      <div class="stats">
-        <h3>Total Plays: ${this.totalPlays}</h3>
-        <ul>
-          ${[...this.panelPlays.entries()]
-            .map(([id, count]) => `<li>${id}: ${count}</li>`)
-            .join('')}
-        </ul>
-      </div>
-    `;
-  }
+ constructor() {
+ this.totalPlays = 0;
+ this.panelPlays = new Map();
+ }
+ 
+ async onEnable(api, settings) {
+ // Load saved stats
+ this.totalPlays = await api.storage.get('totalPlays', 0);
+ 
+ // Subscribe to panel events
+ this.unsubscribe = api.panels.onStateChange('*', (change) => {
+ if (change.property === 'playing' && change.newValue === true) {
+ this.recordPlay(change.panelId);
+ }
+ });
+ 
+ // Register stats panel
+ this.unregisterPanel = api.ui.registerPanelType({
+ id: 'panel-stats',
+ title: 'Stats',
+ render: (container) => this.renderStats(container)
+ });
+ 
+ // Add menu item
+ this.removeMenuItem = api.ui.registerMenuItem('view', {
+ label: 'Show Panel Stats',
+ click: () => api.ui.notify(`Total plays: ${this.totalPlays}`)
+ });
+ }
+ 
+ async onDisable() {
+ this.unsubscribe?.();
+ this.unregisterPanel?.();
+ this.removeMenuItem?.();
+ }
+ 
+ recordPlay(panelId) {
+ this.totalPlays++;
+ const count = this.panelPlays.get(panelId) || 0;
+ this.panelPlays.set(panelId, count + 1);
+ this.api.storage.set('totalPlays', this.totalPlays);
+ }
+ 
+ renderStats(container) {
+ container.innerHTML = `
+ <div class="stats">
+ <h3>Total Plays: ${this.totalPlays}</h3>
+ <ul>
+ ${[...this.panelPlays.entries()]
+ .map(([id, count]) => `<li>${id}: ${count}</li>`)
+ .join('')}
+ </ul>
+ </div>
+ `;
+ }
 }
 ```
 
@@ -783,7 +783,7 @@ export default class PanelStats {
 - `/resources/plugins/panel-stats/index.js`
 - `/resources/plugins/panel-stats/README.md`
 
----
+
 
 ## Testing Matrix
 
@@ -799,7 +799,7 @@ export default class PanelStats {
 | storage | | | |
 | events | | | |
 
----
+
 
 ## Definition of Done
 
@@ -811,7 +811,7 @@ export default class PanelStats {
 - [ ] All tests passing
 - [ ] API versioned
 
----
+
 
 ## Estimated Effort
 

@@ -28,7 +28,7 @@ Create a plugin discovery and distribution system that allows users to browse, i
 - Plugin submission process
 - Security review guidelines
 
----
+
 
 ## Story 6.1: Define Repository API Specification
 
@@ -50,102 +50,102 @@ Define the REST API contract for the plugin repository server.
 
 # List/Search plugins
 GET /plugins
-  Query Parameters:
-    - q: string         # Search query
-    - type: string      # Filter by type (skin, extension, visualizer)
-    - category: string  # Filter by category
-    - sort: string      # Sort order (downloads, rating, updated, name)
-    - page: number      # Page number (default: 1)
-    - limit: number     # Results per page (default: 20, max: 100)
-  Response:
-    {
-      "plugins": [...],
-      "total": 150,
-      "page": 1,
-      "pages": 8
-    }
+ Query Parameters:
+ - q: string # Search query
+ - type: string # Filter by type (skin, extension, visualizer)
+ - category: string # Filter by category
+ - sort: string # Sort order (downloads, rating, updated, name)
+ - page: number # Page number (default: 1)
+ - limit: number # Results per page (default: 20, max: 100)
+ Response:
+ {
+ "plugins": [...],
+ "total": 150,
+ "page": 1,
+ "pages": 8
+ }
 
 # Get plugin details
 GET /plugins/{pluginId}
-  Response:
-    {
-      "id": "mqtt-bridge",
-      "displayName": "MQTT Bridge",
-      "version": "1.0.0",
-      "description": "...",
-      "longDescription": "...",
-      "author": { "name": "...", "url": "..." },
-      "license": "MIT",
-      "repository": "https://github.com/...",
-      "type": "extension",
-      "category": "integration",
-      "permissions": [...],
-      "screenshots": ["url1", "url2"],
-      "downloadUrl": "https://...",
-      "downloadCount": 1234,
-      "rating": 4.5,
-      "reviewCount": 23,
-      "compatibility": { "min": "0.7.0", "max": "1.x" },
-      "createdAt": "...",
-      "updatedAt": "..."
-    }
+ Response:
+ {
+ "id": "mqtt-bridge",
+ "displayName": "MQTT Bridge",
+ "version": "1.0.0",
+ "description": "...",
+ "longDescription": "...",
+ "author": { "name": "...", "url": "..." },
+ "license": "MIT",
+ "repository": "https://github.com/...",
+ "type": "extension",
+ "category": "integration",
+ "permissions": [...],
+ "screenshots": ["url1", "url2"],
+ "downloadUrl": "https://...",
+ "downloadCount": 1234,
+ "rating": 4.5,
+ "reviewCount": 23,
+ "compatibility": { "min": "0.7.0", "max": "1.x" },
+ "createdAt": "...",
+ "updatedAt": "..."
+ }
 
 # Get plugin versions
 GET /plugins/{pluginId}/versions
-  Response:
-    {
-      "versions": [
-        { "version": "1.0.0", "releaseDate": "...", "changelog": "..." },
-        { "version": "0.9.0", ... }
-      ]
-    }
+ Response:
+ {
+ "versions": [
+ { "version": "1.0.0", "releaseDate": "...", "changelog": "..." },
+ { "version": "0.9.0", ... }
+ ]
+ }
 
 # Download plugin
 GET /plugins/{pluginId}/download
 GET /plugins/{pluginId}/download/{version}
-  Response: ZIP file
+ Response: ZIP file
 
 # Check for updates (batch)
 POST /plugins/check-updates
-  Body:
-    {
-      "plugins": [
-        { "id": "mqtt-bridge", "version": "1.0.0" },
-        { "id": "osc-bridge", "version": "0.5.0" }
-      ]
-    }
-  Response:
-    {
-      "updates": [
-        { 
-          "id": "mqtt-bridge", 
-          "currentVersion": "1.0.0",
-          "latestVersion": "1.1.0",
-          "changelog": "...",
-          "downloadUrl": "..."
-        }
-      ]
-    }
+ Body:
+ {
+ "plugins": [
+ { "id": "mqtt-bridge", "version": "1.0.0" },
+ { "id": "osc-bridge", "version": "0.5.0" }
+ ]
+ }
+ Response:
+ {
+ "updates": [
+ { 
+ "id": "mqtt-bridge", 
+ "currentVersion": "1.0.0",
+ "latestVersion": "1.1.0",
+ "changelog": "...",
+ "downloadUrl": "..."
+ }
+ ]
+ }
 
 # Get featured plugins
 GET /plugins/featured
-  Response:
-    {
-      "featured": [...],
-      "trending": [...],
-      "new": [...]
-    }
+ Response:
+ {
+ "featured": [...],
+ "trending": [...],
+ "new": [...]
+ }
 
 # Get categories
 GET /categories
-  Response:
-    {
-      "categories": [
-        { "id": "integration", "name": "Integrations", "count": 15 },
-        { "id": "visualization", "name": "Visualizations", "count": 8 },
-        ...
-      ]
-    }
+ Response:
+ {
+ "categories": [
+ { "id": "integration", "name": "Integrations", "count": 15 },
+ { "id": "visualization", "name": "Visualizations", "count": 8 },
+ ...
+ ]
+ }
 ```
 
 ### Validation
@@ -158,7 +158,7 @@ GET /categories
 - `/docs/repository-api.md`
 - OpenAPI spec file (optional)
 
----
+
 
 ## Story 6.2: Implement Repository Client
 
@@ -178,92 +178,92 @@ Create a client module in the app that communicates with the repository server.
 // src/managers/repositoryClient.js
 
 class RepositoryClient {
-  constructor(baseUrl = 'https://plugins.r0astr.app/api/v1') {
-    this.baseUrl = baseUrl;
-    this.cache = new Map();
-  }
-  
-  /**
-   * Search for plugins
-   * @param {SearchOptions} options
-   * @returns {Promise<SearchResult>}
-   */
-  async search(options = {}) {
-    const params = new URLSearchParams(options);
-    const response = await fetch(`${this.baseUrl}/plugins?${params}`);
-    return response.json();
-  }
-  
-  /**
-   * Get plugin details
-   * @param {string} pluginId
-   * @returns {Promise<PluginDetails>}
-   */
-  async getPlugin(pluginId) {
-    const response = await fetch(`${this.baseUrl}/plugins/${pluginId}`);
-    return response.json();
-  }
-  
-  /**
-   * Download a plugin
-   * @param {string} pluginId
-   * @param {string} version - Optional, defaults to latest
-   * @returns {Promise<ArrayBuffer>}
-   */
-  async download(pluginId, version = 'latest') {
-    const url = version === 'latest' 
-      ? `${this.baseUrl}/plugins/${pluginId}/download`
-      : `${this.baseUrl}/plugins/${pluginId}/download/${version}`;
-    const response = await fetch(url);
-    return response.arrayBuffer();
-  }
-  
-  /**
-   * Check for updates to installed plugins
-   * @param {Array<{id: string, version: string}>} plugins
-   * @returns {Promise<UpdateResult[]>}
-   */
-  async checkUpdates(plugins) {
-    const response = await fetch(`${this.baseUrl}/plugins/check-updates`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plugins })
-    });
-    return response.json();
-  }
-  
-  /**
-   * Get featured plugins
-   * @returns {Promise<FeaturedResult>}
-   */
-  async getFeatured() {
-    const response = await fetch(`${this.baseUrl}/plugins/featured`);
-    return response.json();
-  }
-  
-  /**
-   * Get categories
-   * @returns {Promise<Category[]>}
-   */
-  async getCategories() {
-    const response = await fetch(`${this.baseUrl}/categories`);
-    return response.json();
-  }
+ constructor(baseUrl = 'https://plugins.r0astr.app/api/v1') {
+ this.baseUrl = baseUrl;
+ this.cache = new Map();
+ }
+ 
+ /**
+ * Search for plugins
+ * @param {SearchOptions} options
+ * @returns {Promise<SearchResult>}
+ */
+ async search(options = {}) {
+ const params = new URLSearchParams(options);
+ const response = await fetch(`${this.baseUrl}/plugins?${params}`);
+ return response.json();
+ }
+ 
+ /**
+ * Get plugin details
+ * @param {string} pluginId
+ * @returns {Promise<PluginDetails>}
+ */
+ async getPlugin(pluginId) {
+ const response = await fetch(`${this.baseUrl}/plugins/${pluginId}`);
+ return response.json();
+ }
+ 
+ /**
+ * Download a plugin
+ * @param {string} pluginId
+ * @param {string} version - Optional, defaults to latest
+ * @returns {Promise<ArrayBuffer>}
+ */
+ async download(pluginId, version = 'latest') {
+ const url = version === 'latest' 
+ ? `${this.baseUrl}/plugins/${pluginId}/download`
+ : `${this.baseUrl}/plugins/${pluginId}/download/${version}`;
+ const response = await fetch(url);
+ return response.arrayBuffer();
+ }
+ 
+ /**
+ * Check for updates to installed plugins
+ * @param {Array<{id: string, version: string}>} plugins
+ * @returns {Promise<UpdateResult[]>}
+ */
+ async checkUpdates(plugins) {
+ const response = await fetch(`${this.baseUrl}/plugins/check-updates`, {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ plugins })
+ });
+ return response.json();
+ }
+ 
+ /**
+ * Get featured plugins
+ * @returns {Promise<FeaturedResult>}
+ */
+ async getFeatured() {
+ const response = await fetch(`${this.baseUrl}/plugins/featured`);
+ return response.json();
+ }
+ 
+ /**
+ * Get categories
+ * @returns {Promise<Category[]>}
+ */
+ async getCategories() {
+ const response = await fetch(`${this.baseUrl}/categories`);
+ return response.json();
+ }
 }
 ```
 
 ### Offline Handling
 ```javascript
 async search(options) {
-  try {
-    const result = await this.fetchWithCache('search', options);
-    return result;
-  } catch (error) {
-    if (this.isOffline()) {
-      return this.getFromCache('search', options) || { plugins: [], offline: true };
-    }
-    throw error;
-  }
+ try {
+ const result = await this.fetchWithCache('search', options);
+ return result;
+ } catch (error) {
+ if (this.isOffline()) {
+ return this.getFromCache('search', options) || { plugins: [], offline: true };
+ }
+ throw error;
+ }
 }
 ```
 
@@ -278,18 +278,18 @@ async search(options) {
 ### Test Cases
 ```javascript
 describe('RepositoryClient', () => {
-  it('should fetch plugin list', async () => { });
-  it('should search with filters', async () => { });
-  it('should download plugin', async () => { });
-  it('should check for updates', async () => { });
-  it('should handle offline mode', async () => { });
+ it('should fetch plugin list', async () => { });
+ it('should search with filters', async () => { });
+ it('should download plugin', async () => { });
+ it('should check for updates', async () => { });
+ it('should handle offline mode', async () => { });
 });
 ```
 
 ### Deliverables
 - `/src/managers/repositoryClient.js`
 
----
+
 
 ## Story 6.3: Implement Plugin Browser UI
 
@@ -310,49 +310,49 @@ Create a user interface for browsing, searching, and installing plugins from the
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│  Plugin Browser                                               [X] │
+│ Plugin Browser [X] │
 ├───────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│  ┌─────────────────────────────────────────┐  [🔍 Search...]      │
-│  │ All │ Extensions │ Skins │ Visualizers │                       │
-│  └─────────────────────────────────────────┘                       │
-│                                                                   │
-│  Sort: [Popular ▼]                                    150 plugins │
-│                                                                   │
-│  ─────────────────────────────────────────────────────────────    │
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────────────┐ │
-│  │ 🔌 MQTT Bridge                                    ★★★★★ (23) │ │
-│  │                                                    v1.0.0    │ │
-│  │ Control r0astr via MQTT protocol for IoT and            │ │
-│  │ home automation integration.                                 │ │
-│  │                                                              │ │
-│  │ by Plugin Author                        1.2K downloads       │ │
-│  │                                                              │ │
-│  │                                              [Install]       │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────────────┐ │
-│  │ 🎨 Retrowave Deluxe                               ★★★★☆ (8) │ │
-│  │                                                    v2.1.0    │ │
-│  │ A vibrant 80s-inspired theme with animated neon             │ │
-│  │ effects and synthwave aesthetics.                           │ │
-│  │                                                              │ │
-│  │ by Theme Designer                        856 downloads       │ │
-│  │                                                              │ │
-│  │                                              [Install]       │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────────────┐ │
-│  │ 📊 Spectrum Analyzer                              ★★★★★ (15)│ │
-│  │                                                    v1.2.0    │ │
-│  │ Real-time audio spectrum visualization with                 │ │
-│  │ customizable colors and display modes.          [Installed] │ │
-│  │                                                              │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                   │
-│  [Load More...]                                                   │
-│                                                                   │
+│ │
+│ ┌─────────────────────────────────────────┐ [ Search...] │
+│ │ All │ Extensions │ Skins │ Visualizers │ │
+│ └─────────────────────────────────────────┘ │
+│ │
+│ Sort: [Popular ▼] 150 plugins │
+│ │
+│ ───────────────────────────────────────────────────────────── │
+│ │
+│ ┌──────────────────────────────────────────────────────────────┐ │
+│ │ MQTT Bridge ★★★★★ (23) │ │
+│ │ v1.0.0 │ │
+│ │ Control r0astr via MQTT protocol for IoT and │ │
+│ │ home automation integration. │ │
+│ │ │ │
+│ │ by Plugin Author 1.2K downloads │ │
+│ │ │ │
+│ │ [Install] │ │
+│ └──────────────────────────────────────────────────────────────┘ │
+│ │
+│ ┌──────────────────────────────────────────────────────────────┐ │
+│ │ Retrowave Deluxe ★★★★☆ (8) │ │
+│ │ v2.1.0 │ │
+│ │ A vibrant 80s-inspired theme with animated neon │ │
+│ │ effects and synthwave aesthetics. │ │
+│ │ │ │
+│ │ by Theme Designer 856 downloads │ │
+│ │ │ │
+│ │ [Install] │ │
+│ └──────────────────────────────────────────────────────────────┘ │
+│ │
+│ ┌──────────────────────────────────────────────────────────────┐ │
+│ │ Spectrum Analyzer ★★★★★ (15)│ │
+│ │ v1.2.0 │ │
+│ │ Real-time audio spectrum visualization with │ │
+│ │ customizable colors and display modes. [Installed] │ │
+│ │ │ │
+│ └──────────────────────────────────────────────────────────────┘ │
+│ │
+│ [Load More...] │
+│ │
 └───────────────────────────────────────────────────────────────────┘
 ```
 
@@ -360,46 +360,46 @@ Create a user interface for browsing, searching, and installing plugins from the
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│  ← MQTT Bridge                                                [X] │
+│ ← MQTT Bridge [X] │
 ├───────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│  ┌─────────────┐  MQTT Bridge v1.0.0                             │
-│  │             │  by Plugin Author                               │
-│  │   [icon]    │  ★★★★★ (23 reviews) • 1.2K downloads           │
-│  │             │                                                  │
-│  └─────────────┘  [Install]  [View Source]                       │
-│                                                                   │
-│  ─────────────────────────────────────────────────────────────    │
-│                                                                   │
-│  Description                                                      │
-│  Control r0astr via MQTT protocol. Perfect for IoT and       │
-│  home automation integration. Features include:                   │
-│  • Connect to any MQTT broker                                     │
-│  • Map topics to panel controls                                   │
-│  • Publish state changes automatically                            │
-│  • Support for TLS connections                                    │
-│                                                                   │
-│  ─────────────────────────────────────────────────────────────    │
-│                                                                   │
-│  Screenshots                                                      │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐                             │
-│  │         │ │         │ │         │                             │
-│  └─────────┘ └─────────┘ └─────────┘                             │
-│                                                                   │
-│  ─────────────────────────────────────────────────────────────    │
-│                                                                   │
-│  Permissions Required                                             │
-│  ⚠ Network Access (external servers)                             │
-│  • Read panel information                                         │
-│  • Control panel playback                                         │
-│  • Show notifications                                             │
-│                                                                   │
-│  ─────────────────────────────────────────────────────────────    │
-│                                                                   │
-│  Version History                                                  │
-│  v1.0.0 (Jan 15, 2024) - Initial release                         │
-│  v0.9.0 (Dec 20, 2023) - Beta release                            │
-│                                                                   │
+│ │
+│ ┌─────────────┐ MQTT Bridge v1.0.0 │
+│ │ │ by Plugin Author │
+│ │ [icon] │ ★★★★★ (23 reviews) • 1.2K downloads │
+│ │ │ │
+│ └─────────────┘ [Install] [View Source] │
+│ │
+│ ───────────────────────────────────────────────────────────── │
+│ │
+│ Description │
+│ Control r0astr via MQTT protocol. Perfect for IoT and │
+│ home automation integration. Features include: │
+│ • Connect to any MQTT broker │
+│ • Map topics to panel controls │
+│ • Publish state changes automatically │
+│ • Support for TLS connections │
+│ │
+│ ───────────────────────────────────────────────────────────── │
+│ │
+│ Screenshots │
+│ ┌─────────┐ ┌─────────┐ ┌─────────┐ │
+│ │ │ │ │ │ │ │
+│ └─────────┘ └─────────┘ └─────────┘ │
+│ │
+│ ───────────────────────────────────────────────────────────── │
+│ │
+│ Permissions Required │
+│ ⚠ Network Access (external servers) │
+│ • Read panel information │
+│ • Control panel playback │
+│ • Show notifications │
+│ │
+│ ───────────────────────────────────────────────────────────── │
+│ │
+│ Version History │
+│ v1.0.0 (Jan 15, 2024) - Initial release │
+│ v0.9.0 (Dec 20, 2023) - Beta release │
+│ │
 └───────────────────────────────────────────────────────────────────┘
 ```
 
@@ -425,7 +425,7 @@ Create a user interface for browsing, searching, and installing plugins from the
 - `/src/ui/pluginBrowser.css`
 - `/src/ui/pluginDetails.js`
 
----
+
 
 ## Story 6.4: Implement Plugin Installation from Repository
 
@@ -455,28 +455,28 @@ Integrate the repository browser with the plugin installer to enable one-click i
 ### Progress UI
 ```
 ┌────────────────────────────────────────────────────────┐
-│  Installing MQTT Bridge                            [X] │
+│ Installing MQTT Bridge [X] │
 ├────────────────────────────────────────────────────────┤
-│                                                        │
-│  Downloading...                                        │
-│  [████████████████████░░░░░░░░░░░░░░] 65%              │
-│                                                        │
-│  2.1 MB / 3.2 MB                                       │
-│                                                        │
+│ │
+│ Downloading... │
+│ [████████████████████░░░░░░░░░░░░░░] 65% │
+│ │
+│ 2.1 MB / 3.2 MB │
+│ │
 └────────────────────────────────────────────────────────┘
 ```
 
 ### Verification
 ```javascript
 async function verifyPlugin(zipBuffer, expectedChecksum) {
-  const hash = await crypto.subtle.digest('SHA-256', zipBuffer);
-  const checksum = Array.from(new Uint8Array(hash))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-  
-  if (checksum !== expectedChecksum) {
-    throw new Error('Plugin verification failed: checksum mismatch');
-  }
+ const hash = await crypto.subtle.digest('SHA-256', zipBuffer);
+ const checksum = Array.from(new Uint8Array(hash))
+ .map(b => b.toString(16).padStart(2, '0'))
+ .join('');
+ 
+ if (checksum !== expectedChecksum) {
+ throw new Error('Plugin verification failed: checksum mismatch');
+ }
 }
 ```
 
@@ -492,7 +492,7 @@ async function verifyPlugin(zipBuffer, expectedChecksum) {
 - Updated `/src/managers/pluginInstaller.js`
 - Updated `/src/ui/pluginBrowser.js`
 
----
+
 
 ## Story 6.5: Implement Auto-Update System
 
@@ -514,8 +514,8 @@ Create a system that checks for plugin updates and allows users to update with o
 2. Gather installed plugin versions
 3. Call repository check-updates endpoint
 4. If updates available:
-   a. Show badge on Plugins in settings
-   b. Optional notification
+ a. Show badge on Plugins in settings
+ b. Optional notification
 5. User opens Plugin Manager
 6. Show "Update Available" badges
 7. User clicks Update (single or all)
@@ -530,20 +530,20 @@ Create a system that checks for plugin updates and allows users to update with o
 ```
 Settings Menu:
 ┌──────────────────┐
-│ Appearance       │
-│ Plugins      (3) │  ← Badge shows update count
-│ Audio            │
-│ ...              │
+│ Appearance │
+│ Plugins (3) │ ← Badge shows update count
+│ Audio │
+│ ... │
 └──────────────────┘
 ```
 
 ### Plugin Card with Update
 ```
 ┌──────────────────────────────────────────────────────┐
-│ ☑ MQTT Bridge                              v1.0.0   │
-│   Control r0astr via MQTT              ⬆ v1.1.0 │
-│                                    available        │
-│   [⚙ Settings]  [Update]  [ⓘ Info]                 │
+│ ☑ MQTT Bridge v1.0.0 │
+│ Control r0astr via MQTT ⬆ v1.1.0 │
+│ available │
+│ [ Settings] [Update] [ⓘ Info] │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -559,7 +559,7 @@ Settings Menu:
 - `/src/managers/pluginUpdater.js`
 - Updated `/src/ui/pluginManager.js`
 
----
+
 
 ## Story 6.6: Implement Update Notifications
 
@@ -576,21 +576,21 @@ Notify users about available plugin updates in a non-intrusive way.
 ### Notification UI
 ```
 ┌────────────────────────────────────────────────────────────────┐
-│ 🔄 3 plugin updates available                            [X]  │
-│    MQTT Bridge, OSC Bridge, Spectrum Analyzer                 │
-│    [Update All]  [View Details]  [Remind Me Later]            │
+│ 3 plugin updates available [X] │
+│ MQTT Bridge, OSC Bridge, Spectrum Analyzer │
+│ [Update All] [View Details] [Remind Me Later] │
 └────────────────────────────────────────────────────────────────┘
 ```
 
 ### Settings
 ```json
 {
-  "updates": {
-    "checkAutomatically": true,
-    "checkInterval": "daily",
-    "showNotifications": true,
-    "autoUpdate": false
-  }
+ "updates": {
+ "checkAutomatically": true,
+ "checkInterval": "daily",
+ "showNotifications": true,
+ "autoUpdate": false
+ }
 }
 ```
 
@@ -605,7 +605,7 @@ Notify users about available plugin updates in a non-intrusive way.
 - Updated `/src/managers/pluginUpdater.js`
 - `/src/ui/updateNotification.js`
 
----
+
 
 ## Story 6.7: Define Plugin Submission Process
 
@@ -684,7 +684,7 @@ Ready for submission!
 - `/docs/plugin-submission.md`
 - `/tools/validate-plugin/` (CLI tool)
 
----
+
 
 ## Story 6.8: Repository Server Implementation (Out of Scope)
 
@@ -705,11 +705,11 @@ For development and self-hosting, support a local/custom repository:
 ```json
 // In app settings
 {
-  "repository": {
-    "url": "https://plugins.r0astr.app/api/v1",
-    "customUrl": null,  // Override for self-hosted
-    "enabled": true
-  }
+ "repository": {
+ "url": "https://plugins.r0astr.app/api/v1",
+ "customUrl": null, // Override for self-hosted
+ "enabled": true
+ }
 }
 ```
 
@@ -721,12 +721,12 @@ const express = require('express');
 const app = express();
 
 app.get('/api/v1/plugins', (req, res) => {
-  const plugins = scanPluginDirectory('./plugins');
-  res.json({ plugins, total: plugins.length });
+ const plugins = scanPluginDirectory('./plugins');
+ res.json({ plugins, total: plugins.length });
 });
 
 app.get('/api/v1/plugins/:id/download', (req, res) => {
-  res.sendFile(`./plugins/${req.params.id}.zip`);
+ res.sendFile(`./plugins/${req.params.id}.zip`);
 });
 ```
 
@@ -734,7 +734,7 @@ app.get('/api/v1/plugins/:id/download', (req, res) => {
 - `/docs/repository-server.md` (specification)
 - `/tools/local-repository/` (development server)
 
----
+
 
 ## Testing Matrix
 
@@ -746,7 +746,7 @@ app.get('/api/v1/plugins/:id/download', (req, res) => {
 | Errors handled | | | | | |
 | Performance | | | | | |
 
----
+
 
 ## Definition of Done
 
@@ -759,7 +759,7 @@ app.get('/api/v1/plugins/:id/download', (req, res) => {
 - [ ] Security guidelines published
 - [ ] All tests passing
 
----
+
 
 ## Estimated Effort
 
@@ -775,7 +775,7 @@ app.get('/api/v1/plugins/:id/download', (req, res) => {
 | 6.8 Server (Out of Scope) | - | |
 | **Total** | **29** | |
 
----
+
 
 ## Future Considerations
 

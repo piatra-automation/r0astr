@@ -97,7 +97,7 @@ note("c2 ~ c2 e2").s("sawtooth").lpf(400).gain(0.6)
 
 ### Step 3: Hit Play on Card 2
 
-Click Play. The bass joins the drums – perfectly in sync!
+Click Play. The bass joins the drums - perfectly in sync!
 
 ---
 

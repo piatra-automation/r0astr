@@ -2,7 +2,7 @@
 
 Understand the mental model behind r0astr to make the interface intuitive.
 
----
+
 
 ## The Big Picture
 
@@ -10,22 +10,22 @@ r0astr is a multi-instrument live coding environment. Think of it as having four
 
 ```mermaid
 graph TB
-    subgraph r0astr["r0astr Interface"]
-        MP["🎛️ Master Panel<br/>TEMPO, Global Effects"]
-        C1["📦 Card 1<br/>Drums"]
-        C2["📦 Card 2<br/>Bass"]
-        C3["📦 Card 3<br/>Melody"]
-        C4["📦 Card 4<br/>Ambient"]
-    end
-    CLOCK(("🕐 Shared Clock"))
-    MP --> CLOCK
-    CLOCK --> C1
-    CLOCK --> C2
-    CLOCK --> C3
-    CLOCK --> C4
+ subgraph r0astr["r0astr Interface"]
+ MP[" Master Panel<br/>TEMPO, Global Effects"]
+ C1[" Card 1<br/>Drums"]
+ C2[" Card 2<br/>Bass"]
+ C3[" Card 3<br/>Melody"]
+ C4[" Card 4<br/>Ambient"]
+ end
+ CLOCK((" Shared Clock"))
+ MP --> CLOCK
+ CLOCK --> C1
+ CLOCK --> C2
+ CLOCK --> C3
+ CLOCK --> C4
 ```
 
----
+
 
 ## Cards
 
@@ -62,7 +62,7 @@ This is just a suggestion - use cards however you like!
 
 [:octicons-arrow-right-24: Learn more in the Multi-Instrument Guide](multi-instrument.md)
 
----
+
 
 ## Synchronization
 
@@ -89,7 +89,7 @@ When you press Play on a card:
 - It waits for the next cycle boundary
 - This ensures musical timing is always correct
 
----
+
 
 ## Master Panel
 
@@ -109,7 +109,7 @@ The master panel is where you set the global tempo using a slider:
 
 ```javascript
 // In Master Panel
-let TEMPO = slider(30, 15, 45);  // 30 CPS, range 15-45
+let TEMPO = slider(30, 15, 45); // 30 CPS, range 15-45
 ```
 
 All cards automatically follow this tempo.
@@ -130,7 +130,7 @@ This lets you control parameters across all instruments with a single slider.
 
 [:octicons-arrow-right-24: Learn more in the Master Panel Guide](master-panel.md)
 
----
+
 
 ## Pattern Lifecycle
 
@@ -139,16 +139,16 @@ Understanding how patterns work as you edit and play them.
 ### The Flow
 
 ```
-┌─────────┐     ┌─────────┐     ┌──────────────┐
-│  Write  │ --> │  Play   │ --> │ Live Update  │
-│ Pattern │     │         │     │  (optional)  │
-└─────────┘     └─────────┘     └──────────────┘
-                     │                  │
-                     v                  v
-                ┌─────────┐     ┌─────────┐
-                │  Hear   │     │ Changes │
-                │  Sound  │     │ Applied │
-                └─────────┘     └─────────┘
+┌─────────┐ ┌─────────┐ ┌──────────────┐
+│ Write │ --> │ Play │ --> │ Live Update │
+│ Pattern │ │ │ │ (optional) │
+└─────────┘ └─────────┘ └──────────────┘
+ │ │
+ v v
+ ┌─────────┐ ┌─────────┐
+ │ Hear │ │ Changes │
+ │ Sound │ │ Applied │
+ └─────────┘ └─────────┘
 ```
 
 ### Step by Step
@@ -170,9 +170,9 @@ The magic of r0astr is **live coding**:
 - Experiment in real-time
 
 !!! tip "Pro Tip"
-    Make small changes and listen. This is the essence of live coding - evolving your music incrementally as you play.
+ Make small changes and listen. This is the essence of live coding - evolving your music incrementally as you play.
 
----
+
 
 ## How They Connect
 
@@ -184,34 +184,34 @@ Let's tie all the concepts together:
 4. **A shared clock** keeps everything synchronized
 5. **Live updates** let you evolve your music in real-time
 
----
+
 
 ## Next Steps
 
 <div class="grid cards" markdown>
 
--   :material-music-note:{ .lg .middle } **Pattern Syntax**
+- :material-music-note:{ .lg .middle } **Pattern Syntax**
 
-    ---
 
-    Learn the mini notation language for writing patterns.
 
-    [:octicons-arrow-right-24: Pattern Syntax](patterns.md)
+ Learn the mini notation language for writing patterns.
 
--   :material-view-grid:{ .lg .middle } **Multi-Instrument**
+ [:octicons-arrow-right-24: Pattern Syntax](patterns.md)
 
-    ---
+- :material-view-grid:{ .lg .middle } **Multi-Instrument**
 
-    Advanced techniques for using multiple cards together.
 
-    [:octicons-arrow-right-24: Multi-Instrument Guide](multi-instrument.md)
 
--   :material-tune:{ .lg .middle } **Master Panel**
+ Advanced techniques for using multiple cards together.
 
-    ---
+ [:octicons-arrow-right-24: Multi-Instrument Guide](multi-instrument.md)
 
-    Deep dive into global controls and sliders.
+- :material-tune:{ .lg .middle } **Master Panel**
 
-    [:octicons-arrow-right-24: Master Panel Guide](master-panel.md)
+
+
+ Deep dive into global controls and sliders.
+
+ [:octicons-arrow-right-24: Master Panel Guide](master-panel.md)
 
 </div>

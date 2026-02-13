@@ -27,10 +27,7 @@ theme:
         name: Switch to light mode
   features:
     - navigation.tabs
-    - navigation.sections
-    - navigation.expand
     - navigation.top
-    - navigation.indexes
     - search.suggest
     - search.highlight
     - content.code.copy
@@ -91,6 +88,9 @@ nav:
 
 docs_dir: docs-source
 site_dir: docs
+
+extra_css:
+  - assets/stylesheets/custom.css
 
 extra:
   social:

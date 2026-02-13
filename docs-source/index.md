@@ -36,13 +36,13 @@ r0astr is a **multi-instrument live coding interface** built on [Strudel](https:
 
     ---
 
-    Four independent cards, each running its own pattern. Drums, bass, melody, ambient – layer them all.
+    Four independent cards, each running its own pattern. Drums, bass, melody, ambient - layer them all.
 
 -   :material-sync: **Perfect Sync**
 
     ---
 
-    All instruments share a clock. Start and stop cards freely – they always stay in time.
+    All instruments share a clock. Start and stop cards freely - they always stay in time.
 
 -   :material-tune-vertical: **Live Sliders**
 
