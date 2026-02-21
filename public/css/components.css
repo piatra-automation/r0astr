@@ -1,0 +1,1551 @@
+/**
+ * Component Styles
+ *
+ * Merged from: buttons.css + controls.css + modals.css
+ * Contains all UI component styles for r0astr.
+ *
+ * Structure:
+ * - Button System (button-in-hole pattern, sizes, variants)
+ * - Hero Buttons
+ * - Top Bar Buttons
+ * - Global Control Buttons
+ * - Panel Control Buttons
+ * - Pause & Activate Buttons
+ * - Delete Button
+ * - New Button Hole System (.btn-raised)
+ * - Modal Buttons
+ * - Slider Controls
+ * - Toggle Switches
+ * - Select Dropdowns
+ * - Text/Number Inputs
+ * - Validation Messages
+ * - Setting Sliders
+ * - Settings Modal
+ * - Confirmation Modal
+ */
+
+/* ============================================
+   BUTTON SYSTEM: Button-in-Hole Pattern
+   ============================================ */
+
+/* Base button-in-hole structure (outer container - "the hole") */
+.btn-hole {
+  background: var(--btn-hole-bg);
+  border-radius: var(--btn-hole-radius);
+  padding: var(--btn-hole-depth);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-hole:hover {
+  background: var(--btn-hole-hover-bg);
+}
+
+.btn-hole:disabled {
+  cursor: not-allowed;
+  background: rgba(60, 76, 81, 0.1);
+}
+
+.btn-hole:disabled .btn-surface {
+  opacity: 0.5;
+}
+
+/* Small hole variant */
+.btn-hole-sm {
+  padding: var(--btn-hole-depth-sm);
+}
+
+/* Base button surface (inner button) */
+.btn-surface {
+  background: var(--btn-surface-bg);
+  border-radius: var(--btn-surface-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  /* 3D bevel lighting effect */
+  border-top: 1px solid var(--btn-bevel-light);
+  border-left: 1px solid var(--btn-bevel-light);
+  border-bottom: 1px solid var(--btn-bevel-dark);
+  border-right: 1px solid var(--btn-bevel-dark);
+
+  box-shadow: var(--btn-shadow-normal);
+  transform: translateY(0);
+  transition: all 0.1s ease;
+}
+
+/* Small surface variant */
+.btn-surface-sm {
+  border-radius: var(--btn-surface-radius-sm);
+  box-shadow: var(--btn-shadow-normal-sm);
+}
+
+/* Press animation - applies to all button-in-hole buttons */
+.btn-hole:active .btn-surface,
+.btn-hole.pressing .btn-surface {
+  /* Invert bevel lighting for pressed effect */
+  border-top: 1px solid var(--btn-bevel-dark);
+  border-left: 1px solid var(--btn-bevel-dark);
+  border-bottom: 1px solid var(--btn-bevel-light);
+  border-right: 1px solid var(--btn-bevel-light);
+
+  /* Flatten shadow and move down */
+  box-shadow: var(--btn-shadow-pressed);
+  transform: translateY(var(--btn-press-move));
+}
+
+/* Small button press animation */
+.btn-hole-sm:active .btn-surface-sm,
+.btn-hole-sm.pressing .btn-surface-sm {
+  box-shadow: var(--btn-shadow-pressed-sm);
+  transform: translateY(var(--btn-press-move-sm));
+}
+
+/* ============================================
+   BUTTON SIZE VARIANTS: SQUARE
+   ============================================ */
+
+/* Square Large (Hero buttons) */
+.btn-square-lg .btn-surface {
+  padding: var(--btn-padding-square-lg);
+}
+
+.btn-square-lg .material-icons {
+  font-size: var(--btn-icon-lg);
+}
+
+/* Square Medium (Expanded panel buttons) */
+.btn-square-md .btn-surface {
+  padding: var(--btn-padding-square-md);
+}
+
+.btn-square-md .material-icons {
+  font-size: var(--btn-icon-md);
+}
+
+/* Square Small (Collapsed panel buttons) */
+.btn-square-sm .btn-surface {
+  padding: var(--btn-padding-square-sm);
+}
+
+.btn-square-sm .material-icons {
+  font-size: var(--btn-icon-xs);
+}
+
+/* Square Extra-Small (Master mode button) */
+.btn-square-xs .btn-surface {
+  padding: var(--btn-padding-square-xs);
+}
+
+.btn-square-xs .material-icons {
+  font-size: var(--btn-icon-sm);
+}
+
+/* ============================================
+   BUTTON SIZE VARIANTS: SLIM
+   ============================================ */
+
+/* Slim Large (rectangular, wide) */
+.btn-slim-lg .btn-surface {
+  padding: var(--btn-padding-slim-lg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-slim-lg .material-icons {
+  font-size: var(--btn-icon-md);
+}
+
+/* Slim Medium */
+.btn-slim-md .btn-surface {
+  padding: var(--btn-padding-slim-md);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-slim-md .material-icons {
+  font-size: var(--btn-icon-sm);
+}
+
+/* ============================================
+   BUTTON SIZE VARIANTS: TINY
+   ============================================ */
+
+/* Tiny icon-only buttons */
+.btn-tiny .btn-surface {
+  padding: var(--btn-padding-tiny);
+}
+
+.btn-tiny .material-icons {
+  font-size: var(--btn-icon-tiny);
+}
+
+/* ============================================
+   MATERIAL ICONS BASE STYLING
+   ============================================ */
+
+.btn-surface .material-icons {
+  font-family: var(--font-family-icons);
+  user-select: none;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   HERO BUTTONS (Legacy Large Buttons)
+   ============================================ */
+
+.hero-btn {
+  background: var(--darkness);
+  border-radius: 2px;
+  padding: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.hero-btn.action-add {
+  margin-right: 28px;
+}
+
+.hero-btn:hover {
+  background: #4a5a5f;
+}
+
+.hero-btn:disabled {
+  cursor: not-allowed;
+  background: rgba(60, 76, 81, 0.1);
+}
+
+.hero-btn:disabled .material-icons {
+  opacity: 0.4;
+}
+
+.hero-btn.updating .material-icons {
+  animation: spin-update 1s linear infinite;
+  opacity: 1;
+}
+
+@keyframes spin-update {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hero-btn-inner {
+  background: var(--pale-white);
+  border-radius: 4px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  /* Borders: white+20% on top/left, gray+50% on bottom/right */
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+  border-right: 1px solid rgba(128, 128, 128, 0.5);
+
+  /* Shadow for depth */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(0);
+  transition: all 0.1s ease;
+}
+
+/* Button press animation - invert borders and flatten */
+.hero-btn:active .hero-btn-inner,
+.hero-btn.pressing .hero-btn-inner {
+  /* Invert border lighting for pressed effect */
+  border-top: 1px solid rgba(128, 128, 128, 0.5);
+  border-left: 1px solid rgba(128, 128, 128, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+
+  /* Flatten shadow and push down slightly */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transform: translateY(1px);
+}
+
+.count-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--burnt-red);
+  color: var(--pale-white);
+  border-radius: 50%;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px;
+  border: 2px solid var(--darkness);
+}
+
+.hero-btn .material-icons {
+  font-family: var(--font-family-icons);
+  font-size: 32px;
+  user-select: none;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Icon colors */
+.hero-btn.action-stop .material-icons {
+  color: var(--burnt-red);
+}
+
+.hero-btn.action-play .material-icons,
+.hero-btn.action-add .material-icons {
+  color: var(--dark-green);
+}
+
+.hero-btn.action-update .material-icons {
+  color: var(--puke);
+}
+
+/* ============================================
+   TOP BAR BUTTONS (structural only - styling in skins)
+   ============================================ */
+
+.top-bar-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  pointer-events: auto;
+}
+
+/* ============================================
+   GLOBAL CONTROL BUTTONS
+   ============================================ */
+
+.global-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.stop-all-btn {
+  padding: 12px 24px;
+  border-radius: 6px;
+  border: 2px solid #d32f2f;
+  background: #c62828;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.stop-all-btn:hover {
+  background: #b71c1c;
+  border-color: #b71c1c;
+}
+
+.update-all-btn {
+  padding: 12px 24px;
+  border-radius: 6px;
+  border: 2px solid #ffa000;
+  background: #ffd43b;
+  color: #333;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 15px rgba(255, 212, 59, 0.3);
+}
+
+.update-all-btn:not(:disabled):hover {
+  background: #ffc107;
+  border-color: #ff8f00;
+  box-shadow: 0 0 20px rgba(255, 212, 59, 0.5);
+}
+
+.update-all-btn:not(:disabled) {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.update-all-btn:disabled {
+  background: #495057;
+  color: #adb5bd;
+  border-color: #495057;
+  cursor: not-allowed;
+  box-shadow: none;
+  animation: none;
+}
+
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.85;
+  }
+}
+
+.add-panel-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 2px solid #2196F3;
+  background: #1976D2;
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.add-panel-btn:hover {
+  background: #1565C0;
+  border-color: #0D47A1;
+}
+
+/* ============================================
+   PANEL CONTROL BUTTONS
+   ============================================ */
+
+/* Generic control button - for backward compatibility */
+.control-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 2px solid #555;
+  background: #333;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.control-btn:hover {
+  background: #444;
+  border-color: #666;
+}
+
+.control-btn.playing {
+  background: #4CAF50;
+  border-color: #45a049;
+}
+
+.control-btn.playing:hover {
+  background: #45a049;
+}
+
+/* ============================================
+   PAUSE & ACTIVATE BUTTONS
+   ============================================ */
+
+.pause-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 2px solid #d32f2f;
+  background: #c62828;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  min-width: 70px;
+}
+
+.pause-btn:hover:not(:disabled) {
+  background: #b71c1c;
+  border-color: #b71c1c;
+}
+
+.pause-btn:disabled,
+.pause-btn.hidden,
+.activate-btn.hidden {
+  display: none;
+}
+
+/* ACTIVATE button - Default (PLAY) */
+.activate-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 2px solid #388E3C;
+  background: #4CAF50;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  min-width: 70px;
+}
+
+.activate-btn:hover:not(:disabled) {
+  background: #45a049;
+  border-color: #2E7D32;
+}
+
+/* ACTIVATE button - UPDATE state (stale) */
+.activate-btn.update {
+  background: #ffd43b;
+  border-color: #ffa000;
+  color: #333;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ACTIVATE button - Disabled (playing, not stale) */
+.activate-btn:disabled {
+  background: #495057;
+  border-color: #343a40;
+  color: #adb5bd;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ACTIVATE button - Disabled class (invalid code) */
+.activate-btn.disabled {
+  background: #495057;
+  border-color: #343a40;
+  color: #adb5bd;
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: none;
+  animation: none;
+}
+
+/* ============================================
+   DELETE BUTTON
+   ============================================ */
+
+.delete-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 2px solid #d32f2f;
+  background: #c62828;
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  line-height: 1;
+  margin-left: 10px;
+}
+
+.delete-btn:hover {
+  background: #b71c1c;
+  border-color: #b71c1c;
+}
+
+/* ============================================
+   NEW BUTTON HOLE SYSTEM (.btn-raised)
+   ============================================ */
+
+/* BUTTON HOLES - The dark recessed containers */
+.btn-hole {
+  background: var(--darkness);
+  border: 1px solid #ede4d5;
+  border-radius: 2.5px;
+  padding: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.btn-hole-slim {
+  width: 86px;
+  height: 42px;
+}
+
+.btn-hole-square {
+  width: 86px;
+  height: 86px;
+}
+
+/* INACTIVE BUTTON HOLES - Transparent background */
+.btn-hole.inactive,
+.btn-hole:disabled {
+  background: transparent;
+  cursor: not-allowed;
+}
+
+/* BUTTONS - The raised elements inside holes */
+.btn-raised {
+  box-sizing: border-box;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  transition: all 0.1s ease;
+  user-select: none;
+
+  /* Beveled border effect - light on top/left, dark on bottom/right */
+  border: 2px solid;
+  border-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.2) rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.2);
+  border-left-color: rgba(255, 255, 255, 0.2);
+  border-bottom-color: rgba(0, 0, 0, 0.2);
+  border-right-color: rgba(0, 0, 0, 0.2);
+
+  /* Diffuse blurred shadow effect - bottom and right edges only */
+  box-shadow:
+    4px 4px 6px rgba(99, 99, 99, 0.5),
+    8px 8px 12px rgba(99, 99, 99, 0.5),
+    12px 12px 16px rgba(99, 99, 99, 0.5),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.1),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.btn-raised-slim {
+  width: 80px;
+  min-width: 80px;
+  height: 35px;
+  min-height: 35px;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.btn-raised-square {
+  width: 80px;
+  min-width: 80px;
+  height: 80px;
+  min-height: 80px;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* Button color varieties */
+.btn-pearl {
+  background: var(--pearl);
+  color: var(--dark-green);
+}
+
+.btn-cream {
+  background: var(--cream);
+  color: var(--dark-green);
+}
+
+.btn-burnt-red {
+  background: var(--burnt-red);
+  color: white;
+}
+
+.btn-dark-green {
+  background: var(--dark-green);
+  color: white;
+}
+
+/* PRESSED STATE - Invert borders and remove drop-shadow completely */
+.btn-hole:active .btn-raised,
+.btn-hole.pressing .btn-raised {
+  border-top-color: rgba(0, 0, 0, 0.2);
+  border-left-color: rgba(0, 0, 0, 0.2);
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  border-right-color: rgba(255, 255, 255, 0.2);
+
+  box-shadow: none !important;
+
+  transform: translateY(1px);
+}
+
+/* Override hover state when pressing */
+.btn-hole:active:hover .btn-raised,
+.btn-hole.pressing:hover .btn-raised {
+  box-shadow: none !important;
+}
+
+/* HOVER STATE - Reduce shadow offset by 25% */
+.btn-hole:hover .btn-raised {
+  box-shadow:
+    3px 3px 6px rgba(99, 99, 99, 0.5),
+    6px 6px 12px rgba(99, 99, 99, 0.5),
+    9px 9px 16px rgba(99, 99, 99, 0.5),
+    inset -1px -1px 2px rgba(0, 0, 0, 0.1),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+/* INACTIVE BUTTON STATE - Looks pressed with no shadow and inverted borders */
+.btn-hole.inactive .btn-raised,
+.btn-hole:disabled .btn-raised {
+  border-top-color: rgba(0, 0, 0, 0.2);
+  border-left-color: rgba(0, 0, 0, 0.2);
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  border-right-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none !important;
+  transform: translateY(1px);
+}
+
+/* Keep inactive appearance on hover */
+.btn-hole.inactive:hover .btn-raised,
+.btn-hole:disabled:hover .btn-raised {
+  border-top-color: rgba(0, 0, 0, 0.2);
+  border-left-color: rgba(0, 0, 0, 0.2);
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  border-right-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none !important;
+  transform: translateY(1px);
+}
+
+/* Keep inactive appearance when pressed */
+.btn-hole.inactive:active .btn-raised,
+.btn-hole.inactive.pressing .btn-raised,
+.btn-hole:disabled:active .btn-raised {
+  border-top-color: rgba(0, 0, 0, 0.2);
+  border-left-color: rgba(0, 0, 0, 0.2);
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  border-right-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none !important;
+  transform: translateY(1px);
+}
+
+/* Material Icons inside buttons */
+.btn-raised .material-icons {
+  font-size: 24px;
+}
+
+.btn-raised-square .material-icons {
+  font-size: 32px;
+}
+
+/* ============================================
+   MODAL BUTTONS
+   ============================================ */
+
+.btn-primary {
+  background: #4CAF50;
+  color: #fff;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #45a049;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #888;
+  border: 1px solid #555;
+  padding: 10px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #333;
+  color: #fff;
+  border-color: #666;
+}
+
+/* Close button */
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--darkness);
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  opacity: 1;
+}
+
+/* Confirmation modal buttons */
+.confirm-modal-btn {
+  padding: 10px 20px;
+  border: 2px solid;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.confirm-modal-cancel {
+  border-color: #666;
+}
+
+.confirm-modal-cancel:hover {
+  background: #333;
+  border-color: #888;
+}
+
+.confirm-modal-confirm {
+  border-color: #ff4444;
+  color: #ff4444;
+}
+
+.confirm-modal-confirm:hover {
+  background: #ff4444;
+  color: #fff;
+}
+
+.confirm-modal-confirm:focus,
+.confirm-modal-cancel:focus {
+  outline: 2px solid var(--border-color);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   SLIDER CONTROLS (Panel Sliders)
+   ============================================ */
+
+.controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.slider-control {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 120px;
+}
+
+.slider-control label {
+  font-size: 12px;
+  color: #aaa;
+  display: flex;
+  justify-content: space-between;
+}
+
+.slider-control input[type="range"] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #444;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.slider-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+.slider-control input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4CAF50;
+  cursor: pointer;
+  border: none;
+}
+
+/* Slider container for dynamically generated sliders */
+.slider-container {
+  flex-shrink: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  padding-top: 10px;
+}
+
+/* ============================================
+   MASTER PANEL SLIDERS
+   ============================================ */
+
+/* Master panel compact sliders - horizontal sliders stacked vertically */
+.master-panel.compact .slider-control {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.master-panel.compact .slider-control label {
+  font-size: 10px;
+  color: var(--darkness);
+  font-weight: 600;
+  min-width: 50px;
+  flex-shrink: 0;
+}
+
+.master-panel.compact .slider-control input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 8px;
+  background: rgba(7, 84, 90, 0.2);
+  border-radius: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+  border-right: 1px solid rgba(128, 128, 128, 0.5);
+}
+
+.master-panel.compact .slider-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--mid-green);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--darkness);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.master-panel.compact .slider-control input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--mid-green);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--darkness);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.master-panel.compact .slider-control .slider-value {
+  font-size: 9px;
+  color: var(--darkness);
+  font-weight: 600;
+  min-width: 35px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Master panel expanded sliders */
+.master-panel:not(.compact) .slider-control {
+  margin-bottom: 12px;
+}
+
+.master-panel:not(.compact) .slider-control label {
+  color: var(--darkness);
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.master-panel:not(.compact) .slider-control input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: rgba(7, 84, 90, 0.2);
+  border-radius: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+  border-right: 1px solid rgba(128, 128, 128, 0.5);
+  outline: none;
+}
+
+.master-panel:not(.compact) .slider-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--mid-green);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--darkness);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.master-panel:not(.compact) .slider-control input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--mid-green);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--darkness);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.master-panel:not(.compact) .slider-control .slider-value {
+  font-size: 11px;
+  color: var(--darkness);
+  font-weight: 600;
+}
+
+/* ============================================
+   TOGGLE SWITCHES
+   ============================================ */
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 10px;
+}
+
+.toggle-input {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 50px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 12px;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 2px;
+  top: 2px;
+  background: rgba(128, 128, 128, 0.5);
+  border-radius: 50%;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.toggle-input:checked+.toggle-slider {
+  background: rgba(180, 66, 22, 0.2);
+  border-color: var(--burnt-red);
+}
+
+.toggle-input:checked+.toggle-slider::before {
+  transform: translateX(26px);
+  background: var(--burnt-red);
+}
+
+.toggle-text {
+  color: var(--darkness);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ============================================
+   SELECT DROPDOWNS
+   ============================================ */
+
+.setting-select {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  color: var(--darkness);
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.setting-select:focus {
+  outline: none;
+  border-color: var(--burnt-red);
+  box-shadow: 0 0 5px rgba(180, 66, 22, 0.3);
+}
+
+.setting-select option {
+  background: var(--pale-white);
+  color: var(--darkness);
+}
+
+/* ============================================
+   TEXT INPUTS
+   ============================================ */
+
+.setting-text-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  color: var(--darkness);
+  font-size: 14px;
+  border-radius: 4px;
+  font-family: var(--font-family-monospace);
+  margin-top: 4px;
+}
+
+.setting-text-input:focus {
+  outline: none;
+  border-color: var(--burnt-red);
+  box-shadow: 0 0 5px rgba(180, 66, 22, 0.3);
+}
+
+.setting-text-input::placeholder {
+  color: rgba(60, 76, 81, 0.4);
+}
+
+.setting-text-input.invalid {
+  border-color: #ff0000;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+/* ============================================
+   NUMBER INPUTS
+   ============================================ */
+
+.setting-number-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  color: var(--darkness);
+  font-size: 14px;
+  border-radius: 4px;
+  font-family: var(--font-family-monospace);
+  margin-top: 4px;
+}
+
+.setting-number-input:focus {
+  outline: none;
+  border-color: var(--burnt-red);
+  box-shadow: 0 0 5px rgba(180, 66, 22, 0.3);
+}
+
+.setting-number-input:invalid {
+  border-color: #ff0000;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+/* ============================================
+   VALIDATION MESSAGES
+   ============================================ */
+
+.validation-message {
+  display: inline-block;
+  font-size: 0.85em;
+  margin-left: 0.5em;
+  font-weight: 600;
+}
+
+.validation-message.valid {
+  color: #98c379;
+}
+
+.validation-message.invalid {
+  color: #e06c75;
+}
+
+/* ============================================
+   SETTING SLIDERS (Appearance)
+   ============================================ */
+
+.setting-slider {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+  margin-top: 8px;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.setting-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--burnt-red);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--darkness);
+}
+
+.setting-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--burnt-red);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--darkness);
+}
+
+.setting-slider:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 5px rgba(180, 66, 22, 0.5);
+}
+
+.setting-slider:hover::-moz-range-thumb {
+  box-shadow: 0 0 5px rgba(180, 66, 22, 0.5);
+}
+
+/* ============================================
+   RESIZE CURSORS (interact.js)
+   ============================================ */
+
+.resize-edge {
+  position: absolute;
+}
+
+/* ============================================
+   SETTINGS MODAL
+   ============================================ */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(60, 76, 81, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: var(--z-modal);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Modal initial state */
+.modal-overlay {
+  display: none;
+}
+
+.modal-content.settings-panel {
+  background: var(--pale-white);
+  border-radius: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.5);
+  border-right: 1px solid rgba(128, 128, 128, 0.5);
+  padding: 0;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+  background: rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: var(--darkness);
+  font-size: 1.5rem;
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid #444;
+  background: #222;
+  flex-shrink: 0;
+}
+
+/* Settings Sections */
+.settings-section {
+  margin-bottom: 30px;
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-section h3 {
+  color: var(--darkness);
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  padding-bottom: 10px;
+}
+
+.settings-placeholder {
+  color: rgba(60, 76, 81, 0.6);
+  font-style: italic;
+  margin: 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* Setting Items */
+.setting-item {
+  margin-bottom: 24px;
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.setting-item>label:not(.toggle-label) {
+  display: block;
+  color: var(--darkness);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* Setting Description Text */
+.setting-description {
+  color: rgba(60, 76, 81, 0.7);
+  font-size: 12px;
+  margin: 8px 0 0 0;
+  line-height: 1.4;
+}
+
+.toggle-label+.setting-description {
+  margin-left: 60px;
+}
+
+/* Notice box for important messages in settings */
+.notice-box {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin: 16px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.notice-info {
+  background: rgba(33, 150, 243, 0.1);
+  border: 1px solid rgba(33, 150, 243, 0.3);
+  color: var(--darkness);
+}
+
+.notice-info .material-icons {
+  color: rgba(33, 150, 243, 0.8);
+}
+
+/* Notice box icons */
+.notice-box .material-icons {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+/* ============================================
+   CONFIRMATION MODAL
+   ============================================ */
+
+.confirm-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-panel);
+}
+
+.confirm-modal {
+  background: var(--card-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.confirm-modal-danger {
+  border-color: #ff4444;
+}
+
+.confirm-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.confirm-modal-message {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-color);
+}
+
+.confirm-modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* ============================================
+   SKIN IMPORT/MANAGE UI
+   ============================================ */
+
+.skin-import-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.import-status {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.import-status.success {
+  background: rgba(0, 200, 0, 0.1);
+  border: 1px solid rgba(0, 200, 0, 0.3);
+  color: #00c800;
+}
+
+.import-status.error {
+  background: rgba(200, 0, 0, 0.1);
+  border: 1px solid rgba(200, 0, 0, 0.3);
+  color: #c83c3c;
+}
+
+.custom-skins-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.no-custom-skins {
+  color: #666;
+  font-size: 13px;
+  font-style: italic;
+  padding: 12px;
+  text-align: center;
+}
+
+.custom-skin-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.custom-skin-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.custom-skin-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.custom-skin-meta {
+  font-size: 12px;
+  color: #888;
+}
+
+.custom-skin-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.custom-skin-actions button {
+  padding: 6px 10px;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.custom-skin-actions button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.custom-skin-actions .btn-export {
+  color: var(--dark-green);
+}
+
+.custom-skin-actions .btn-delete {
+  color: var(--burnt-red);
+}
+
+.custom-skin-actions .btn-delete:hover {
+  background: rgba(200, 60, 60, 0.2);
+  border-color: var(--burnt-red);
+}
