@@ -1,0 +1,564 @@
+/**
+ * Accessibility Styles
+ *
+ * This file contains accessibility-related CSS including:
+ * - Skip links for keyboard navigation
+ * - Screen reader only utilities
+ * - High contrast mode
+ * - Reduced motion preferences
+ * - Enhanced focus indicators
+ */
+
+/* ============================================
+   SKIP LINKS
+   ============================================ */
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  background: var(--dark-green, #076443);
+  color: #fff;
+  padding: 12px 24px;
+  z-index: 100000;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 0 0 4px 0;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid var(--puke, #e3ad43);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   SCREEN READER ONLY UTILITIES
+   ============================================ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Make content visible for debugging while still screen-reader accessible */
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* ============================================
+   FOCUS INDICATORS
+   ============================================ */
+
+/* Default focus indicator */
+:focus {
+  outline: 2px solid var(--dark-green, #076443);
+  outline-offset: 2px;
+}
+
+/* Focus visible - only show focus ring for keyboard navigation */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--dark-green, #076443);
+  outline-offset: 2px;
+}
+
+/* Enhanced focus indicator style (user preference) */
+body.focus-enhanced :focus-visible {
+  outline: 3px solid var(--puke, #e3ad43);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(227, 173, 67, 0.3);
+}
+
+/* Outline only focus style (user preference) */
+body.focus-outline-only :focus-visible {
+  outline: 2px dashed var(--dark-green, #076443);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* Button focus states */
+button:focus-visible,
+.btn-hole:focus-visible,
+.top-bar-btn:focus-visible {
+  outline: 2px solid var(--puke, #e3ad43);
+  outline-offset: 2px;
+}
+
+/* Input and select focus states */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--dark-green, #076443);
+  outline-offset: 0;
+  border-color: var(--dark-green, #076443);
+}
+
+/* Panel title focus */
+.panel-title:focus-visible {
+  outline: 2px solid var(--dark-green, #076443);
+  outline-offset: 2px;
+  background: #2a2a2a;
+}
+
+/* Settings section header focus */
+.settings-section h3:focus-visible {
+  outline: 2px solid var(--burnt-red, #f64c04);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ============================================
+   HIGH CONTRAST MODE
+   ============================================ */
+
+/* High contrast mode CSS variables */
+body.high-contrast {
+  /* Override color palette for maximum contrast */
+  --pale-white: #ffffff;
+  --pearl: #ffffff;
+  --cream: #ffffff;
+  --darkness: #000000;
+  --dark-green: #00aa00;
+  --mid-green: #00cc00;
+  --burnt-red: #ff0000;
+  --puke: #ffff00;
+
+  /* Text colors */
+  --text-color: #ffffff;
+  --bg-color: #000000;
+  --card-bg: #000000;
+  --border-color: #ffffff;
+  --header-color: #00ff00;
+
+  /* Panel colors */
+  --panel-base-warm: #ffffff;
+  --panel-base-cool: #ffffff;
+  --panel-base-light: #ffffff;
+  --panel-base-dark: #000000;
+
+  /* Button colors */
+  --btn-hole-bg: #000000;
+  --btn-surface-bg: #ffffff;
+  --btn-hole-hover-bg: #333333;
+}
+
+/* High contrast specific styles */
+body.high-contrast {
+  background: #000000 !important;
+  color: #ffffff;
+}
+
+body.high-contrast .banner-bar,
+body.high-contrast .top-menu-bar {
+  background: #000000;
+  border-bottom: 2px solid #ffffff;
+}
+
+body.high-contrast .level-panel {
+  background: #000000;
+  border: 2px solid #ffffff;
+}
+
+body.high-contrast .level-panel > details > summary {
+  background: #000000;
+  border-bottom: 1px solid #ffffff;
+}
+
+body.high-contrast .level-panel > details > summary:hover {
+  background: #222222;
+}
+
+body.high-contrast .panel-title {
+  color: #ffffff;
+}
+
+body.high-contrast .panel-number-badge {
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid #ffffff;
+}
+
+body.high-contrast .panel-actions button {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+body.high-contrast .panel-actions button:hover {
+  background: #333333;
+}
+
+body.high-contrast .add-panel-trigger {
+  border: 2px solid #ffffff;
+  background: #000000;
+}
+
+body.high-contrast .add-panel-trigger:hover {
+  background: #222222;
+  border-color: #00ff00;
+}
+
+body.high-contrast .add-panel-text {
+  color: #ffffff;
+}
+
+/* High contrast modal */
+body.high-contrast .modal-overlay {
+  background: rgba(0, 0, 0, 0.95);
+}
+
+body.high-contrast .modal-content.settings-panel {
+  background: #000000;
+  border: 3px solid #ffffff;
+}
+
+body.high-contrast .modal-header {
+  background: #000000;
+  border-bottom: 2px solid #ffffff;
+}
+
+body.high-contrast .modal-header h2 {
+  color: #ffffff;
+}
+
+body.high-contrast .settings-section h3 {
+  color: #ffffff;
+  border-bottom: 1px solid #ffffff;
+}
+
+body.high-contrast .toggle-text,
+body.high-contrast .setting-item > label:not(.toggle-label) {
+  color: #ffffff;
+}
+
+body.high-contrast .setting-description {
+  color: #cccccc;
+}
+
+body.high-contrast .toggle-slider {
+  background: #333333;
+  border: 2px solid #ffffff;
+}
+
+body.high-contrast .toggle-input:checked + .toggle-slider {
+  background: #006600;
+  border-color: #00ff00;
+}
+
+body.high-contrast .toggle-input:checked + .toggle-slider::before {
+  background: #00ff00;
+}
+
+body.high-contrast .setting-select,
+body.high-contrast .setting-text-input,
+body.high-contrast .setting-number-input {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+body.high-contrast .setting-select:focus,
+body.high-contrast .setting-text-input:focus,
+body.high-contrast .setting-number-input:focus {
+  border-color: #00ff00;
+  box-shadow: 0 0 0 2px #00ff00;
+}
+
+body.high-contrast .btn-primary {
+  background: #00aa00;
+  color: #000000;
+  border: 2px solid #00ff00;
+}
+
+body.high-contrast .btn-primary:hover {
+  background: #00cc00;
+}
+
+body.high-contrast .btn-secondary {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+body.high-contrast .btn-secondary:hover {
+  background: #333333;
+}
+
+/* High contrast code editor */
+body.high-contrast .code-editor-wrapper,
+body.high-contrast .panel-editor-container .code-editor-wrapper {
+  background: #000000;
+  border: 2px solid #ffffff;
+}
+
+body.high-contrast .error-message {
+  background: #330000;
+  border-left: 4px solid #ff0000;
+  color: #ff6666;
+}
+
+/* High contrast focus indicators */
+body.high-contrast :focus-visible {
+  outline: 3px solid #ffff00 !important;
+  outline-offset: 2px;
+}
+
+body.high-contrast button:focus-visible {
+  outline: 3px solid #ffff00 !important;
+  box-shadow: 0 0 0 5px rgba(255, 255, 0, 0.5);
+}
+
+/* High contrast info footer */
+body.high-contrast .info {
+  color: #cccccc;
+  background: #000000;
+  border-top: 1px solid #ffffff;
+}
+
+/* ============================================
+   REDUCED MOTION PREFERENCES
+   ============================================ */
+
+/* Respect system preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* User preference for reduced motion */
+body.reduced-motion *,
+body.reduced-motion *::before,
+body.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Keep essential transitions for usability */
+body.reduced-motion .skip-link {
+  transition-duration: 0.1ms !important;
+}
+
+/* ============================================
+   PREFERS CONTRAST MEDIA QUERY
+   ============================================ */
+
+@media (prefers-contrast: more) {
+  :root {
+    --pale-white: #ffffff;
+    --darkness: #000000;
+    --dark-green: #00aa00;
+    --burnt-red: #ff0000;
+    --puke: #ffff00;
+    --text-color: #ffffff;
+    --bg-color: #000000;
+    --border-color: #ffffff;
+  }
+
+  body {
+    background: #000000;
+    color: #ffffff;
+  }
+
+  .level-panel {
+    border-width: 2px;
+  }
+
+  button,
+  a,
+  input,
+  select {
+    border-width: 2px;
+  }
+
+  :focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/* ============================================
+   CONFIRMATION MODAL ACCESSIBILITY
+   ============================================ */
+
+.confirm-modal-backdrop {
+  /* Ensure focus trap works */
+}
+
+.confirm-modal:focus {
+  outline: none;
+}
+
+.confirm-modal-btn:focus-visible {
+  outline: 3px solid var(--puke, #e3ad43);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   PANEL STATE ANNOUNCEMENTS
+   ============================================ */
+
+/* Visual indicators that complement aria-live announcements */
+.level-panel.playing {
+  position: relative;
+}
+
+.level-panel.playing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--dark-green, #076443);
+}
+
+.level-panel.error::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--burnt-red, #f64c04);
+}
+
+/* ============================================
+   KEYBOARD NAVIGATION ENHANCEMENTS
+   ============================================ */
+
+/* Visual indicator for keyboard-focused panels */
+.level-panel:focus-within {
+  box-shadow: 0 0 0 2px var(--dark-green, #076443);
+}
+
+/* Settings section keyboard navigation */
+.settings-section h3 {
+  cursor: pointer;
+  padding: 10px;
+  margin: -10px;
+  border-radius: 4px;
+}
+
+.settings-section h3:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Tab panel navigation indicator */
+[role="tablist"] [role="tab"]:focus-visible {
+  outline: 2px solid var(--dark-green, #076443);
+  outline-offset: -2px;
+}
+
+[role="tab"][aria-selected="true"] {
+  border-bottom: 2px solid var(--dark-green, #076443);
+}
+
+/* ============================================
+   TOUCH TARGET SIZES (WCAG 2.5.5)
+   ============================================ */
+
+/* Ensure minimum 44x44px touch targets */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  a,
+  input[type="checkbox"],
+  input[type="radio"],
+  select {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .toggle-slider {
+    min-width: 50px;
+    min-height: 44px;
+  }
+
+  .panel-actions button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* ============================================
+   COLOR BLINDNESS CONSIDERATIONS
+   ============================================ */
+
+/* Add patterns/icons in addition to color for state indication */
+.level-panel.playing .panel-number-badge::before {
+  content: '\25B6'; /* Play symbol */
+  position: absolute;
+  font-size: 8px;
+  top: -2px;
+  right: -2px;
+}
+
+.level-panel.stale .panel-number-badge::before {
+  content: '\21BB'; /* Refresh symbol */
+  position: absolute;
+  font-size: 8px;
+  top: -2px;
+  right: -2px;
+}
+
+.level-panel.error .panel-number-badge::before {
+  content: '\26A0'; /* Warning symbol */
+  position: absolute;
+  font-size: 8px;
+  top: -2px;
+  right: -2px;
+}
+
+.panel-number-badge {
+  position: relative;
+}
+
+/* ============================================
+   LINK IDENTIFICATION
+   ============================================ */
+
+/* Ensure links are distinguishable from regular text */
+a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* External link indicator */
+a[target="_blank"]::after {
+  content: ' \2197'; /* External link icon */
+  font-size: 0.8em;
+}
+
+.top-bar-btn[target="_blank"]::after {
+  display: none; /* Don't show for nav buttons */
+}
