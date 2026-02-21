@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.10.13] - 2026-02-21
+
+### Fixed
+- **GitHub Pages asset loading**
+  - Material Icons and fonts failing to load on the hosted "Try It Now" page (404 for woff2)
+  - Changed absolute asset paths to relative in `index.html` and `fonts.css`
+  - Fixes all `/static/` and `/fonts/` references that broke under the `/app/` subdirectory
+
 ## [0.10.12] - 2026-01-07
 
 ### Added

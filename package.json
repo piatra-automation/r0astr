@@ -1,6 +1,6 @@
 {
   "name": "r0astr",
-  "version": "0.10.12",
+  "version": "0.10.13",
   "description": "r0astr - Multi-instrument live coding interface built on Strudel",
   "type": "module",
   "private": true,
@@ -42,6 +42,7 @@
     "prettier": "^3.6.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "concurrently": "^8.2.2",
     "electron": "^39.2.7",
     "electron-builder": "^25.1.8",

@@ -6,72 +6,82 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>r0astr - Strudel Synth API</title>
   <!-- Core CSS (order matters) -->
-  <link rel="stylesheet" href="/static/css/variables.css">
-  <link rel="stylesheet" href="/static/css/base.css">
-  <link rel="stylesheet" href="/static/css/panels.css">
-  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="static/css/variables.css">
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/panels.css">
+  <link rel="stylesheet" href="static/css/components.css">
+  <link rel="stylesheet" href="static/css/accessibility.css">
   <!-- Local fonts (bundled to avoid render-blocking network requests) -->
-  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="fonts/fonts.css">
 </head>
 
 <body>
+  <!-- Skip Links for Keyboard Navigation -->
+  <a href="#panel-tree" class="skip-link" id="skip-to-main">Skip to main content</a>
+  <a href="#panel-0" class="skip-link" id="skip-to-editor">Skip to code editor</a>
+
+  <!-- Screen Reader Announcements -->
+  <div id="sr-announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="sr-status" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
   <!-- Electron: Draggable title bar region (no-op in browser) -->
-  <div class="electron-drag-region"></div>
+  <div class="electron-drag-region" aria-hidden="true"></div>
 
   <!-- Banner Bar: Narrow header with logo and subtitle
        MUST come before top-menu-bar for CSS sibling hover selector to work -->
-  <div class="banner-bar" id="banner-bar">
+  <header class="banner-bar" id="banner-bar" role="banner">
     <div class="site-logo">
-      <img src="/static/images/banner.png" alt="r0astr Logo">
+      <img src="static/images/banner.png" alt="r0astr - Strudel Synth Orchestrator">
     </div>
-    <div class="banner-subtitle">
-      <a href="https://strudel.cc" target="_blank" rel="noopener noreferrer">STRUDEL</a> SYNTH API | ORCHESTRATOR
+    <div class="banner-subtitle" aria-label="Powered by Strudel Synth API">
+      <a href="https://strudel.cc" target="_blank" rel="noopener noreferrer" aria-label="Visit Strudel website (opens in new tab)">STRUDEL</a> SYNTH API | ORCHESTRATOR
     </div>
-  </div>
+  </header>
 
   <!-- Top Menu Bar: Auto-hiding drawer from top (slides down on banner hover) -->
   <nav class="top-menu-bar" id="top-menu-bar" aria-label="Main menu">
-    <button class="top-bar-btn btn-white" id="save-btn">SAVE</button>
-    <button class="top-bar-btn btn-orange" id="load-btn">LOAD</button>
-    <a href="/remote" class="top-bar-btn btn-green" id="remote-btn" target="_blank" rel="noopener noreferrer">REMOTE</a>
-    <button class="top-bar-btn btn-orange" id="config-btn">CONFIG</button>
+    <button class="top-bar-btn btn-white" id="save-btn" aria-label="Save current layout to file">SAVE</button>
+    <button class="top-bar-btn btn-orange" id="load-btn" aria-label="Load layout from file">LOAD</button>
+    <a href="/remote" class="top-bar-btn btn-green" id="remote-btn" target="_blank" rel="noopener noreferrer" aria-label="Open remote control interface (opens in new tab)">REMOTE</a>
+    <button class="top-bar-btn btn-orange" id="config-btn" aria-label="Open settings dialog" aria-haspopup="dialog">CONFIG</button>
   </nav>
 
   <!-- Metronome Section: Step sequencer indicator (16 steps per cycle) -->
-  <div class="metronome-section" id="metronome-section">
-    <div class="step-sequencer" id="metronome" title="Cycle position (1/16th steps)">
-      <div class="step-box" data-step="0"></div>
-      <div class="step-box" data-step="1"></div>
-      <div class="step-box" data-step="2"></div>
-      <div class="step-box" data-step="3"></div>
-      <div class="step-box" data-step="4"></div>
-      <div class="step-box" data-step="5"></div>
-      <div class="step-box" data-step="6"></div>
-      <div class="step-box" data-step="7"></div>
-      <div class="step-box" data-step="8"></div>
-      <div class="step-box" data-step="9"></div>
-      <div class="step-box" data-step="10"></div>
-      <div class="step-box" data-step="11"></div>
-      <div class="step-box" data-step="12"></div>
-      <div class="step-box" data-step="13"></div>
-      <div class="step-box" data-step="14"></div>
-      <div class="step-box" data-step="15"></div>
+  <div class="metronome-section" id="metronome-section" role="status" aria-label="Cycle position indicator">
+    <div class="step-sequencer" id="metronome" title="Cycle position (1/16th steps)" aria-label="16-step sequencer showing current cycle position">
+      <div class="step-box" data-step="0" aria-hidden="true"></div>
+      <div class="step-box" data-step="1" aria-hidden="true"></div>
+      <div class="step-box" data-step="2" aria-hidden="true"></div>
+      <div class="step-box" data-step="3" aria-hidden="true"></div>
+      <div class="step-box" data-step="4" aria-hidden="true"></div>
+      <div class="step-box" data-step="5" aria-hidden="true"></div>
+      <div class="step-box" data-step="6" aria-hidden="true"></div>
+      <div class="step-box" data-step="7" aria-hidden="true"></div>
+      <div class="step-box" data-step="8" aria-hidden="true"></div>
+      <div class="step-box" data-step="9" aria-hidden="true"></div>
+      <div class="step-box" data-step="10" aria-hidden="true"></div>
+      <div class="step-box" data-step="11" aria-hidden="true"></div>
+      <div class="step-box" data-step="12" aria-hidden="true"></div>
+      <div class="step-box" data-step="13" aria-hidden="true"></div>
+      <div class="step-box" data-step="14" aria-hidden="true"></div>
+      <div class="step-box" data-step="15" aria-hidden="true"></div>
     </div>
   </div>
 
   <!-- Master Button Block: Removed - buttons now in master panel row -->
 
   <!-- Settings Modal -->
-  <div id="settings-modal" class="modal-overlay" role="dialog" aria-labelledby="settings-title" aria-modal="true">
+  <div id="settings-modal" class="modal-overlay" role="dialog" aria-labelledby="settings-title" aria-describedby="settings-description" aria-modal="true">
     <div class="modal-content settings-panel">
       <div class="modal-header">
         <h2 id="settings-title">Settings</h2>
+        <p id="settings-description" class="sr-only">Configure application settings including appearance, editor options, and accessibility features. Use Tab to navigate between options.</p>
       </div>
 
-      <div class="modal-body">
+      <div class="modal-body" role="group" aria-label="Settings categories">
         <!-- GENERAL Section -->
-        <section class="settings-section collapsed" id="general-settings">
-          <h3>General</h3>
+        <section class="settings-section collapsed" id="general-settings" aria-labelledby="general-settings-heading">
+          <h3 id="general-settings-heading" tabindex="0" role="button" aria-expanded="false" aria-controls="general-settings-content">General</h3>
           <div class="settings-section-content">
             <!-- Restore Session Toggle -->
             <div class="setting-item">
@@ -114,8 +124,8 @@
         </section>
 
         <!-- EDITOR Section -->
-        <section class="settings-section collapsed" id="editor-settings">
-          <h3>Editor</h3>
+        <section class="settings-section collapsed" id="editor-settings" aria-labelledby="editor-settings-heading">
+          <h3 id="editor-settings-heading" tabindex="0" role="button" aria-expanded="false" aria-controls="editor-settings-content">Editor</h3>
           <div class="settings-section-content">
             <!-- Font Size Slider -->
             <div class="setting-item">
@@ -197,8 +207,8 @@
         </section>
 
         <!-- BEHAVIOUR Section -->
-        <section class="settings-section collapsed" id="behaviour-settings">
-          <h3>Behaviour</h3>
+        <section class="settings-section collapsed" id="behaviour-settings" aria-labelledby="behaviour-settings-heading">
+          <h3 id="behaviour-settings-heading" tabindex="0" role="button" aria-expanded="false" aria-controls="behaviour-settings-content">Behaviour</h3>
           <div class="settings-section-content">
             <!-- Active Panel Opacity Slider -->
             <div class="setting-item">
@@ -250,8 +260,8 @@
         </section>
 
         <!-- INTEGRATIONS Section -->
-        <section class="settings-section collapsed" id="integration-settings">
-          <h3>Integrations</h3>
+        <section class="settings-section collapsed" id="integration-settings" aria-labelledby="integration-settings-heading">
+          <h3 id="integration-settings-heading" tabindex="0" role="button" aria-expanded="false" aria-controls="integration-settings-content">Integrations</h3>
           <div class="settings-section-content">
             <!-- UI Skin Selector -->
             <div class="setting-item">
@@ -303,9 +313,64 @@
           </div>
         </section>
 
+        <!-- ACCESSIBILITY Section -->
+        <section class="settings-section collapsed" id="accessibility-settings" aria-labelledby="accessibility-settings-heading">
+          <h3 id="accessibility-settings-heading" tabindex="0" role="button" aria-expanded="false" aria-controls="accessibility-settings-content">Accessibility</h3>
+          <div class="settings-section-content" id="accessibility-settings-content">
+            <!-- High Contrast Mode Toggle -->
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="high-contrast-toggle" class="toggle-input" aria-describedby="high-contrast-description">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">High Contrast Mode</span>
+              </label>
+              <p class="setting-description" id="high-contrast-description">
+                Increases contrast for better visibility. Uses system preference by default.
+              </p>
+            </div>
+
+            <!-- Reduced Motion Toggle -->
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="reduced-motion-toggle" class="toggle-input" aria-describedby="reduced-motion-description">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Reduce Motion</span>
+              </label>
+              <p class="setting-description" id="reduced-motion-description">
+                Minimizes animations and transitions. Uses system preference by default.
+              </p>
+            </div>
+
+            <!-- Screen Reader Announcements Toggle -->
+            <div class="setting-item">
+              <label class="toggle-label">
+                <input type="checkbox" id="screen-reader-announcements-toggle" class="toggle-input" checked aria-describedby="sr-announcements-description">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Screen Reader Announcements</span>
+              </label>
+              <p class="setting-description" id="sr-announcements-description">
+                Announce panel state changes (playing, stopped, errors) to screen readers
+              </p>
+            </div>
+
+            <!-- Focus Indicator Style -->
+            <div class="setting-item">
+              <label for="focus-indicator-select">Focus Indicator Style</label>
+              <select id="focus-indicator-select" class="setting-select" aria-describedby="focus-indicator-description">
+                <option value="default">Default</option>
+                <option value="enhanced">Enhanced (larger, high contrast)</option>
+                <option value="outline-only">Outline only</option>
+              </select>
+              <p class="setting-description" id="focus-indicator-description">
+                Style of keyboard focus indicators throughout the application
+              </p>
+            </div>
+          </div>
+        </section>
+
         <!-- ADVANCED Section -->
-        <section class="settings-section collapsed" id="advanced-settings">
-          <h3>Advanced</h3>
+        <section class="settings-section collapsed" id="advanced-settings" aria-labelledby="advanced-settings-heading">
+          <h3 id="advanced-settings-heading" tabindex="0" role="button" aria-expanded="false" aria-controls="advanced-settings-content">Advanced</h3>
           <div class="settings-section-content">
             <!-- Show Tempo Knob -->
             <div class="setting-item">
@@ -374,51 +439,48 @@
         </section>
       </div>
 
-      <div class="modal-footer">
-        <button id="settings-save-btn" class="btn-primary">Save</button>
-        <button id="settings-cancel-btn" class="btn-secondary">Cancel</button>
+      <div class="modal-footer" role="group" aria-label="Dialog actions">
+        <button id="settings-save-btn" class="btn-primary" aria-label="Save settings and close dialog">Save</button>
+        <button id="settings-cancel-btn" class="btn-secondary" aria-label="Cancel changes and close dialog">Cancel</button>
       </div>
     </div>
   </div>
 
-  <header>
-    <div class="global-controls">
-      <!-- Controls moved to hero section -->
-    </div>
-  </header>
-
   <!-- Panel Tree Structure -->
-  <ul class="panel-tree" id="panel-tree">
-    <!-- Master Panel (panel-0) -->
-    <li class="level-panel" data-panel-id="panel-0" data-panel-number="0" id="panel-0">
-      <details open>
-        <summary>
-          <span class="panel-number-badge">0</span>
-          <span class="panel-title" contenteditable="true">GLOBALS</span>
-          <div class="panel-actions">
-            <!-- Master panel controls: Update All and Stop All -->
-            <button class="btn-update-all" id="update-all-btn" title="Update all stale panels">
-              <span class="material-icons">eco</span>
-              <span class="count-badge hidden"></span>
-            </button>
-            <button class="btn-stop-all" id="stop-all" title="Stop All">
-              <span class="material-icons">stop</span>
-            </button>
-            <!-- No delete button for master panel -->
-          </div>
-        </summary>
+  <main id="main-content" role="main" aria-label="Code panels">
+    <ul class="panel-tree" id="panel-tree" role="list" aria-label="Instrument panels">
+      <!-- Master Panel (panel-0) -->
+      <li class="level-panel" data-panel-id="panel-0" data-panel-number="0" id="panel-0" role="listitem" aria-label="Master panel - Global settings">
+        <details open>
+          <summary aria-label="Master panel: GLOBALS. Contains global variables and settings.">
+            <span class="panel-number-badge" aria-label="Panel 0">0</span>
+            <span class="panel-title" contenteditable="true" role="textbox" aria-label="Panel title - editable" aria-describedby="panel-title-hint">GLOBALS</span>
+            <span id="panel-title-hint" class="sr-only">Press Enter to save, Escape to cancel</span>
+            <div class="panel-actions" role="toolbar" aria-label="Master panel controls">
+              <!-- Master panel controls: Update All and Stop All -->
+              <button class="btn-update-all" id="update-all-btn" title="Update all stale panels" aria-label="Update all stale panels" aria-describedby="update-all-hint">
+                <span class="material-icons" aria-hidden="true">eco</span>
+                <span class="count-badge hidden" aria-live="polite"></span>
+              </button>
+              <span id="update-all-hint" class="sr-only">Refreshes all panels with pending code changes</span>
+              <button class="btn-stop-all" id="stop-all" title="Stop All" aria-label="Stop all playing panels">
+                <span class="material-icons" aria-hidden="true">stop</span>
+              </button>
+              <!-- No delete button for master panel -->
+            </div>
+          </summary>
         <!-- Editor container - collapses with details -->
         <div class="panel-editor-container">
           <div class="code-editor-wrapper">
-            <div class="code-editor" id="editor-panel-0" data-card="panel-0"></div>
+            <div class="code-editor" id="editor-panel-0" data-card="panel-0" role="textbox" aria-multiline="true" aria-label="Code editor for master panel"></div>
           </div>
-          <div class="error-message" data-card="panel-0" style="display: none;"></div>
+          <div class="error-message" data-card="panel-0" style="display: none;" role="alert" aria-live="assertive"></div>
         </div>
       </details>
       <!-- Controls container - outside details, visibility controlled by settings -->
-      <div class="panel-controls-container">
-        <div class="leaf-viz" style="display: none;">
-          <div id="viz-container-panel-0" class="viz-container"></div>
+      <div class="panel-controls-container" aria-label="Panel controls">
+        <div class="leaf-viz" style="display: none;" aria-hidden="true">
+          <div id="viz-container-panel-0" class="viz-container" aria-label="Audio visualization"></div>
         </div>
         <!-- Slider leaves will be added dynamically by sliderManager -->
       </div>
@@ -426,17 +488,19 @@
     <!-- Dynamic panels created via [+] button will appear here -->
 
     <!-- Add Panel Row: Always at end of tree -->
-    <li class="add-panel-row" id="add-panel-row">
-      <button class="add-panel-trigger" id="add-panel-btn" title="Add New Panel">
-        <span class="panel-number-badge add-badge">+</span>
+    <li class="add-panel-row" id="add-panel-row" role="listitem">
+      <button class="add-panel-trigger" id="add-panel-btn" title="Add New Panel" aria-label="Add new instrument panel" aria-describedby="add-panel-hint">
+        <span class="panel-number-badge add-badge" aria-hidden="true">+</span>
         <span class="add-panel-text">Add New Panel</span>
       </button>
+      <span id="add-panel-hint" class="sr-only">Creates a new code panel for instruments and patterns. Keyboard shortcut: Cmd+N</span>
     </li>
   </ul>
 
-  <div class="info">
+  <footer class="info" role="contentinfo" aria-label="Application help">
     Click [+] to create new instrument panels. Expand panels to edit code.
-  </div>
+  </footer>
+  </main>
 
   <script type="module" src="/src/main.js"></script>
 </body>
