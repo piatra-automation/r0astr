@@ -159,3 +159,10 @@ __pycache__/
 
 # MkDocs
 site/site/
+_site/
+
+# Test outputs
+test-results/
+
+# Automaker (deprecated)
+.automaker/

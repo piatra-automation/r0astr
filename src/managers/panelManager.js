@@ -281,6 +281,85 @@ export function updatePanelCode(panelId, code) {
 }
 
 /**
+ * Duplicate an existing panel with all its content and state
+ * Creates a new panel as a copy of the source panel
+ * @param {string} sourcePanelId - ID of the panel to duplicate
+ * @param {Object} options - Override options for the new panel
+ * @returns {string|null} New panel ID or null if source not found
+ */
+export function duplicatePanel(sourcePanelId, options = {}) {
+  // Get source panel
+  const sourcePanel = panels.get(sourcePanelId);
+  if (!sourcePanel) {
+    console.warn(`Cannot duplicate: Panel ${sourcePanelId} not found`);
+    return null;
+  }
+
+  // Generate new unique ID
+  const newPanelId = generatePanelId();
+  const newPanelNumber = getNextPanelNumber();
+
+  // Create title for duplicated panel
+  let newTitle = options.title;
+  if (!newTitle) {
+    // Add " Copy" suffix, handling existing "Copy" suffixes
+    const baseTitle = sourcePanel.title.replace(/ Copy( \d+)?$/, '');
+    // Check for existing copies to increment number
+    let copyNumber = 1;
+    const existingTitles = Array.from(panels.values()).map(p => p.title);
+    while (existingTitles.includes(copyNumber === 1 ? `${baseTitle} Copy` : `${baseTitle} Copy ${copyNumber}`)) {
+      copyNumber++;
+    }
+    newTitle = copyNumber === 1 ? `${baseTitle} Copy` : `${baseTitle} Copy ${copyNumber}`;
+  }
+
+  // Increment max z-index for new panel
+  maxZIndex += 10;
+
+  // Deep clone panel state (except id, number, playing state, zIndex)
+  const newPanel = {
+    id: newPanelId,
+    number: newPanelNumber,
+    title: newTitle,
+    code: sourcePanel.code, // Copy the code with all slider values
+    playing: false, // Start paused for safety
+    stale: false,
+    lastEvaluatedCode: '', // Reset - not yet evaluated
+    position: { ...sourcePanel.position }, // Copy position (legacy)
+    size: { ...sourcePanel.size }, // Copy size
+    zIndex: maxZIndex,
+    expandedPosition: sourcePanel.expandedPosition ? { ...sourcePanel.expandedPosition } : null,
+    collapsedPosition: null, // Will be calculated when rendered
+    isCollapsed: true
+  };
+
+  // Store in panels Map
+  panels.set(newPanelId, newPanel);
+
+  // Emit panel duplicated event
+  eventBus.emit('panel:duplicated', {
+    sourceId: sourcePanelId,
+    newId: newPanelId,
+    title: newPanel.title,
+    code: newPanel.code
+  });
+
+  // Also emit panel created for compatibility
+  eventBus.emit('panel:created', {
+    id: newPanelId,
+    title: newPanel.title,
+    code: newPanel.code,
+    options: { duplicatedFrom: sourcePanelId }
+  });
+
+  // Auto-save panel state
+  autoSavePanelState();
+
+  console.log(`Duplicated panel ${sourcePanelId} -> ${newPanelId} as "${newTitle}"`);
+  return newPanelId;
+}
+
+/**
  * Delete panel by ID
  * Removes from state and DOM
  * NOTE: Audio must be stopped BEFORE calling this (using silence pattern)
@@ -374,8 +453,9 @@ export function renderPanel(panelId, options = {}) {
   panelElement.dataset.panelId = panelId;
   panelElement.dataset.panelNumber = panel.number;
 
-  // Hide delete button for master panel (panel-0)
+  // Hide delete and duplicate buttons for master panel (panel-0)
   const deleteButtonStyle = panelId === MASTER_PANEL_ID ? 'display: none;' : '';
+  const duplicateButtonStyle = panelId === MASTER_PANEL_ID ? 'display: none;' : '';
 
   // Render panel using skin template
   const panelHTML = skinManager.render('panel', {
@@ -383,7 +463,8 @@ export function renderPanel(panelId, options = {}) {
     panelNumber: panel.number,
     title: panel.title,
     expanded: options.expanded ? ' open' : '',
-    deleteButtonStyle
+    deleteButtonStyle,
+    duplicateButtonStyle
   });
 
   panelElement.innerHTML = panelHTML;

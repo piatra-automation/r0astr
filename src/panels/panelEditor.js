@@ -5,6 +5,11 @@
  * - Editor view creation
  * - Font size configuration
  * - Editor change handling
+ *
+ * Story 7.6: Responsive syntax highlighting using CodeMirror 6
+ * - Optimized for typing without lag
+ * - Debounced non-critical operations
+ * - requestAnimationFrame for visual updates
  */
 
 // CodeMirror 6 imports
@@ -25,6 +30,14 @@ import { updateVisualIndicators } from './panelUI.js';
 
 // Reference to updateAllButton - set by main.js
 let updateAllButtonRef = null;
+
+// === DEBOUNCING FOR RESPONSIVE TYPING ===
+// Debounce timers for each panel to prevent lag during typing
+const debounceTimers = new Map();
+// Pending updates batched per panel
+const pendingUpdates = new Map();
+// RAF handle for batched visual updates
+let rafHandle = null;
 
 /**
  * Set reference to updateAllButton from main.js
@@ -135,31 +148,117 @@ export function createEditorView(container, options = {}) {
 }
 
 /**
- * Handle editor change event
- * Story 7.6: CodeMirror Integration
+ * Handle editor change event - OPTIMIZED for responsive typing
+ * Story 7.6: Responsive syntax highlighting using CodeMirror 6
+ *
+ * Performance strategy:
+ * 1. Immediate: Store code in panel state (minimal overhead)
+ * 2. Debounced (100ms): Check staleness and update UI indicators
+ * 3. RAF batched: Visual updates to prevent layout thrashing
+ *
  * @param {string} code - New code content
  * @param {string} panelId - Panel ID
  */
 export function handleEditorChange(code, panelId) {
-  const startTime = performance.now();
+  const panel = getPanel(panelId);
+  if (!panel) return;
+
+  // IMMEDIATE: Update panel code state (fast, in-memory only)
+  // This ensures code is always saved even during rapid typing
+  panel.code = code;
+
+  // Store pending update for this panel
+  pendingUpdates.set(panelId, code);
+
+  // Clear existing debounce timer for this panel
+  const existingTimer = debounceTimers.get(panelId);
+  if (existingTimer) {
+    clearTimeout(existingTimer);
+  }
+
+  // DEBOUNCED: Schedule staleness check and visual updates
+  // 100ms delay allows rapid typing without triggering expensive operations
+  const timer = setTimeout(() => {
+    processPendingUpdate(panelId);
+  }, 100);
+
+  debounceTimers.set(panelId, timer);
+}
+
+/**
+ * Process pending update for a panel
+ * Called after debounce delay to batch operations
+ * @param {string} panelId - Panel ID
+ */
+function processPendingUpdate(panelId) {
+  const code = pendingUpdates.get(panelId);
+  if (code === undefined) return;
+
+  // Clear pending update
+  pendingUpdates.delete(panelId);
+  debounceTimers.delete(panelId);
 
   const panel = getPanel(panelId);
-  if (panel) {
-    const t1 = performance.now();
-    updatePanel(panelId, { code: code });
-    const t2 = performance.now();
-    checkStaleness(panelId);
-    const t3 = performance.now();
-    updateVisualIndicators(panelId);
-    const t4 = performance.now();
+  if (!panel) return;
+
+  // Update panel state with persistence (debounced - won't save immediately)
+  updatePanel(panelId, { code: code });
+
+  // Check staleness (compares current code to last evaluated)
+  checkStaleness(panelId);
+
+  // Schedule visual updates on next animation frame
+  // This batches multiple panels' updates together and avoids layout thrashing
+  scheduleVisualUpdate(panelId);
+}
+
+/**
+ * Schedule visual update using requestAnimationFrame
+ * Batches visual updates across multiple panels for efficiency
+ * @param {string} panelId - Panel ID to update
+ */
+const panelsToUpdate = new Set();
+
+function scheduleVisualUpdate(panelId) {
+  panelsToUpdate.add(panelId);
+
+  // Only schedule one RAF callback
+  if (rafHandle) return;
+
+  rafHandle = requestAnimationFrame(() => {
+    rafHandle = null;
+
+    // Process all pending visual updates
+    for (const id of panelsToUpdate) {
+      updateVisualIndicators(id);
+    }
+    panelsToUpdate.clear();
+
+    // Update global "Update All" button if needed
     if (updateAllButtonRef) {
       updateAllButtonRef();
     }
-    const t5 = performance.now();
+  });
+}
 
-    const total = t5 - startTime;
-    if (total > 5) {
-      console.warn(`[PERF INPUT] Total: ${total.toFixed(1)}ms | updatePanel: ${(t2 - t1).toFixed(1)}ms | checkStaleness: ${(t3 - t2).toFixed(1)}ms | updateVisualIndicators: ${(t4 - t3).toFixed(1)}ms | updateAllButton: ${(t5 - t4).toFixed(1)}ms`);
+/**
+ * Flush pending updates immediately
+ * Use when you need updates to apply before an action (e.g., play button)
+ * @param {string} panelId - Optional panel ID to flush, or all if not specified
+ */
+export function flushPendingUpdates(panelId = null) {
+  if (panelId) {
+    // Flush specific panel
+    const existingTimer = debounceTimers.get(panelId);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      processPendingUpdate(panelId);
+    }
+  } else {
+    // Flush all pending updates
+    for (const [id, timer] of debounceTimers) {
+      clearTimeout(timer);
+      processPendingUpdate(id);
     }
   }
 }

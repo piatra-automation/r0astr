@@ -11,6 +11,7 @@ import { loadSnippets, clearSnippets } from '../managers/snippetManager.js';
 import { importSkinFromZip, downloadSkin } from '../managers/skinImporter.js';
 import { getAllSkins, deleteSkin } from '../managers/skinStorage.js';
 import { skinManager } from '../managers/skinManager.js';
+import { applyHighContrast, applyReducedMotion, applyFocusStyle, createFocusTrap, getSystemPreferences } from '../managers/accessibilityManager.js';
 
 // Track if settings have been modified (dirty flag)
 let settingsDirty = false;
@@ -300,6 +301,37 @@ async function loadSettingsIntoForm() {
 
   if (showCpmToggle && settings.advanced) {
     showCpmToggle.checked = settings.advanced.show_cpm || false;
+  }
+
+  // Accessibility settings
+  const systemPrefs = getSystemPreferences();
+  const accessibility = settings.accessibility || {};
+
+  const highContrastToggle = document.getElementById('high-contrast-toggle');
+  if (highContrastToggle) {
+    // Use explicit setting if set, otherwise use system preference
+    const isHighContrast = accessibility.highContrast !== undefined
+      ? accessibility.highContrast
+      : systemPrefs.prefersHighContrast;
+    highContrastToggle.checked = isHighContrast;
+  }
+
+  const reducedMotionToggle = document.getElementById('reduced-motion-toggle');
+  if (reducedMotionToggle) {
+    const isReducedMotion = accessibility.reducedMotion !== undefined
+      ? accessibility.reducedMotion
+      : systemPrefs.prefersReducedMotion;
+    reducedMotionToggle.checked = isReducedMotion;
+  }
+
+  const srAnnouncementsToggle = document.getElementById('screen-reader-announcements-toggle');
+  if (srAnnouncementsToggle) {
+    srAnnouncementsToggle.checked = accessibility.screenReaderAnnouncements !== false;
+  }
+
+  const focusIndicatorSelect = document.getElementById('focus-indicator-select');
+  if (focusIndicatorSelect) {
+    focusIndicatorSelect.value = accessibility.focusStyle || 'default';
   }
 }
 
@@ -845,15 +877,101 @@ export function initializeSettingsModal() {
     input.addEventListener('input', trackChanges);
   });
 
-  // Collapsible settings sections
+  // Collapsible settings sections with accessibility support
   modal.querySelectorAll('.settings-section h3').forEach(header => {
     header.addEventListener('click', () => {
       const section = header.closest('.settings-section');
-      section.classList.toggle('collapsed');
+      const isCollapsed = section.classList.toggle('collapsed');
+      // Update aria-expanded state
+      header.setAttribute('aria-expanded', (!isCollapsed).toString());
+    });
+
+    // Keyboard support for collapsible sections
+    header.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        header.click();
+      }
     });
   });
 
-  console.log('✓ Settings modal initialized');
+  // Accessibility settings handlers
+  const highContrastToggle = document.getElementById('high-contrast-toggle');
+  highContrastToggle?.addEventListener('change', (e) => {
+    const enabled = e.target.checked;
+    applyHighContrast(enabled);
+
+    const settings = getSettings();
+    if (!settings.accessibility) settings.accessibility = {};
+    settings.accessibility.highContrast = enabled;
+    saveSettings(settings);
+
+    console.log(`High contrast mode ${enabled ? 'enabled' : 'disabled'}`);
+  });
+
+  const reducedMotionToggle = document.getElementById('reduced-motion-toggle');
+  reducedMotionToggle?.addEventListener('change', (e) => {
+    const enabled = e.target.checked;
+    applyReducedMotion(enabled);
+
+    const settings = getSettings();
+    if (!settings.accessibility) settings.accessibility = {};
+    settings.accessibility.reducedMotion = enabled;
+    saveSettings(settings);
+
+    console.log(`Reduced motion ${enabled ? 'enabled' : 'disabled'}`);
+  });
+
+  const srAnnouncementsToggle = document.getElementById('screen-reader-announcements-toggle');
+  srAnnouncementsToggle?.addEventListener('change', (e) => {
+    const enabled = e.target.checked;
+
+    const settings = getSettings();
+    if (!settings.accessibility) settings.accessibility = {};
+    settings.accessibility.screenReaderAnnouncements = enabled;
+    saveSettings(settings);
+
+    console.log(`Screen reader announcements ${enabled ? 'enabled' : 'disabled'}`);
+  });
+
+  const focusIndicatorSelect = document.getElementById('focus-indicator-select');
+  focusIndicatorSelect?.addEventListener('change', (e) => {
+    const style = e.target.value;
+    applyFocusStyle(style);
+
+    const settings = getSettings();
+    if (!settings.accessibility) settings.accessibility = {};
+    settings.accessibility.focusStyle = style;
+    saveSettings(settings);
+
+    console.log(`Focus indicator style set to: ${style}`);
+  });
+
+  // Setup focus trap for modal
+  let cleanupFocusTrap = null;
+
+  // Apply focus trap when modal opens
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'style') {
+        const isVisible = modal.style.display !== 'none';
+        if (isVisible && !cleanupFocusTrap) {
+          cleanupFocusTrap = createFocusTrap(modal.querySelector('.modal-content'));
+        } else if (!isVisible && cleanupFocusTrap) {
+          cleanupFocusTrap();
+          cleanupFocusTrap = null;
+        }
+      }
+    });
+  });
+  observer.observe(modal, { attributes: true });
+
+  // Handle escape key to close modal
+  modal.addEventListener('focustrap:escape', () => {
+    handleCancelSettings();
+  });
+
+  console.log('✓ Settings modal initialized with accessibility support');
 }
 
 /**

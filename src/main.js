@@ -2,13 +2,14 @@ import { repl, evalScope, ref } from '@strudel/core';
 import { getAudioContext, webaudioOutput, initAudioOnFirstClick, registerSynthSounds } from '@strudel/webaudio';
 import { transpiler } from '@strudel/transpiler';
 import { sliderWithID, sliderValues as cmSliderValues, highlightExtension, updateMiniLocations, highlightMiniLocations } from '@strudel/codemirror';
-import { createPanel, renderPanel, deletePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, expandPanel, collapsePanel, togglePanel, isPanelExpanded, reRenderAllPanels, MASTER_PANEL_ID } from './managers/panelManager.js';
+import { createPanel, renderPanel, deletePanel, duplicatePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, expandPanel, collapsePanel, togglePanel, isPanelExpanded, reRenderAllPanels, MASTER_PANEL_ID } from './managers/panelManager.js';
 import { initializePanelReorder } from './ui/panelReorder.js';
 import { loadSettings, getSettings, updateSetting } from './managers/settingsManager.js';
 import { skinManager } from './managers/skinManager.js';
 import { moveEditorToScreen, removeEditorFromScreen, removeAllEditorsExcept, isEditorInScreen } from './managers/screenManager.js';
 import { initializeSettingsModal, openSettingsModal } from './ui/settingsModal.js';
 import { applyAllAppearanceSettings, updatePanelOpacities } from './managers/themeManager.js';
+import { initializeAccessibility, announcePanelState } from './managers/accessibilityManager.js';
 import { openSnippetModal } from './ui/snippetModal.js';
 import { saveLayoutToFile, loadLayoutFromFile } from './ui/fileIO.js';
 import { loadSnippets } from './managers/snippetManager.js';
@@ -57,7 +58,8 @@ import {
   createEditorView,
   handleEditorChange as _handleEditorChange,
   updateAllEditorFontSizes,
-  setUpdateAllButtonRef
+  setUpdateAllButtonRef,
+  flushPendingUpdates
 } from './panels/panelEditor.js';
 
 /**
@@ -1361,6 +1363,22 @@ function initializeCards() {
     }
   });
 
+  // Tree layout: Use event delegation for DUPLICATE button clicks
+  document.addEventListener('click', (e) => {
+    const duplicateBtn = e.target.closest('.btn-duplicate');
+    if (duplicateBtn) {
+      // Try data-panel, then find from tree parent
+      let panelId = duplicateBtn.dataset.panel;
+      if (!panelId) {
+        const levelPanel = duplicateBtn.closest('.level-panel');
+        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
+      }
+      if (panelId && panelId !== MASTER_PANEL_ID) {
+        duplicatePanelAndFocus(panelId);
+      }
+    }
+  });
+
   // Tree layout: Handle details toggle for accordion mode and controls visibility
   // Listen for toggle events on details elements (use capture since toggle doesn't bubble)
   document.addEventListener('toggle', (e) => {
@@ -1871,6 +1889,10 @@ async function activatePanel(panelId) {
     alert('Strudel is still initializing. Please wait a moment and try again.');
     return;
   }
+
+  // Story 7.6: Flush any pending editor updates before playing
+  // This ensures the latest code is used even if user types and immediately hits play
+  flushPendingUpdates(panelId);
 
   const panel = cardStates[panelId];
   const view = editorViews.get(panelId);
@@ -2825,6 +2847,97 @@ function createNewPanelAndFocus() {
 }
 
 /**
+ * Duplicate an existing panel and focus its editor
+ * Creates a copy of the panel with all code and slider values
+ * @param {string} sourcePanelId - ID of the panel to duplicate
+ */
+function duplicatePanelAndFocus(sourcePanelId) {
+  // Cannot duplicate master panel
+  if (sourcePanelId === MASTER_PANEL_ID) {
+    console.warn('[Duplicate] Cannot duplicate master panel');
+    return;
+  }
+
+  // Duplicate the panel using panelManager
+  const newPanelId = duplicatePanel(sourcePanelId);
+  if (!newPanelId) {
+    console.error('[Duplicate] Failed to duplicate panel');
+    return;
+  }
+
+  // Get the source and new panel data
+  const sourcePanel = getPanel(sourcePanelId);
+  const newPanel = getPanel(newPanelId);
+
+  // Initialize cardStates for the new panel
+  cardStates[newPanelId] = {
+    playing: false,
+    stale: false,
+    lastEvaluatedCode: ''
+  };
+
+  // Render the new panel to DOM
+  const panelElement = renderPanel(newPanelId);
+
+  // Initialize CodeMirror for new panel with the copied code
+  const container = getPanelEditorContainer(newPanelId);
+  if (container) {
+    const view = createEditorView(container, {
+      initialCode: newPanel.code || '',
+      onChange: handleEditorChange,
+      panelId: newPanelId,
+    });
+    editorViews.set(newPanelId, view);
+    console.log(`[Duplicate] CodeMirror initialized for: ${newPanelId}`);
+
+    // Focus editor immediately after creation
+    setTimeout(() => {
+      bringPanelToFront(newPanelId);
+
+      // Expand details in tree layout
+      if (panelElement) {
+        const details = panelElement.querySelector('details');
+        if (details) {
+          details.open = true;
+        }
+      }
+
+      setTimeout(() => {
+        view.focus();
+        console.log(`[Duplicate] Panel ${newPanelId} focused and ready for input`);
+      }, 10);
+    }, 10);
+  }
+
+  // Initialize visual state
+  updateVisualIndicators(newPanelId);
+
+  // Re-parse sliders from the copied code (if any)
+  if (newPanel.code) {
+    const panelSlidersData = getPanelSliders(sourcePanelId);
+    if (panelSlidersData && panelSlidersData.length > 0) {
+      // Sliders will be parsed from the code when the panel is activated
+      console.log(`[Duplicate] Panel has ${panelSlidersData.length} sliders (will be initialized on activation)`);
+    }
+  }
+
+  console.log(`[Duplicate] Duplicated panel ${sourcePanelId} -> ${newPanelId}`);
+
+  // Broadcast panel_created event to remote clients
+  if (newPanel && wsIsConnected()) {
+    wsSend(MESSAGE_TYPES.PANEL_CREATED, {
+      id: newPanelId,
+      title: newPanel.title,
+      position: getAllPanels().size,
+      timestamp: Date.now()
+    });
+    console.log(`[WebSocket] Broadcasted panel_created for duplicate: ${newPanelId}`);
+  }
+
+  return newPanelId;
+}
+
+/**
  * Activate panel by index (0 = master, 1-9 = panels in order)
  * Brings panel to front and focuses its editor
  * If panel is already focused, toggles focus off (blur)
@@ -3190,6 +3303,19 @@ function initializeKeyboardShortcuts() {
         })();
         break;
 
+      case 'KeyD':
+        e.preventDefault();
+        const focusedPanelD = findFocusedPanel();
+        if (focusedPanelD && focusedPanelD !== MASTER_PANEL_ID) {
+          duplicatePanelAndFocus(focusedPanelD);
+          console.log('[Keyboard] Duplicated focused panel');
+        } else if (focusedPanelD === MASTER_PANEL_ID) {
+          console.warn('[Keyboard] Cannot duplicate master panel');
+        } else {
+          console.warn('[Keyboard] No panel focused - cannot duplicate');
+        }
+        break;
+
       case 'KeyE':
         e.preventDefault();
         const focusedPanelE = findFocusedPanel();
@@ -3295,6 +3421,7 @@ setTimeout(() => {
 
 initializeCards();
 initializeSettingsModal();
+initializeAccessibility();
 initializeKeyboardShortcuts();
 
 // Initialize Electron menu shortcut handlers (Cmd+N, Cmd+W, Cmd+P, etc.)

@@ -1,0 +1,29 @@
+/* Hide left navigation sidebar, keep right TOC only */
+
+/* Hide the left navigation sidebar */
+.md-sidebar--primary {
+  display: none;
+}
+
+/* Expand main content to fill the space */
+.md-main__inner {
+  margin-left: 0;
+}
+
+/* Adjust content area when left nav is hidden */
+.md-content {
+  margin-left: 0;
+  max-width: 100%;
+}
+
+/* Keep the right TOC visible and adjust positioning */
+.md-sidebar--secondary {
+  display: block;
+}
+
+/* On mobile, ensure content takes full width */
+@media screen and (max-width: 76.1875em) {
+  .md-content {
+    margin-left: 0;
+  }
+}

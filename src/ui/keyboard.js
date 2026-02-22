@@ -102,6 +102,7 @@ export function animatePressRelease(button) {
  * @param {Function} handlers.activatePanelByIndex - Activate panel by index (0-9)
  * @param {Function} handlers.createNewPanelAndFocus - Create new panel
  * @param {Function} handlers.deleteFocusedPanel - Delete focused panel
+ * @param {Function} handlers.duplicateFocusedPanel - Duplicate focused panel
  * @param {Function} handlers.togglePlaybackFocusedPanel - Toggle play/pause for focused panel
  * @param {Function} handlers.updateFocusedPanel - Update focused panel
  * @param {Function} handlers.openSnippetModal - Open snippet modal
@@ -113,6 +114,7 @@ export function initializeKeyboardShortcuts(handlers) {
     activatePanelByIndex,
     createNewPanelAndFocus,
     deleteFocusedPanel,
+    duplicateFocusedPanel,
     togglePlaybackFocusedPanel,
     updateFocusedPanel,
     openSnippetModal,
@@ -244,6 +246,14 @@ export function initializeKeyboardShortcuts(handlers) {
         deleteFocusedPanel();
         break;
 
+      case 'KeyD':
+        e.preventDefault();
+        if (duplicateFocusedPanel) {
+          duplicateFocusedPanel();
+          console.log('[Keyboard] Duplicated focused panel');
+        }
+        break;
+
       case 'KeyE':
         e.preventDefault();
         const focusedPanelE = findFocusedPanel();
@@ -286,6 +296,7 @@ export function initializeKeyboardShortcuts(handlers) {
   console.log(`✓ Keyboard shortcuts initialized (${isElectron ? 'Electron' : 'Browser'} mode):`);
   console.log(`  ${mod}+0-9: Activate panel (0=master, 1-9=panels)`);
   console.log(`  ${mod}+N: Create new panel`);
+  console.log(`  ${mod}+D: Duplicate focused panel`);
   console.log(`  ${mod}+W: Delete focused panel`);
   console.log(`  ${mod}+P: Toggle Play/Pause focused panel`);
   console.log(`  ${mod}+↑: Update focused panel`);

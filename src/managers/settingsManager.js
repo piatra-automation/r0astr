@@ -53,6 +53,12 @@ export const DEFAULT_SETTINGS = {
     show_tempo_knob: true,        // Show automatic TEMPO control (CPM/BPM)
     show_cpm: false               // Display as CPM (true) or BPM (false)
   },
+  accessibility: {
+    highContrast: undefined,      // undefined = use system preference, true/false = explicit
+    reducedMotion: undefined,     // undefined = use system preference, true/false = explicit
+    screenReaderAnnouncements: true, // Announce panel state changes to screen readers
+    focusStyle: 'default'         // 'default', 'enhanced', 'outline-only'
+  },
   snippetLocation: '',            // URL/path to snippet JSON
   remoteWSLayout: 'side-panel',   // 'side-panel', 'modal', 'hidden'
   skinPack: ''                    // Path to WinAmp-style skin folder (future)
