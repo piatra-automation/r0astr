@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.11.0] - 2026-02-22
+
+### Added
+- **Epic 1: CI/CD Pipeline Ground-Up Rebuild**
+  - Reusable `detect-version.yml` workflow — parses `^^^ vX.Y.Z` from commit messages, creates annotated git tags
+  - Reusable `build-electron.yml` workflow — parallel build matrix for macOS (universal), Windows (x64), Linux (x64) with `npm ci` and code signing
+  - Reusable `create-release.yml` workflow — idempotent GitHub Release creation with all platform artifacts
+  - Reusable `deploy-pages.yml` workflow — MkDocs site + lite web app deployed to GitHub Pages with pip/npm caching
+  - `ci.yml` orchestrator — single entry point for all CI/CD, replaces fragile ad-hoc workflows
+  - Manual `workflow_dispatch` release trigger with version input
+- **Plugin system** — plugin manager, sandbox, and validator
+- **Accessibility manager** — screen reader and keyboard navigation support
+- **Playwright config** — end-to-end test infrastructure
+
+### Changed
+- Moved BMAD historical docs from `bmad/` to `bmad-archive/` (read-only archive)
+- Updated branding assets (banner, icon, logo)
+- UI improvements to panel editor, settings modal, keyboard shortcuts, and skin templates
+- `.gitignore` updated to exclude `_site/`, `test-results/`, `.automaker/`
+
+### Removed
+- Old CI/CD workflows: `release.yml`, `docs.yml.disabled`, `static.yml.disabled`
+- `deploy-pages.yml` standalone push trigger (now called by orchestrator)
+
 ## [0.10.15] - 2026-02-21
 
 ### Fixed
