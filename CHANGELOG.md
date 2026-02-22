@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.11.2] - 2026-02-22
+
+### Fixed
+- macOS signing: don't pass empty `CSC_LINK` env var to electron-builder (step-level env overrode GITHUB_ENV)
+- Windows build: force `bash` shell for steps using Unix commands and bash variable expansion
+
 ## [0.11.1] - 2026-02-22
 
 ### Fixed
