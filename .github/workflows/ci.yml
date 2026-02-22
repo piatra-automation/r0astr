@@ -1,0 +1,57 @@
+# Top-level orchestrator: coordinates version detection, Electron builds,
+# release creation, and pages deployment from a single workflow.
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. 0.10.15). Leave empty for normal push behavior."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # --- Version detection (always runs) ---
+  detect-version:
+    uses: ./.github/workflows/detect-version.yml
+    with:
+      version: ${{ inputs.version || '' }}
+    secrets: inherit
+
+  # --- Electron build (release only) ---
+  build-electron:
+    needs: detect-version
+    if: needs.detect-version.outputs.is_release == 'true'
+    uses: ./.github/workflows/build-electron.yml
+    with:
+      version: ${{ needs.detect-version.outputs.version }}
+    secrets: inherit
+
+  # --- GitHub Release (after build, release only) ---
+  create-release:
+    needs: [detect-version, build-electron]
+    if: needs.detect-version.outputs.is_release == 'true'
+    uses: ./.github/workflows/create-release.yml
+    with:
+      version: ${{ needs.detect-version.outputs.version }}
+      tag: ${{ needs.detect-version.outputs.tag }}
+      is_prerelease: ${{ needs.detect-version.outputs.is_prerelease }}
+    secrets: inherit
+
+  # --- Pages deployment (always, parallel with release pipeline) ---
+  deploy-pages:
+    uses: ./.github/workflows/deploy-pages.yml
+    secrets: inherit

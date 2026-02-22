@@ -1,13 +1,9 @@
 # Reusable workflow: build MkDocs site + lite web app, deploy to GitHub Pages.
-# Can be called by the orchestrator or triggered standalone on push to main.
+# Called by ci.yml orchestrator on every push to main, or manually via workflow_dispatch.
 name: Deploy Docs & App to GitHub Pages
 
 on:
   workflow_call:
-
-  push:
-    branches:
-      - main
 
   workflow_dispatch:
 

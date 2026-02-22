@@ -6,6 +6,11 @@ name: Detect Version
 
 on:
   workflow_call:
+    inputs:
+      version:
+        description: "Optional version override (bypasses commit message parsing)"
+        required: false
+        type: string
     outputs:
       is_release:
         description: "'true' if a release version was detected, 'false' otherwise"
@@ -47,11 +52,10 @@ jobs:
       - name: Parse version
         id: parse
         env:
-          EVENT_NAME: ${{ github.event_name }}
           INPUT_VERSION: ${{ inputs.version }}
         run: |
-          # --- Manual trigger override ---
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+          # --- Version override (from workflow_call input or workflow_dispatch) ---
+          if [ -n "$INPUT_VERSION" ]; then
             RAW_VERSION="$INPUT_VERSION"
             # Strip leading 'v' if user included it
             VERSION="${RAW_VERSION#v}"
@@ -107,7 +111,7 @@ jobs:
         if: steps.parse.outputs.is_release == 'true'
         env:
           TAG: ${{ steps.parse.outputs.tag }}
-          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
           # Check if tag already exists (tag-only check, not all refs)
           if git tag -l "$TAG" | grep -q .; then
@@ -116,8 +120,8 @@ jobs:
           fi
 
           # Build tag message
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            TAG_MSG="Release $TAG (manual dispatch)"
+          if [ -n "$INPUT_VERSION" ]; then
+            TAG_MSG="Release $TAG (manual override)"
           else
             COMMIT_MSG=$(git log -1 --pretty=%B)
             # Use text after the ^^^ vX.Y.Z prefix as the tag message, or a default
