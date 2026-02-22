@@ -59,14 +59,14 @@ jobs:
         run: npm run build
 
       # --- macOS code signing ---
-      - name: Verify macOS signing certificate
+      - name: Configure code signing
         if: matrix.platform == 'mac'
         env:
           CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
         run: |
           if [ -z "$CSC_LINK" ]; then
-            echo "::warning::No macOS signing certificate configured — build will be unsigned"
+            echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
+            echo "::warning::No signing certificate — macOS build will be unsigned"
           fi
 
       - name: Build Electron (${{ matrix.platform }})
