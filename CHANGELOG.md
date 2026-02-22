@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.11.1] - 2026-02-22
+
+### Fixed
+- CI/CD concurrency deadlock between `ci.yml` and `deploy-pages.yml`
+- macOS unsigned build failure when `CSC_LINK` secret is empty
+- Rollup platform-specific optional deps missing in CI (npm bug #4828) — delete lockfile + node_modules before install
+
 ## [0.11.0] - 2026-02-22
 
 ### Added
