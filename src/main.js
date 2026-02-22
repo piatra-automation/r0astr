@@ -2692,40 +2692,11 @@ async function initializeStrudel() {
     transpiler,
   });
 
-  // Wrap evaluate to log every pattern registration
-  const originalEvaluate = replInstance.evaluate;
-  strudelCore.evaluate = (...args) => {
-    console.log('[GHOST DEBUG] evaluate() called with:', args[0]?.substring?.(0, 200), 'autoSchedule:', args[1]);
-    console.trace('[GHOST DEBUG] evaluate call stack');
-    return originalEvaluate(...args);
-  };
+  strudelCore.evaluate = replInstance.evaluate;
   strudelCore.scheduler = replInstance.scheduler;
-
-  // Log scheduler pattern registration
-  const originalSetPattern = strudelCore.scheduler.setPattern?.bind(strudelCore.scheduler);
-  if (originalSetPattern) {
-    strudelCore.scheduler.setPattern = (id, pattern, ...rest) => {
-      console.log('[GHOST DEBUG] scheduler.setPattern() id:', id, 'pattern:', pattern?.constructor?.name);
-      console.trace('[GHOST DEBUG] setPattern call stack');
-      return originalSetPattern(id, pattern, ...rest);
-    };
-  }
 
   // Expose scheduler globally for master panel functions (e.g., scheduler.now())
   window.scheduler = strudelCore.scheduler;
-
-  // Debug: log all registered patterns periodically
-  setInterval(() => {
-    const pats = strudelCore.scheduler?.pattern;
-    if (pats) {
-      console.log('[GHOST DEBUG] Scheduler patterns:', Object.keys(pats));
-    }
-    // Also check internal hap/event state
-    const state = strudelCore.scheduler?.getState?.();
-    if (state) {
-      console.log('[GHOST DEBUG] Scheduler state:', state);
-    }
-  }, 5000);
 
   // Initialize metronome indicator
   initializeMetronome();
