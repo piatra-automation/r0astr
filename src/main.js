@@ -1783,11 +1783,11 @@ function pausePanel(panelId) {
   // Use tracked pattern ID (handles .d1, .p1, etc.)
   const patternId = panel.patternId || panelId;
 
-  // Stop audio by replacing with silence, then deregister from scheduler.
+  // Stop audio by replacing with silence.
   // autoSchedule=false prevents restarting the scheduler when silencing.
+  // NOTE: Do NOT call scheduler.stop() here — it stops ALL patterns, not just one.
   try {
     strudelCore.evaluate(`silence.p('${patternId}')`, false, false);
-    strudelCore.scheduler.stop(patternId);
     console.log(`Panel ${panelId}: Paused (pattern ID: ${patternId})`);
   } catch (error) {
     console.error(`Panel ${panelId}: Pause error`, error);
