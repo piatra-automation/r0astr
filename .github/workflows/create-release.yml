@@ -1,0 +1,84 @@
+# Reusable workflow: download build artifacts and create/update a GitHub Release.
+# Expects artifacts named electron-* from the build-electron workflow.
+name: Create Release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Semver version string (e.g. '0.10.15')"
+        required: true
+        type: string
+      tag:
+        description: "Git tag (e.g. 'v0.10.15')"
+        required: true
+        type: string
+      is_prerelease:
+        description: "'true' if this is a pre-release version"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    name: Create GitHub Release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: electron-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: List downloaded artifacts
+        run: |
+          echo "Downloaded artifacts:"
+          ls -lhR artifacts/
+
+          # Verify minimum expected files exist
+          FILE_COUNT=$(find artifacts -type f \( -name '*.dmg' -o -name '*.zip' -o -name '*.exe' -o -name '*.AppImage' -o -name '*.deb' \) | wc -l)
+          echo "Distributable file count: $FILE_COUNT"
+          if [ "$FILE_COUNT" -lt 8 ]; then
+            echo "::warning::Expected at least 8 distributable files (2 dmg + 2 zip + 2 exe + AppImage + deb), found $FILE_COUNT"
+          fi
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+          VERSION: ${{ inputs.version }}
+          IS_PRERELEASE: ${{ inputs.is_prerelease }}
+        run: |
+          PRERELEASE_FLAG=""
+          if [ "$IS_PRERELEASE" = "true" ]; then
+            PRERELEASE_FLAG="--prerelease"
+          fi
+
+          # Collect all distributable files (null-delimited for filenames with spaces)
+          # Check if release already exists
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release $TAG already exists — updating"
+            gh release edit "$TAG" \
+              --title "r0astr $TAG" \
+              $PRERELEASE_FLAG
+
+            # Upload/overwrite artifacts
+            find artifacts -type f \( -name '*.dmg' -o -name '*.zip' -o -name '*.exe' -o -name '*.AppImage' -o -name '*.deb' \) -print0 \
+              | xargs -0 gh release upload "$TAG" --clobber
+          else
+            echo "Creating release $TAG"
+            find artifacts -type f \( -name '*.dmg' -o -name '*.zip' -o -name '*.exe' -o -name '*.AppImage' -o -name '*.deb' \) -print0 \
+              | xargs -0 gh release create "$TAG" \
+              --title "r0astr $TAG" \
+              --generate-notes \
+              $PRERELEASE_FLAG
+          fi
+
+          echo "Release $TAG published"
