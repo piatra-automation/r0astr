@@ -51,9 +51,11 @@ jobs:
         # Delete node_modules AND package-lock.json to ensure platform-specific
         # optional deps resolve correctly on each runner's OS.
         # The lockfile generated on macOS omits other platforms' native bindings (npm #4828).
+        shell: bash
         run: rm -rf node_modules package-lock.json && npm install
 
       - name: Inject version into package.json
+        shell: bash
         env:
           VERSION: ${{ inputs.version }}
         run: npm version "$VERSION" --no-git-tag-version --allow-same-version
