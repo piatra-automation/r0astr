@@ -35,9 +35,10 @@ jobs:
           cache: "npm"
 
       - name: Install Node dependencies
-        # Delete node_modules and reinstall to ensure platform-specific optional
-        # deps like @rollup/rollup-linux-x64-gnu resolve correctly (npm #4828).
-        run: rm -rf node_modules && npm install
+        # Delete node_modules AND package-lock.json to ensure platform-specific
+        # optional deps like @rollup/rollup-linux-x64-gnu resolve correctly.
+        # The lockfile generated on macOS omits Linux native bindings (npm #4828).
+        run: rm -rf node_modules package-lock.json && npm install
 
       - name: Build MkDocs site
         run: mkdocs build --site-dir _site

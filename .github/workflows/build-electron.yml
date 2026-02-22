@@ -48,9 +48,10 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        # Delete node_modules and reinstall to ensure platform-specific optional
-        # deps like @rollup/rollup-win32-x64-msvc resolve correctly (npm #4828).
-        run: rm -rf node_modules && npm install
+        # Delete node_modules AND package-lock.json to ensure platform-specific
+        # optional deps resolve correctly on each runner's OS.
+        # The lockfile generated on macOS omits other platforms' native bindings (npm #4828).
+        run: rm -rf node_modules package-lock.json && npm install
 
       - name: Inject version into package.json
         env:
