@@ -1780,18 +1780,25 @@ function pausePanel(panelId) {
   const panel = cardStates[panelId];
   if (!panel || !panel.playing) return;
 
-  // Use tracked pattern ID (handles .d1, .p1, etc.)
-  const patternId = panel.patternId || panelId;
+  // Build list of pattern IDs to silence.
+  // Panels with $: labels have multiple sub-IDs (patternIds array).
+  // Regular panels have a single patternId.
+  const idsToSilence = panel.patternIds || [panel.patternId || panelId];
 
-  // Stop audio by replacing with silence.
+  // Stop audio by replacing each pattern with silence.
   // autoSchedule=false prevents restarting the scheduler when silencing.
   // NOTE: Do NOT call scheduler.stop() here — it stops ALL patterns, not just one.
   try {
-    strudelCore.evaluate(`silence.p('${patternId}')`, false, false);
-    console.log(`Panel ${panelId}: Paused (pattern ID: ${patternId})`);
+    for (const id of idsToSilence) {
+      strudelCore.evaluate(`silence.p('${id}')`, false, false);
+    }
+    console.log(`Panel ${panelId}: Paused (pattern IDs: ${idsToSilence.join(', ')})`);
   } catch (error) {
     console.error(`Panel ${panelId}: Pause error`, error);
   }
+
+  // Clear tracked sub-IDs
+  delete panel.patternIds;
 
   // Update state
   panel.playing = false;
@@ -1971,17 +1978,29 @@ async function activatePanel(panelId) {
       }
     }
 
-    // Fix labeled statements: replace .p('$') with .p('panelId')
-    // This ensures $: patterns register to the same panel ID
+    // Fix labeled statements: replace each .p('$') with a unique sub-ID
+    // so multiple $: patterns in one panel get separate IDs for proper cleanup
     if (hasLabeledStatements) {
-      output = output.replace(/\.p\(['"]?\$['"]?\)/g, `.p('${panelId}')`);
-      userPatternId = panelId; // Track that we've mapped $ to panelId
+      let labelIndex = 0;
+      output = output.replace(/\.p\(['"]?\$['"]?\)/g, () => {
+        return `.p('${panelId}__${labelIndex++}')`;
+      });
+      // Track all sub-IDs for this panel (for pause cleanup)
+      const subIds = [];
+      for (let i = 0; i < labelIndex; i++) {
+        subIds.push(`${panelId}__${i}`);
+      }
+      cardStates[panelId].patternIds = subIds;
+      userPatternId = panelId; // Still set for the hasNamedPattern branch
+      console.log(`[PATTERN ID] Panel ${panelId} using $: sub-IDs:`, subIds);
     }
 
     // Store which pattern ID this panel is using (for pause button)
     if (userPatternId) {
       cardStates[panelId].patternId = userPatternId;
-      console.log(`[PATTERN ID] Panel ${panelId} using pattern ID: ${userPatternId}`);
+      if (!hasLabeledStatements) {
+        console.log(`[PATTERN ID] Panel ${panelId} using pattern ID: ${userPatternId}`);
+      }
     } else {
       cardStates[panelId].patternId = panelId; // Default to panel ID
     }
