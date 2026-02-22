@@ -62,12 +62,24 @@ jobs:
         run: npm run build
 
       # --- macOS code signing ---
-      - name: Configure code signing
+      # Export signing env vars only when secrets are actually configured.
+      # Setting CSC_LINK="" causes electron-builder to error ("not a file").
+      - name: Configure macOS code signing
         if: matrix.platform == 'mac'
         env:
           CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          if [ -z "$CSC_LINK" ]; then
+          if [ -n "$CSC_LINK" ]; then
+            echo "CSC_LINK=$CSC_LINK" >> "$GITHUB_ENV"
+            echo "CSC_KEY_PASSWORD=$CSC_KEY_PASSWORD" >> "$GITHUB_ENV"
+            [ -n "$APPLE_ID" ] && echo "APPLE_ID=$APPLE_ID" >> "$GITHUB_ENV"
+            [ -n "$APPLE_APP_SPECIFIC_PASSWORD" ] && echo "APPLE_APP_SPECIFIC_PASSWORD=$APPLE_APP_SPECIFIC_PASSWORD" >> "$GITHUB_ENV"
+            [ -n "$APPLE_TEAM_ID" ] && echo "APPLE_TEAM_ID=$APPLE_TEAM_ID" >> "$GITHUB_ENV"
+          else
             echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
             echo "::warning::No signing certificate — macOS build will be unsigned"
           fi
@@ -76,13 +88,6 @@ jobs:
         run: npx electron-builder --${{ matrix.platform }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # macOS signing — electron-builder reads these automatically
-          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
-          # Apple notarization (if configured)
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       # --- Artifact upload ---
       - name: Upload macOS artifacts
