@@ -140,6 +140,13 @@ Strudel is a live coding environment that brings the power of TidalCycles to the
 
 Learn more at [strudel.cc](https://strudel.cc)
 
+## Releases
+
+To create a release, push a commit to `main` with the message `^^^ vX.Y.Z` (e.g., `^^^ v0.11.0`).
+This triggers the CI pipeline to create a git tag, build Electron apps for macOS/Windows/Linux, publish a GitHub Release with all artifacts, and deploy the docs site.
+Pre-release versions use a `-` suffix (e.g., `^^^ v0.11.0-beta.1`) and are flagged as prerelease on GitHub.
+You can also trigger a release manually via **Actions > CI > Run workflow** and providing a version string.
+
 ## License
 
 GNU Affero General Public License v3.0 (AGPL-3.0-or-later)
