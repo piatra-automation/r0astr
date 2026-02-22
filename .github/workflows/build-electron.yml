@@ -48,10 +48,9 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        # Use npm install instead of npm ci so platform-specific optional deps
-        # (e.g. @rollup/rollup-win32-x64-msvc) resolve correctly even when the
-        # lockfile was generated on a different OS (known npm bug #4828).
-        run: npm install
+        # Delete node_modules and reinstall to ensure platform-specific optional
+        # deps like @rollup/rollup-win32-x64-msvc resolve correctly (npm #4828).
+        run: rm -rf node_modules && npm install
 
       - name: Inject version into package.json
         env:

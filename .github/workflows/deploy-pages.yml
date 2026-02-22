@@ -35,10 +35,9 @@ jobs:
           cache: "npm"
 
       - name: Install Node dependencies
-        # npm install instead of npm ci — works around npm bug #4828 where
-        # platform-specific optional deps (@rollup/rollup-linux-x64-gnu) are
-        # missing when the lockfile was generated on a different OS.
-        run: npm install
+        # Delete node_modules and reinstall to ensure platform-specific optional
+        # deps like @rollup/rollup-linux-x64-gnu resolve correctly (npm #4828).
+        run: rm -rf node_modules && npm install
 
       - name: Build MkDocs site
         run: mkdocs build --site-dir _site
