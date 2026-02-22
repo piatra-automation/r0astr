@@ -88,6 +88,12 @@ export async function validateCode(panelId) {
     return { valid: true };
   }
 
+  // Skip validation for $: labeled statements — .p() is only available
+  // inside the repl instance, not in the standalone coreEvaluate context
+  if (/^\s*\$\s*:/m.test(code)) {
+    return { valid: true };
+  }
+
   try {
     // Transpile and evaluate in one step using core evaluate
     // This catches both syntax errors and runtime errors (undefined variables/functions)
