@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.11.7] - 2026-02-23
+
+### Fixed
+- Ghost pattern bug: multiple `$:` labels in one panel now get unique sub-IDs, preventing orphaned patterns that couldn't be silenced
+
 ## [0.11.6] - 2026-02-22
 
 ### Added
