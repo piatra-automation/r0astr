@@ -1,0 +1,34 @@
+schema: 1
+story: "1.4"
+story_title: "GitHub Pages Deployment (MkDocs + Lite App)"
+gate: PASS
+status_reason: "All 8 ACs met. PERF-001 resolved in v1.1 with requirements.txt for pip cache activation. No new issues."
+reviewer: "Quinn (Test Architect)"
+updated: "2026-02-22"
+
+top_issues: []
+
+waiver: { active: false }
+
+nfr_validation:
+  _assessed: [security, performance, reliability, maintainability]
+  security:
+    status: PASS
+    notes: "Minimal permissions, no input interpolation"
+  performance:
+    status: PASS
+    notes: "Both pip and npm caching active"
+  reliability:
+    status: PASS
+    notes: "Concurrency group, CNAME verification, proper two-job dependency chain"
+  maintainability:
+    status: PASS
+    notes: "Clean structure, requirements.txt for reproducible pip installs"
+
+history:
+  - at: "2026-02-22"
+    gate: CONCERNS
+    note: "Initial review — PERF-001 (pip cache inactive without requirements file)"
+  - at: "2026-02-22"
+    gate: PASS
+    note: "Re-review after dev fix — requirements.txt added, pip cache active"
