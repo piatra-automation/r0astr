@@ -1,0 +1,31 @@
+schema: 1
+story: "1.1"
+story_title: "Reusable Version Detection Workflow"
+gate: PASS
+status_reason: "All 7 ACs met. All four issues from initial review (SEC-001, ARCH-001, TEST-001, MNT-001) resolved in v1.1. No new issues introduced."
+reviewer: "Quinn (Test Architect)"
+updated: "2026-02-22"
+
+top_issues: []
+
+waiver: { active: false }
+
+nfr_validation:
+  _assessed: [security, reliability, maintainability]
+  security:
+    status: PASS
+    notes: "Script injection vector resolved — all inputs passed via env: blocks"
+  reliability:
+    status: PASS
+    notes: "Graceful fallback and idempotent tag creation implemented"
+  maintainability:
+    status: PASS
+    notes: "Clean structure, well-commented, test deferral documented to Story 1.6"
+
+history:
+  - at: "2026-02-22"
+    gate: CONCERNS
+    note: "Initial review — SEC-001 (script injection), ARCH-001 (regex whitespace), TEST-001 (no tests), MNT-001 (rev-parse)"
+  - at: "2026-02-22"
+    gate: PASS
+    note: "Re-review after dev fixes — all four issues resolved"

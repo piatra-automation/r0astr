@@ -1,0 +1,31 @@
+schema: 1
+story: "1.2"
+story_title: "Multi-Arch Electron Build Matrix"
+gate: PASS
+status_reason: "All 7 ACs met. All three issues from initial review (SEC-002, ARCH-002, MNT-002) resolved in v1.1. No new issues introduced."
+reviewer: "Quinn (Test Architect)"
+updated: "2026-02-22"
+
+top_issues: []
+
+waiver: { active: false }
+
+nfr_validation:
+  _assessed: [security, reliability, maintainability]
+  security:
+    status: PASS
+    notes: "Input interpolation fixed — version passed via env var"
+  reliability:
+    status: PASS
+    notes: "fail-fast: false, if-no-files-found: error, graceful cert warning"
+  maintainability:
+    status: PASS
+    notes: "Clean matrix structure, clear step names, npm ci replaces old hacks"
+
+history:
+  - at: "2026-02-22"
+    gate: CONCERNS
+    note: "Initial review — SEC-002 (input interpolation), ARCH-002 (macOS naming), MNT-002 (step name)"
+  - at: "2026-02-22"
+    gate: PASS
+    note: "Re-review after dev fixes — all three issues resolved"

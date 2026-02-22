@@ -1,0 +1,136 @@
+# Reusable workflow: detect version from commit message or manual input,
+# create annotated git tag if needed, and output version metadata.
+#
+# Test coverage deferred to Story 1.6 (Pipeline Validation).
+name: Detect Version
+
+on:
+  workflow_call:
+    outputs:
+      is_release:
+        description: "'true' if a release version was detected, 'false' otherwise"
+        value: ${{ jobs.detect.outputs.is_release }}
+      version:
+        description: "Semver version string (e.g. '0.10.15') or empty"
+        value: ${{ jobs.detect.outputs.version }}
+      tag:
+        description: "Git tag (e.g. 'v0.10.15') or empty"
+        value: ${{ jobs.detect.outputs.tag }}
+      is_prerelease:
+        description: "'true' if version contains a hyphen (pre-release suffix)"
+        value: ${{ jobs.detect.outputs.is_prerelease }}
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. 0.10.15 or 0.10.15-beta.1). Do NOT include the 'v' prefix."
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      is_release: ${{ steps.parse.outputs.is_release }}
+      version: ${{ steps.parse.outputs.version }}
+      tag: ${{ steps.parse.outputs.tag }}
+      is_prerelease: ${{ steps.parse.outputs.is_prerelease }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Parse version
+        id: parse
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          # --- Manual trigger override ---
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            RAW_VERSION="$INPUT_VERSION"
+            # Strip leading 'v' if user included it
+            VERSION="${RAW_VERSION#v}"
+
+            # Validate semver format
+            if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
+              echo "::error::Invalid version format: '$RAW_VERSION'. Expected semver (e.g. 0.10.15 or 0.10.15-beta.1)"
+              exit 1
+            fi
+
+            echo "Manual dispatch with version: $VERSION"
+            echo "is_release=true" >> "$GITHUB_OUTPUT"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+            if echo "$VERSION" | grep -qE '\-'; then
+              echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+            fi
+            exit 0
+          fi
+
+          # --- Commit message parsing ---
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MSG"
+
+          # Match ^^^ followed by one or more whitespace chars then vX.Y.Z (aligned with release.yml \s+)
+          if echo "$COMMIT_MSG" | grep -qP '^\^\^\^\s+v([0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?)'; then
+            VERSION=$(echo "$COMMIT_MSG" | grep -oP '(?<=\s)v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?' | head -1)
+            # VERSION includes 'v' prefix from grep; strip for version output
+            SEMVER="${VERSION#v}"
+
+            echo "Detected release version: $SEMVER (tag: $VERSION)"
+            echo "is_release=true" >> "$GITHUB_OUTPUT"
+            echo "version=$SEMVER" >> "$GITHUB_OUTPUT"
+            echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
+
+            if echo "$SEMVER" | grep -qE '\-'; then
+              echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "No release pattern found in commit message"
+            echo "is_release=false" >> "$GITHUB_OUTPUT"
+            echo "version=" >> "$GITHUB_OUTPUT"
+            echo "tag=" >> "$GITHUB_OUTPUT"
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create and push tag
+        if: steps.parse.outputs.is_release == 'true'
+        env:
+          TAG: ${{ steps.parse.outputs.tag }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          # Check if tag already exists (tag-only check, not all refs)
+          if git tag -l "$TAG" | grep -q .; then
+            echo "Tag $TAG already exists — skipping creation"
+            exit 0
+          fi
+
+          # Build tag message
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            TAG_MSG="Release $TAG (manual dispatch)"
+          else
+            COMMIT_MSG=$(git log -1 --pretty=%B)
+            # Use text after the ^^^ vX.Y.Z prefix as the tag message, or a default
+            TAG_MSG=$(echo "$COMMIT_MSG" | sed -E 's/^\^\^\^\s+v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?\s*//')
+            if [ -z "$TAG_MSG" ]; then
+              TAG_MSG="Release $TAG"
+            fi
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          echo "Creating annotated tag $TAG with message: $TAG_MSG"
+          git tag -a "$TAG" -m "$TAG_MSG"
+          git push origin "$TAG"
+          echo "Tag $TAG created and pushed"
