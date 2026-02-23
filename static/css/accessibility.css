@@ -392,19 +392,33 @@ body.high-contrast .info {
   }
 }
 
-/* User preference for reduced motion */
-body.reduced-motion *,
-body.reduced-motion *::before,
-body.reduced-motion *::after {
-  animation-duration: 0.01ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
-  scroll-behavior: auto !important;
+/* User preference for reduced motion (JS toggle) — mirrors targeted media query */
+body.reduced-motion .modal-content.settings-panel,
+body.reduced-motion .confirm-modal {
+  animation: modal-enter 150ms ease-out;
 }
 
-/* Keep essential transitions for usability */
-body.reduced-motion .skip-link {
-  transition-duration: 0.1ms !important;
+body.reduced-motion .level-panel {
+  transition: none;
+}
+
+body.reduced-motion .level-panel:hover {
+  box-shadow: none;
+}
+
+body.reduced-motion .activate-btn.update,
+body.reduced-motion .update-all-btn:not(:disabled),
+body.reduced-motion .hero-btn.updating .material-icons,
+body.reduced-motion .panel-updating {
+  animation: none;
+}
+
+body.reduced-motion .step-box {
+  transition: none;
+}
+
+body.reduced-motion html {
+  scroll-behavior: auto;
 }
 
 /* ============================================

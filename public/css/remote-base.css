@@ -10,6 +10,9 @@
 
 /* =====================
    Design Tokens (remote-local)
+   IMPORTANT: These duplicate tokens from static/css/variables.css because
+   remote.html does not load variables.css. Keep in sync manually.
+   If variables.css token values change, update these to match.
    ===================== */
 
 :root {

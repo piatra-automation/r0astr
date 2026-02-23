@@ -1,0 +1,25 @@
+schema: 1
+story: "2.5"
+story_title: "Remote Control and Responsive Polish"
+gate: PASS
+status_reason: "All 8 ACs verified. Remote CSS rewritten with oklch glassmorphism, responsive breakpoints correct, projection margins functional, reduced-motion and high-contrast media queries properly targeted, color discipline maintained."
+reviewer: "Quinn (Test Architect)"
+updated: "2026-02-23T13:00:00Z"
+
+waiver: { active: false }
+
+top_issues:
+  - id: "MNT-001"
+    severity: low
+    finding: "remote-base.css duplicates design token values from variables.css rather than sharing a common source — tokens could drift out of sync over time"
+    suggested_action: "Document the duplication explicitly in CLAUDE.md or consider a build-time token injection for remote context"
+  - id: "MNT-002"
+    severity: low
+    finding: "body.reduced-motion selector (accessibility.css:396-403) uses nuclear 0.01ms override on all animations/transitions — overlaps with the targeted @media (prefers-reduced-motion) rules above it"
+    suggested_action: "Consider if both approaches are needed or if the body.reduced-motion class can be removed in favor of the media query"
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 0, low: 2 }
+  recommendations:
+    must_fix: []
+    monitor: []
