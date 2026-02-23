@@ -1,0 +1,9 @@
+schema: 1
+story: "2.2"
+story_title: "Default Skin Theme Rewrite"
+gate: PASS
+status_reason: "All 13 ACs met. Previous CONCERNS (max-height transition, chevron rotate) fixed — settings section now uses opacity-only fade, chevron uses content swap instead of transform."
+reviewer: "Quinn"
+updated: "2026-02-23"
+top_issues: []
+waiver: { active: false }

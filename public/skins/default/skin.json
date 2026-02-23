@@ -1,8 +1,8 @@
 {
   "name": "r0astr Default",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": "Piatra",
-  "description": "Clean tree-based panel layout with collapsible details",
+  "description": "Dark forest-green glassmorphism with translucent surfaces and green glow accents",
   "layoutType": "tree",
   "cssVariables": {},
   "css": {

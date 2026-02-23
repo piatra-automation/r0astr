@@ -1,37 +1,49 @@
 /**
- * Default Skin Theme
+ * Default Skin Theme — Forest-Green Glassmorphism
  *
- * The default skin uses the base CSS from /static/css/
- * This file explicitly restores default backgrounds when switching from other skins.
+ * Dark near-black base with translucent white-at-opacity surfaces,
+ * green glow accents, oklch color system throughout.
+ * Consumes design tokens from Story 2.1 (variables.css).
  */
 
-/* Overscroll background color */
+/* =====================
+   Background
+   ===================== */
+
 html {
-  background-color: #0a0a0a;
+  background-color: oklch(0.04 0 0);
 }
 
-/* Synthwave gradient background */
 body {
-  background: linear-gradient(45deg, #2d1b4e 0%, #0a0a0a 50%, #0d3b3b 100%);
+  background:
+    linear-gradient(
+      135deg,
+      oklch(0.06 0.04 150) 0%,
+      oklch(0.04 0 0) 40%,
+      oklch(0.04 0 0) 60%,
+      oklch(0.06 0.03 150) 100%
+    );
   background-attachment: fixed;
 }
 
-/* Banner visible by default */
-.banner-bar {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Remove overlay - let body gradient show through */
+/* Remove overlay — let body gradient show through */
 body::before {
   background: transparent;
 }
 
 /* =====================
-   Top Menu Bar - Always Visible Icons
+   Banner
    ===================== */
 
-/* Position menu as icon row on right side of banner */
+.banner-bar {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* =====================
+   Top Menu Bar — Floating with Blur
+   ===================== */
+
 .top-menu-bar {
   position: fixed;
   top: var(--projection-margin-top);
@@ -40,7 +52,9 @@ body::before {
   height: var(--banner-bar-height);
   width: auto;
   padding: 0;
-  background: transparent;
+  background: var(--surface-card-50);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 0;
   flex-direction: row;
   gap: 8px;
@@ -49,39 +63,33 @@ body::before {
   opacity: 1;
   pointer-events: auto;
   transform: none;
-  transition: none;
   z-index: calc(var(--z-panel) + 1);
 }
 
-/* Compact icon buttons - plain icons, subtle hover */
 .top-menu-bar .top-bar-btn {
   width: 32px;
   height: 32px;
   padding: 0;
-  font-size: 0; /* Hide text */
+  font-size: 0;
   border-radius: var(--radius-md);
   background: transparent;
-  color: var(--pale-white);
+  color: var(--text-secondary);
   border: none;
   box-shadow: none;
   opacity: 0.7;
-  transform: translateY(0);
-  transition: opacity 0.15s ease, background 0.15s ease, transform 0.15s ease;
+  transition: color 150ms, opacity 150ms, background-color 150ms;
 }
 
 .top-menu-bar .top-bar-btn:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
+  background: var(--surface-accent);
 }
 
 .top-menu-bar .top-bar-btn:active {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(0);
+  background: oklch(1 0 0 / 0.15);
 }
 
-/* Icon display for buttons */
 .top-menu-bar .top-bar-btn::before {
   font-family: var(--font-family-icons);
   font-size: 18px;
@@ -94,10 +102,9 @@ body::before {
 .top-menu-bar #config-btn::before { content: 'settings'; }
 
 /* =====================
-   Metronome - Above Master Panel
+   Metronome — Above Master Panel
    ===================== */
 
-/* Override fixed positioning - center above panels */
 .metronome-section {
   position: fixed;
   top: calc(var(--projection-margin-top) + var(--banner-bar-height) + 16px);
@@ -105,25 +112,74 @@ body::before {
   right: auto;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 900px; /* Match panel-tree width */
-  padding: 0 16px; /* Match panel-tree padding */
+  max-width: 900px;
+  padding: 0 16px;
   background: transparent;
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Reduce panel-tree top padding since metronome is inline */
 .panel-tree {
   padding-top: calc(var(--banner-bar-height, 50px) + var(--metronome-height, 24px) + 24px);
 }
 
+/* Active step — green glow */
+.step-box.active {
+  background: var(--color-primary);
+  box-shadow:
+    0 0 10px var(--color-primary),
+    0 0 20px oklch(0.55 0.15 150 / 0.6),
+    0 0 30px oklch(0.55 0.15 150 / 0.4);
+}
+
+/* Downbeat markers (quarter notes) — primary tint */
+.step-box[data-step="0"],
+.step-box[data-step="4"],
+.step-box[data-step="8"],
+.step-box[data-step="12"] {
+  background: oklch(0.55 0.15 150 / 0.4);
+}
+
+/* Active downbeats — brighter primary glow */
+.step-box[data-step="0"].active,
+.step-box[data-step="4"].active,
+.step-box[data-step="8"].active,
+.step-box[data-step="12"].active {
+  background: oklch(0.7 0.2 150);
+  box-shadow:
+    0 0 12px oklch(0.7 0.2 150),
+    0 0 24px oklch(0.7 0.2 150 / 0.7),
+    0 0 36px oklch(0.7 0.2 150 / 0.5);
+}
+
+/* Beat flash effect */
+.step-box.beat {
+  background: var(--text-primary);
+  transform: scaleX(1.1);
+  box-shadow: 0 0 15px oklch(0.95 0 0 / 0.8);
+}
+
 /* =====================
-   Panel Header - No Chevron
+   Panel Header — No Chevron
    ===================== */
 
-/* Hide default chevron */
 .level-panel > details > summary::before {
   display: none;
+}
+
+/* =====================
+   Panel Surfaces — Translucent, Green Glow on Hover
+   ===================== */
+
+.level-panel {
+  background: var(--surface-card-50);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.05), 0 1px 2px oklch(0 0 0 / 0.03);
+  transition: box-shadow 150ms, border-color 150ms;
+}
+
+.level-panel:hover {
+  box-shadow: 0 0 25px oklch(0.7 0.2 150 / 0.25);
 }
 
 /* =====================
@@ -133,233 +189,180 @@ body::before {
 .panel-actions-left {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-right: 8px;
+  gap: var(--gap-sm);
+  margin-right: var(--gap-md);
 }
 
 .panel-actions-left .btn-playback {
   width: 32px;
   height: 32px;
   border: none;
-  border-radius: 4px;
-  background: #333;
-  color: var(--dark-green);
+  border-radius: var(--radius-md);
+  background: var(--surface-card-80);
+  color: var(--color-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  transition: color 150ms, background-color 150ms;
 }
 
 .panel-actions-left .btn-playback:hover {
-  background: #444;
+  background: var(--surface-accent);
 }
 
 .panel-actions-left .btn-playback:active {
   transform: scale(0.95);
 }
 
-/* Playing state - show pause, red color */
 .level-panel.playing .panel-actions-left .btn-playback {
-  color: var(--burnt-red);
+  color: var(--color-error);
 }
 
-/* Stale state - yellow */
 .level-panel.stale .panel-actions-left .btn-playback {
-  color: var(--puke);
+  color: var(--color-warning);
 }
 
 /* =====================
-   Metronome - Bright Illuminated Colors
-   ===================== */
-
-/* Active step - cyan glow for minor divisions */
-.step-box.active {
-  background: #00ffff;
-  box-shadow:
-    0 0 10px #00ffff,
-    0 0 20px rgba(0, 255, 255, 0.6),
-    0 0 30px rgba(0, 255, 255, 0.4);
-}
-
-/* Downbeat markers (quarter notes) - purple base */
-.step-box[data-step="0"],
-.step-box[data-step="4"],
-.step-box[data-step="8"],
-.step-box[data-step="12"] {
-  background: rgba(180, 100, 255, 0.4);
-}
-
-/* Active downbeats - bright purple glow */
-.step-box[data-step="0"].active,
-.step-box[data-step="4"].active,
-.step-box[data-step="8"].active,
-.step-box[data-step="12"].active {
-  background: #cc66ff;
-  box-shadow:
-    0 0 12px #cc66ff,
-    0 0 24px rgba(200, 100, 255, 0.7),
-    0 0 36px rgba(180, 80, 255, 0.5);
-}
-
-/* Beat flash effect */
-.step-box.beat {
-  background: #ffffff;
-  transform: scaleX(1.1);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
-}
-
-/* =====================
-   Panel Number Badge - Larger with Rounded Corners
+   Panel Number Badge — Circular, Primary Tint
    ===================== */
 
 .panel-number-badge {
   width: 28px;
   height: 28px;
   min-width: 28px;
-  border-radius: 5px;
-  background: #444;
-  color: #999;
+  border-radius: 50%;
+  background: var(--surface-card-80);
+  color: var(--text-muted);
   font-size: 13px;
   font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: grab;
-  transition: transform 0.1s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition: color 150ms, background-color 150ms, box-shadow 150ms;
 }
 
 .panel-number-badge:hover {
-  transform: scale(1.05);
-  background: #555;
-  color: #ccc;
+  background: var(--surface-accent);
+  color: var(--text-secondary);
+  box-shadow: 0 0 12px var(--color-primary-glow);
 }
 
 .panel-number-badge:active,
 .panel-number-badge.dragging {
   cursor: grabbing;
-  transform: scale(1.1);
 }
 
-/* Playing state - synthwave purple */
+/* Playing state — primary green */
 .level-panel.playing .panel-number-badge {
-  background: #9b4dca;
-  color: #fff;
-  box-shadow: 0 0 12px rgba(155, 77, 202, 0.6);
+  background: var(--color-primary);
+  color: var(--text-primary);
+  box-shadow: 0 0 12px oklch(0.55 0.15 150 / 0.6);
 }
 
-/* Stale state - amber warning */
+/* Stale state — amber warning */
 .level-panel.stale .panel-number-badge {
-  background: #c8b400;
-  color: #000;
-  box-shadow: 0 0 8px rgba(200, 180, 0, 0.4);
+  background: var(--color-warning);
+  color: oklch(0.1 0 0);
+  box-shadow: 0 0 8px oklch(0.75 0.15 85 / 0.4);
 }
 
-/* Error state - red */
+/* Error state — red */
 .level-panel.error .panel-number-badge {
-  background: #c44;
-  color: #fff;
-  box-shadow: 0 0 8px rgba(204, 68, 68, 0.5);
+  background: var(--color-error);
+  color: var(--text-primary);
+  box-shadow: 0 0 8px oklch(0.6 0.2 25 / 0.5);
 }
 
 /* Add panel badge */
 .panel-number-badge.add-badge {
   background: transparent;
-  border: 2px dashed #555;
-  color: #777;
+  border: 2px dashed var(--border-emphasis);
+  color: var(--text-muted);
 }
 
 .panel-number-badge.add-badge:hover {
-  border-color: #888;
-  color: #aaa;
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--color-primary);
+  color: var(--text-secondary);
+  background: var(--surface-card-30);
 }
 
 /* =====================
-   Settings Modal - Dark Theme
+   Settings Modal — Dark with Blur
    ===================== */
 
 .modal-overlay {
-  background: rgba(10, 10, 10, 0.85);
-  backdrop-filter: blur(12px);
+  background: oklch(0.04 0 0 / 0.85);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .modal-content.settings-panel {
-  background: #1a1a1a;
-  border-radius: 8px;
-  border: 1px solid #333;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  background: var(--surface-card-80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 8px 32px oklch(0 0 0 / 0.6);
+  animation: modal-enter 200ms ease-out;
+}
+
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .modal-header {
-  background: #222;
-  border-bottom: 1px solid #333;
+  background: var(--surface-card-30);
+  border-bottom: 1px solid var(--border-default);
   padding: 16px 20px;
 }
 
 .modal-header h2 {
-  color: #ddd;
+  color: var(--text-primary);
   font-size: 1.25rem;
 }
 
 .modal-header .close-btn {
   background: transparent;
   border: none;
-  color: #888;
+  color: var(--text-muted);
   font-size: 24px;
   cursor: pointer;
   padding: 4px;
   line-height: 1;
-  transition: color 0.15s ease;
+  transition: color 150ms;
 }
 
 .modal-header .close-btn:hover {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .modal-body {
-  background: #1a1a1a;
-  color: #ccc;
+  background: transparent;
+  color: var(--text-secondary);
 }
 
 .modal-footer {
-  background: #222;
-  border-top: 1px solid #333;
+  background: var(--surface-card-30);
+  border-top: 1px solid var(--border-default);
 }
 
 /* Settings sections */
 .settings-section h3 {
-  color: #aaa;
-  border-bottom-color: #333;
+  color: var(--text-muted);
+  border-bottom-color: var(--border-subtle);
   font-size: 0.95rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-/* Setting items - bright text for dark background */
-.setting-item label {
-  color: #eee;
-}
-
-/* Override specific selector from components.css */
-.setting-item > label:not(.toggle-label) {
-  color: #eee;
-}
-
-.setting-item .setting-description {
-  color: #999;
-}
-
-/* Toggle text and label text - bright for contrast */
-.settings-panel .toggle-text,
-.settings-panel .setting-label-text,
-.settings-panel .toggle-label {
-  color: #eee;
-}
-
-/* Collapsible section headers */
-.settings-section h3 {
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -367,141 +370,150 @@ body::before {
   padding: 12px 0;
   margin: 0;
   user-select: none;
-  transition: color 0.15s ease;
+  transition: color 150ms;
 }
 
 .settings-section h3:hover {
-  color: #fff;
+  color: var(--text-primary);
 }
 
-/* CSS triangle chevron - no font dependency */
+/* Chevron indicator — content swap, no transform */
 .settings-section h3::before {
-  content: '';
+  content: '▼';
   display: inline-block;
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 8px solid #aaa;
-  transition: transform 0.2s ease;
-  margin-right: 4px;
+  font-size: 8px;
+  color: var(--text-muted);
+  margin-right: 6px;
+  transition: color 150ms;
 }
 
 .settings-section h3:hover::before {
-  border-top-color: #fff;
+  color: var(--text-primary);
 }
 
 .settings-section.collapsed h3::before {
-  transform: rotate(-90deg);
+  content: '▶';
 }
 
-/* Sections collapsed by default */
+/* Sections collapsed by default — opacity fade only, no layout transitions */
 .settings-section-content {
   overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.2s ease;
-  max-height: 0;
+  transition: opacity 150ms;
   opacity: 0;
+  height: 0;
   padding-top: 0;
   padding-bottom: 0;
   padding-left: 3em;
 }
 
-/* Expanded state (not collapsed) */
 .settings-section:not(.collapsed) .settings-section-content {
-  max-height: 2000px;
+  height: auto;
   opacity: 1;
   padding-top: 0;
   padding-bottom: 16px;
 }
 
-/* Form controls */
-.setting-item input[type="range"] {
-  accent-color: #9b4dca;
+/* Setting items */
+.setting-item label,
+.setting-item > label:not(.toggle-label) {
+  color: var(--text-primary);
 }
 
+.setting-item .setting-description {
+  color: var(--text-muted);
+}
+
+.settings-panel .toggle-text,
+.settings-panel .setting-label-text,
+.settings-panel .toggle-label {
+  color: var(--text-primary);
+}
+
+/* Form controls */
+.setting-item input[type="range"],
 .setting-item input[type="checkbox"] {
-  accent-color: #9b4dca;
+  accent-color: var(--color-primary);
 }
 
 .setting-item select {
-  background: #2a2a2a;
-  color: #ccc;
-  border: 1px solid #444;
-  border-radius: 4px;
+  background: var(--surface-card-30);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
   padding: 6px 10px;
 }
 
 .setting-item select:focus {
-  border-color: #9b4dca;
+  border-color: var(--color-primary);
   outline: none;
 }
 
 .setting-item input[type="number"],
 .setting-item input[type="text"] {
-  background: #2a2a2a;
-  color: #ccc;
-  border: 1px solid #444;
-  border-radius: 4px;
+  background: var(--surface-card-30);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
   padding: 6px 10px;
 }
 
 .setting-item input[type="number"]:focus,
 .setting-item input[type="text"]:focus {
-  border-color: #9b4dca;
+  border-color: var(--color-primary);
   outline: none;
 }
 
 /* Tab navigation */
 .settings-tabs {
-  background: #222;
-  border-bottom: 1px solid #333;
+  background: var(--surface-card-30);
+  border-bottom: 1px solid var(--border-default);
 }
 
 .settings-tabs .tab-btn {
   background: transparent;
-  color: #888;
+  color: var(--text-muted);
   border: none;
   padding: 12px 16px;
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition: color 150ms, background-color 150ms;
 }
 
 .settings-tabs .tab-btn:hover {
-  color: #ccc;
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  background: var(--surface-card-30);
 }
 
 .settings-tabs .tab-btn.active {
-  color: #fff;
-  background: rgba(155, 77, 202, 0.2);
-  border-bottom: 2px solid #9b4dca;
+  color: var(--text-primary);
+  background: oklch(0.55 0.15 150 / 0.2);
+  border-bottom: 2px solid var(--color-primary);
 }
 
 /* Buttons */
 .modal-footer .btn-primary {
-  background: #9b4dca;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--text-primary);
   border: none;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background-color 150ms;
 }
 
 .modal-footer .btn-primary:hover {
-  background: #8a3fb8;
+  background: oklch(0.5 0.15 150);
 }
 
 .modal-footer .btn-secondary {
-  background: #444;
-  color: #ccc;
+  background: var(--surface-card-80);
+  color: var(--text-secondary);
   border: none;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background-color 150ms;
 }
 
 .modal-footer .btn-secondary:hover {
-  background: #555;
+  background: var(--surface-accent);
 }
