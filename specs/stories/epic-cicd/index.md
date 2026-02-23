@@ -1,7 +1,7 @@
 # Epic 1: CI/CD Pipeline Ground-Up Rebuild
 
 ## Status
-Approved
+Done
 
 ## Epic Goal
 Replace the fragile, ad-hoc GitHub Actions setup with a reliable, modular pipeline that handles version detection from `^^^ vX.Y.Z` commit messages, multi-arch Electron releases (macOS/Windows/Linux), and GitHub Pages deployment (MkDocs + lite app) -- all orchestrated from a single top-level workflow.
