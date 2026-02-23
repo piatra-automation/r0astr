@@ -1,113 +1,88 @@
 /**
  * Default Skin - Remote Control Panel
  *
- * Matches the default r0astr theme with synthwave gradient
+ * Forest-green glassmorphism — matches main UI theme.
+ * All colors in oklch.
  */
 
-/* Synthwave gradient background */
+/* Green gradient background */
 body {
-  background: linear-gradient(45deg, #2d1b4e 0%, #0a0a0a 50%, #0d3b3b 100%);
+  background:
+    linear-gradient(
+      135deg,
+      oklch(0.06 0.04 150) 0%,
+      oklch(0.04 0 0) 40%,
+      oklch(0.04 0 0) 60%,
+      oklch(0.06 0.03 150) 100%
+    );
+  background-attachment: fixed;
 }
 
-/* Header styling */
+/* Header — green gradient text */
 h1 {
-  background: linear-gradient(135deg, #51cf66, #40c057);
+  background: linear-gradient(135deg, oklch(0.55 0.15 150), oklch(0.5 0.15 150));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Connection status badge */
+/* Connection status badge — skin overrides */
 .connection-status {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--surface-card-50);
+  border: 1px solid var(--border-default);
 }
 
 .connection-status.connected {
-  background: rgba(76, 175, 80, 0.2);
-  border-color: rgba(76, 175, 80, 0.4);
+  background: oklch(0.7 0.2 150 / 0.15);
+  border-color: oklch(0.7 0.2 150 / 0.3);
 }
 
 .connection-status.disconnected {
-  background: rgba(244, 67, 54, 0.2);
-  border-color: rgba(244, 67, 54, 0.4);
+  background: oklch(0.6 0.2 25 / 0.15);
+  border-color: oklch(0.6 0.2 25 / 0.3);
 }
 
-/* Panel controls with subtle glow */
-.panel-control {
-  background: linear-gradient(135deg, rgba(45, 27, 78, 0.6) 0%, rgba(10, 10, 10, 0.8) 100%);
-  border-color: rgba(81, 207, 102, 0.3);
-}
-
+/* Panel controls — green glow when playing */
 .panel-control.playing {
-  border-color: #51cf66;
-  box-shadow: 0 0 20px rgba(81, 207, 102, 0.3);
+  box-shadow:
+    0 0 15px oklch(0.55 0.15 150 / 0.25),
+    0 0 30px oklch(0.55 0.15 150 / 0.15);
 }
 
-/* Play button glow effect */
-.panel-button {
-  background: rgba(45, 27, 78, 0.8);
-  border-color: rgba(81, 207, 102, 0.5);
-}
-
+/* Play button glow */
 .panel-control.playing .panel-button {
-  background: linear-gradient(135deg, #51cf66, #40c057);
-  border-color: #51cf66;
-  box-shadow: 0 0 15px rgba(81, 207, 102, 0.5);
+  box-shadow: 0 0 12px oklch(0.55 0.15 150 / 0.5);
 }
 
-/* Master sliders section */
+/* Master sliders section — skin accent */
 .master-sliders-remote {
-  background: rgba(45, 27, 78, 0.4);
-  border-color: rgba(81, 207, 102, 0.3);
+  border-color: oklch(0.55 0.15 150 / 0.2);
 }
 
-/* Global control buttons */
-.stop-all-btn {
-  background: linear-gradient(135deg, #c62828, #b71c1c);
-  border-color: #ef5350;
-}
-
-.update-all-btn {
-  background: linear-gradient(135deg, #f57c00, #e65100);
-  border-color: #ffb74d;
-}
-
-.update-all-btn:disabled {
-  background: rgba(100, 100, 100, 0.5);
-  border-color: rgba(150, 150, 150, 0.5);
-}
-
-/* Metronome - synthwave style */
-.remote-metronome {
-  background: rgba(45, 27, 78, 0.5);
-  border: 1px solid rgba(81, 207, 102, 0.2);
-}
-
-.remote-metronome .step-box {
-  background: rgba(45, 27, 78, 0.8);
-}
-
-.remote-metronome .step-box[data-step="0"],
-.remote-metronome .step-box[data-step="4"],
-.remote-metronome .step-box[data-step="8"],
-.remote-metronome .step-box[data-step="12"] {
-  background: rgba(81, 207, 102, 0.3);
-}
-
+/* Metronome — green active glow */
 .remote-metronome .step-box.active {
-  background: #51cf66;
-  box-shadow: 0 0 12px rgba(81, 207, 102, 0.7);
+  box-shadow:
+    0 0 8px oklch(0.55 0.15 150 / 0.6),
+    0 0 16px oklch(0.55 0.15 150 / 0.4);
 }
 
 .remote-metronome .step-box[data-step="0"].active,
 .remote-metronome .step-box[data-step="4"].active,
 .remote-metronome .step-box[data-step="8"].active,
 .remote-metronome .step-box[data-step="12"].active {
-  background: #69db7c;
-  box-shadow: 0 0 18px rgba(105, 219, 124, 0.9);
+  box-shadow:
+    0 0 12px oklch(0.7 0.2 150 / 0.7),
+    0 0 24px oklch(0.7 0.2 150 / 0.5);
+}
+
+/* Downbeat markers — primary tint */
+.remote-metronome .step-box[data-step="0"],
+.remote-metronome .step-box[data-step="4"],
+.remote-metronome .step-box[data-step="8"],
+.remote-metronome .step-box[data-step="12"] {
+  background: oklch(0.55 0.15 150 / 0.25);
 }
 
 .remote-metronome.downbeat {
-  background: rgba(81, 207, 102, 0.15);
+  background: oklch(0.55 0.15 150 / 0.1);
 }

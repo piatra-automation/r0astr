@@ -517,7 +517,7 @@ async function handleSaveSettings() {
         console.log('✓ Skin hot-reloaded successfully');
       } catch (error) {
         console.error('Failed to hot-reload skin:', error);
-        alert(`Failed to load skin '${skinName}'. Please reload the page.`);
+        showSettingsNotification(`Failed to load skin '${skinName}'. Please reload the page.`, 'error');
       }
     }
 
@@ -812,7 +812,7 @@ export function initializeSettingsModal() {
     // Basic validation
     if (path && !validatePath(path)) {
       input.classList.add('invalid');
-      alert('Invalid path format');
+      showSettingsNotification('Invalid path format', 'error');
       return;
     } else {
       input.classList.remove('invalid');
@@ -980,51 +980,9 @@ export function initializeSettingsModal() {
  * @param {string} type - Notification type ('info', 'warning', 'error', 'success')
  */
 function showSettingsNotification(message, type = 'info') {
-  // Color scheme based on type
-  const colors = {
-    info: 'rgba(59, 130, 246, 0.95)',     // Blue
-    warning: 'rgba(245, 158, 11, 0.95)',  // Amber
-    error: 'rgba(239, 68, 68, 0.95)',     // Red
-    success: 'rgba(34, 197, 94, 0.95)'    // Green
-  };
-
   const toast = document.createElement('div');
-  toast.className = 'settings-notification-toast';
+  toast.className = `settings-notification-toast toast-${type}`;
   toast.textContent = `${type === 'warning' ? '⚠️' : type === 'error' ? '❌' : type === 'success' ? '✓' : 'ℹ️'} ${message}`;
-  toast.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: ${colors[type] || colors.info};
-    color: white;
-    padding: 12px 20px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    z-index: 10001;
-    max-width: 400px;
-    animation: slideInRight 0.3s ease-out;
-  `;
-
-  // Add slide-in animation if not already present
-  if (!document.getElementById('settings-toast-styles')) {
-    const style = document.createElement('style');
-    style.id = 'settings-toast-styles';
-    style.textContent = `
-      @keyframes slideInRight {
-        from {
-          transform: translateX(400px);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-  }
 
   document.body.appendChild(toast);
 

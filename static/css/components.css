@@ -103,15 +103,46 @@
   user-select: none;
   font-weight: normal;
   font-style: normal;
+  font-size: 16px;
   line-height: 1;
   letter-spacing: normal;
   text-transform: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Icon sizing by context */
+.material-icons.icon-sm {
+  font-size: 12px;
+}
+
+.material-icons.icon-lg {
+  font-size: 18px;
+}
+
+/* Modal header icons — larger */
+.modal-header .material-icons,
+.close-btn .material-icons {
+  font-size: 20px;
+}
+
+/* Button icons — medium */
+.btn-primary .material-icons,
+.btn-ghost .material-icons,
+.btn-icon .material-icons,
+.control-btn .material-icons {
+  font-size: 16px;
+}
+
+/* Notice/info icons */
+.notice-box .material-icons {
+  font-size: 18px;
+  margin-right: 8px;
 }
 
 /* ============================================
@@ -1026,11 +1057,6 @@
   color: var(--color-info);
 }
 
-.notice-box .material-icons {
-  font-size: 18px;
-  margin-right: 8px;
-}
-
 /* ============================================
    CONFIRMATION MODAL
    ============================================ */
@@ -1244,4 +1270,54 @@
 .custom-skin-actions .btn-delete:hover {
   background: var(--color-error-bg);
   border-color: var(--color-error);
+}
+
+/* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+
+.settings-notification-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--surface-card-80);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: var(--text-primary);
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px oklch(0 0 0 / 0.3);
+  z-index: 10001;
+  max-width: 400px;
+  animation: toast-slide-in 0.3s ease-out;
+}
+
+.settings-notification-toast.toast-info {
+  border-left: 4px solid var(--color-info);
+}
+
+.settings-notification-toast.toast-warning {
+  border-left: 4px solid var(--color-warning);
+}
+
+.settings-notification-toast.toast-error {
+  border-left: 4px solid var(--color-error);
+}
+
+.settings-notification-toast.toast-success {
+  border-left: 4px solid var(--color-success);
+}
+
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
