@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/v26.8.1/packages/app-builder-lib/scheme.json",
   "appId": "com.piatra.r0astr",
   "productName": "r0astr",
   "copyright": "Copyright © 2024 Peter Kalt / Piatra Engineering",
@@ -10,7 +10,26 @@
   "files": [
     "dist/**/*",
     "electron/**/*",
-    "package.json"
+    "package.json",
+    "!node_modules/@strudel/**",
+    "!node_modules/@csound/**",
+    "!node_modules/@codemirror/**",
+    "!node_modules/@lezer/**",
+    "!node_modules/@tonaljs/**",
+    "!node_modules/google-closure-compiler*/**",
+    "!node_modules/eslint/**",
+    "!node_modules/eslint-*/**",
+    "!node_modules/@eslint/**",
+    "!node_modules/jazz-midi/**",
+    "!node_modules/jzz/**",
+    "!node_modules/webmidi/**",
+    "!node_modules/web-midi-api/**",
+    "!node_modules/@kabelsalat/**",
+    "!node_modules/superdough/**",
+    "!node_modules/interactjs/**",
+    "!node_modules/@interactjs/**",
+    "!node_modules/jszip/**",
+    "!node_modules/prettier/**"
   ],
   "extraMetadata": {
     "main": "electron/main.cjs"
