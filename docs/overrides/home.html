@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+
+{% block htmltitle %}
+  <title>r0astr - Multi-instrument live coding for the web</title>
+{% endblock %}
+
+{% block styles %}
+  {{ super() }}
+  <style>
+    /* Hide sidebar, TOC, and standard content elements on landing */
+    .md-sidebar { display: none !important; }
+    .md-content__inner { margin: 0; padding: 0; max-width: none; }
+    .md-typeset h1 { display: none; }
+
+    /* Fixed backdrop — image + overlay + canvas pinned to viewport */
+    .r0-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+    .r0-backdrop__img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .r0-backdrop__overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+    }
+    [data-md-color-scheme="default"] .r0-backdrop__overlay {
+      background: rgba(255, 255, 255, 0.65);
+    }
+    .r0-backdrop__canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Hero */
+    .r0-hero {
+      position: relative;
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .r0-hero__content {
+      text-align: center;
+      padding: 2rem;
+      max-width: 48rem;
+    }
+    .r0-hero__banner {
+      display: block;
+      max-width: min(20rem, 70vw);
+      height: auto;
+      margin: 0 auto 2rem;
+      filter: drop-shadow(0 2px 12px rgba(0,0,0,0.25));
+    }
+    [data-md-color-scheme="default"] .r0-hero__banner {
+      filter: invert(1) drop-shadow(0 2px 12px rgba(0,0,0,0.15));
+    }
+    .r0-hero__title {
+      font-size: clamp(1.4rem, 3.5vw, 2rem);
+      font-weight: 500;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+      margin: 0 0 1.5rem;
+      color: rgba(255, 255, 255, 0.9);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    [data-md-color-scheme="default"] .r0-hero__title {
+      color: rgba(0, 0, 0, 0.8);
+      text-shadow: none;
+    }
+    .r0-hero__subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.35rem);
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.75);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      margin: 0 0 2.5rem;
+      max-width: 36rem;
+      margin-inline: auto;
+    }
+    [data-md-color-scheme="default"] .r0-hero__subtitle {
+      color: rgba(0, 0, 0, 0.65);
+      text-shadow: none;
+    }
+    .r0-hero__actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .r0-hero__actions .md-button {
+      font-size: 0.95rem;
+      padding: 0.7em 1.8em;
+    }
+
+    /* Scrollable content sections get a semi-transparent backdrop */
+    .r0-section {
+      position: relative;
+      background: color-mix(in srgb, var(--md-default-bg-color) 85%, transparent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Feature grid */
+    .r0-features {
+      padding: 5rem 2rem;
+      max-width: 72rem;
+      margin: 0 auto;
+    }
+    .r0-features__heading {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+      color: var(--md-default-fg-color);
+    }
+    .r0-features__subheading {
+      text-align: center;
+      color: var(--md-default-fg-color--light);
+      margin: 0 0 3rem;
+      font-size: 1.05rem;
+    }
+    .r0-features__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      gap: 1.5rem;
+    }
+    .r0-feature {
+      background: color-mix(in srgb, var(--md-code-bg-color) 80%, transparent);
+      border-radius: 0.5rem;
+      padding: 1.75rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .r0-feature:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    }
+    [data-md-color-scheme="slate"] .r0-feature:hover {
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+    .r0-feature__icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.75rem;
+      display: block;
+      color: var(--md-primary-fg-color);
+    }
+    .r0-feature__title {
+      font-weight: 600;
+      font-size: 1.05rem;
+      margin: 0 0 0.5rem;
+      color: var(--md-default-fg-color);
+    }
+    .r0-feature__text {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--md-default-fg-color--light);
+      margin: 0;
+    }
+
+    /* Code showcase */
+    .r0-code {
+      padding: 5rem 2rem;
+    }
+    .r0-code__inner {
+      max-width: 54rem;
+      margin: 0 auto;
+    }
+    .r0-code__heading {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+      color: var(--md-default-fg-color);
+    }
+    .r0-code__subheading {
+      text-align: center;
+      color: var(--md-default-fg-color--light);
+      margin: 0 0 2.5rem;
+      font-size: 1.05rem;
+    }
+    .r0-code__blocks {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+      gap: 1.5rem;
+    }
+    .r0-code__block {
+      background: color-mix(in srgb, var(--md-code-bg-color) 90%, transparent);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+    }
+    .r0-code__label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--md-primary-fg-color);
+      margin: 0 0 0.75rem;
+    }
+    .r0-code__block code {
+      font-family: var(--md-code-font-family, "JetBrains Mono", monospace);
+      font-size: 0.85rem;
+      line-height: 1.7;
+      display: block;
+      white-space: pre;
+      color: var(--md-code-fg-color);
+    }
+
+    /* CTA banner */
+    .r0-cta {
+      padding: 5rem 2rem;
+      text-align: center;
+      max-width: 40rem;
+      margin: 0 auto;
+    }
+    .r0-cta__heading {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin: 0 0 0.75rem;
+      color: var(--md-default-fg-color);
+    }
+    .r0-cta__text {
+      color: var(--md-default-fg-color--light);
+      margin: 0 0 2rem;
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+    .r0-cta__actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 600px) {
+      .r0-hero { min-height: 80vh; }
+      .r0-features, .r0-code, .r0-cta { padding: 3rem 1.25rem; }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <!-- Fixed background: image + overlay + waveform canvas -->
+  <div class="r0-backdrop">
+    <img src="assets/images/background.jpg" alt="" class="r0-backdrop__img" loading="eager">
+    <div class="r0-backdrop__overlay"></div>
+    <canvas class="r0-backdrop__canvas" id="r0-waveform"></canvas>
+  </div>
+
+  <!-- Hero — scrolls over the fixed backdrop -->
+  <section class="r0-hero">
+    <div class="r0-hero__content">
+      <img src="assets/images/banner.png" alt="r0astr" class="r0-hero__banner">
+      <h2 class="r0-hero__title">Live code music, instrument by instrument</h2>
+      <p class="r0-hero__subtitle">
+        A multi-instrument live coding interface built on Strudel.
+        Write patterns, hear them instantly, perform live.
+      </p>
+      <div class="r0-hero__actions">
+        <a href="app/index.html" class="md-button md-button--primary">Launch app</a>
+        <a href="getting-started/" class="md-button">Get started</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Content sections — frosted glass over the backdrop -->
+  <div class="r0-section">
+    <!-- Features -->
+    <section class="r0-features">
+      <h2 class="r0-features__heading">Built for live performance</h2>
+      <p class="r0-features__subheading">Four instruments, one clock, infinite possibilities</p>
+      <div class="r0-features__grid">
+        <div class="r0-feature">
+          <span class="r0-feature__icon">&#9835;</span>
+          <h3 class="r0-feature__title">Multiple Instruments</h3>
+          <p class="r0-feature__text">
+            Independent cards for drums, bass, melody, ambient.
+            Layer patterns freely &mdash; each with its own editor and controls.
+          </p>
+        </div>
+        <div class="r0-feature">
+          <span class="r0-feature__icon">&#8634;</span>
+          <h3 class="r0-feature__title">Perfect Sync</h3>
+          <p class="r0-feature__text">
+            All instruments share a single audio clock.
+            Start, stop, and modify cards &mdash; they always stay in time.
+          </p>
+        </div>
+        <div class="r0-feature">
+          <span class="r0-feature__icon">&#9783;</span>
+          <h3 class="r0-feature__title">Live Sliders</h3>
+          <p class="r0-feature__text">
+            Add <code>slider()</code> to any parameter.
+            Tweak filters, tempo, and effects in real-time during performance.
+          </p>
+        </div>
+        <div class="r0-feature">
+          <span class="r0-feature__icon">&#10094;/&#10095;</span>
+          <h3 class="r0-feature__title">Code as Music</h3>
+          <p class="r0-feature__text">
+            Strudel's mini notation turns terse expressions into rich rhythmic patterns.
+            Powerful for experts, approachable for beginners.
+          </p>
+        </div>
+        <div class="r0-feature">
+          <span class="r0-feature__icon">&#9881;</span>
+          <h3 class="r0-feature__title">Master Panel</h3>
+          <p class="r0-feature__text">
+            Global controls for tempo and effects that apply across all instruments
+            with reactive slider bindings.
+          </p>
+        </div>
+        <div class="r0-feature">
+          <span class="r0-feature__icon">&#128241;</span>
+          <h3 class="r0-feature__title">Remote Control</h3>
+          <p class="r0-feature__text">
+            Control r0astr from a phone or tablet over WebSocket.
+            Perfect for untethered live sets.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Code showcase -->
+    <section class="r0-code">
+      <div class="r0-code__inner">
+        <h2 class="r0-code__heading">Start with two lines</h2>
+        <p class="r0-code__subheading">Paste into a card, hit play, hear music</p>
+        <div class="r0-code__blocks">
+          <div class="r0-code__block">
+            <p class="r0-code__label">Card 1 &mdash; Drums</p>
+            <code>s("bd*4, ~ sd ~ sd, hh*8").gain(0.8)</code>
+          </div>
+          <div class="r0-code__block">
+            <p class="r0-code__label">Card 2 &mdash; Bass</p>
+            <code>note("c2 ~ c2 e2")
+  .s("sawtooth")
+  .lpf(slider(800, 200, 4000))
+  .gain(0.6)</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom CTA -->
+    <section class="r0-cta">
+      <h2 class="r0-cta__heading">Open source, always</h2>
+      <p class="r0-cta__text">
+        r0astr is free software under AGPL-3.0. Explore the code, contribute, or fork it for your own performances.
+      </p>
+      <div class="r0-cta__actions">
+        <a href="https://github.com/piatra-automation/r0astr" class="md-button" target="_blank">View on GitHub</a>
+        <a href="developers/contributing/" class="md-button">Contribute</a>
+      </div>
+    </section>
+  </div>
+
+  <!-- Waveform animation script -->
+  <script>
+  (function() {
+    var canvas = document.getElementById("r0-waveform");
+    if (!canvas) return;
+    var ctx = canvas.getContext("2d");
+    var w = 0, h = 0, cols = 0, time = 0, raf = 0, running = false;
+
+    var layers = [
+      { freq: 0.008, amp: 0.18, speed: 0.012, phase: 0 },
+      { freq: 0.014, amp: 0.12, speed: 0.018, phase: 2.1 },
+      { freq: 0.022, amp: 0.08, speed: 0.009, phase: 4.2 },
+      { freq: 0.005, amp: 0.22, speed: 0.007, phase: 1.0 },
+    ];
+
+    function resize() {
+      var dpr = window.devicePixelRatio || 1;
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cols = Math.ceil(w / 3);
+    }
+
+    function colors() {
+      var scheme = document.documentElement.getAttribute("data-md-color-scheme");
+      if (scheme === "slate") {
+        return { stroke: "rgba(180, 140, 255, 0.5)", fill: "rgba(180, 140, 255, 0.05)" };
+      }
+      return { stroke: "rgba(63, 81, 181, 0.5)", fill: "rgba(63, 81, 181, 0.06)" };
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      var c = colors();
+      for (var l = 0; l < layers.length; l++) {
+        var ly = layers[l];
+        ctx.beginPath();
+        for (var i = 0; i <= cols; i++) {
+          var x = (i / cols) * w;
+          var y = h * 0.5
+            + Math.sin(i * ly.freq * 6.28 + time * ly.speed * 60 + ly.phase) * h * ly.amp
+            + Math.sin(i * ly.freq * 3.14 + time * ly.speed * 30) * h * ly.amp * 0.4;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = c.stroke;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.closePath();
+        ctx.fillStyle = c.fill;
+        ctx.fill();
+      }
+      time += 0.016;
+      if (running) raf = requestAnimationFrame(draw);
+    }
+
+    function start() {
+      if (running) return;
+      running = true;
+      raf = requestAnimationFrame(draw);
+    }
+
+    function stop() {
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    var mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    mq.addEventListener("change", function() {
+      mq.matches ? stop() : start();
+    });
+    if (!mq.matches) start();
+  })();
+  </script>
+{% endblock %}

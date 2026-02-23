@@ -157,7 +157,7 @@ poetry.lock
 __pycache__/
 *.py[cod]
 
-# MkDocs
+# Zensical / MkDocs build artifacts
 site/site/
 _site/
 

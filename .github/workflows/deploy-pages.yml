@@ -1,4 +1,4 @@
-# Reusable workflow: build MkDocs site + lite web app, deploy to GitHub Pages.
+# Reusable workflow: build Zensical docs site + lite web app, deploy to GitHub Pages.
 # Called by ci.yml orchestrator on every push to main, or manually via workflow_dispatch.
 name: Deploy Docs & App to GitHub Pages
 
@@ -40,25 +40,26 @@ jobs:
         # The lockfile generated on macOS omits Linux native bindings (npm #4828).
         run: rm -rf node_modules package-lock.json && npm install
 
-      - name: Build MkDocs site
-        run: mkdocs build --site-dir _site
+      - name: Build Zensical site
+        run: zensical build --clean
+        # Output goes to docs/ per zensical.toml site_dir
 
       - name: Build r0astr Lite
         run: npm run build:lite
 
       - name: Combine builds
         run: |
-          mkdir -p _site/app
-          cp -r dist-lite/* _site/app/
+          mkdir -p docs/app
+          cp -r dist-lite/* docs/app/
 
           # Verify CNAME preserved
-          if [ ! -f _site/CNAME ]; then
-            echo "::warning::CNAME file missing from _site/ — custom domain may not work"
+          if [ ! -f docs/CNAME ]; then
+            echo "::warning::CNAME file missing from docs/ — custom domain may not work"
           fi
 
           echo "Combined site structure:"
-          ls -la _site/
-          ls -la _site/app/
+          ls -la docs/
+          ls -la docs/app/
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -66,7 +67,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "_site"
+          path: "docs"
 
   deploy:
     runs-on: ubuntu-latest
