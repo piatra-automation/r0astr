@@ -41,48 +41,77 @@
 
 /* ============================================
    CSS Variables for Theming and Appearance
+   oklch color system — forest-green brand palette
    ============================================ */
 :root {
-  /* Base Color Palette (single source of truth) */
-  --pale-white: #d1d8e0;
-  --pearl: #dfddde;
-  --cream: #dad0bc;
-  --dark-green: #01614f;
-  --mid-green: #01614f;
-  --burnt-red: #f64c04;
-  --puke: #e3ad43;
-  --darkness: #0b0600;
+  /* ── Brand Palette ── */
+  --color-primary: oklch(0.55 0.15 150);
+  --color-primary-glow: oklch(0.7 0.2 150 / 0.25);
+  --color-background: oklch(0.04 0 0);
+
+  /* ── Border Tokens (white-at-opacity) ── */
+  --border-default: oklch(1 0 0 / 0.1);
+  --border-subtle: oklch(1 0 0 / 0.05);
+  --border-emphasis: oklch(1 0 0 / 0.2);
+
+  /* ── Surface Tokens (white-at-opacity layers) ── */
+  --surface-card-30: oklch(1 0 0 / 0.03);
+  --surface-card-50: oklch(1 0 0 / 0.05);
+  --surface-card-80: oklch(1 0 0 / 0.08);
+  --surface-accent: oklch(1 0 0 / 0.1);
+
+  /* ── Semantic Accent Colors ── */
+  --color-success: oklch(0.7 0.2 150);
+  --color-warning: oklch(0.75 0.15 85);
+  --color-error: oklch(0.6 0.2 25);
+  --color-info: oklch(0.65 0.15 240);
+  --color-compile: oklch(0.6 0.15 300);
+
+  /* Accent background variants (10% opacity for pills/badges) */
+  --color-success-bg: oklch(0.7 0.2 150 / 0.1);
+  --color-warning-bg: oklch(0.75 0.15 85 / 0.1);
+  --color-error-bg: oklch(0.6 0.2 25 / 0.1);
+  --color-info-bg: oklch(0.65 0.15 240 / 0.1);
+  --color-compile-bg: oklch(0.6 0.15 300 / 0.1);
+
+  /* ── Foreground / Text Tokens ── */
+  --text-primary: oklch(0.95 0 0);
+  --text-secondary: oklch(0.95 0 0 / 0.7);
+  --text-muted: oklch(0.95 0 0 / 0.5);
+
+  /* ── Legacy Palette Aliases (oklch equivalents) ── */
+  --pale-white: oklch(0.87 0.01 240);
+  --pearl: oklch(0.89 0.005 0);
+  --cream: oklch(0.85 0.03 80);
+  --dark-green: var(--color-primary);
+  --mid-green: var(--color-primary);
+  --burnt-red: oklch(0.6 0.2 40);
+  --puke: oklch(0.78 0.14 80);
+  --darkness: var(--color-background);
 
   /* Pattern Highlighting (Strudel) */
-  --foreground: #00ffff;         /* Bright cyan for pattern highlights */
+  --foreground: oklch(0.9 0.15 195);
 
-  /* Panel Base Colors */
-  --panel-base-warm: #dad0bc;        /* Warm beige for background */
-  --panel-base-cool: #d9d8d4;        /* Cool gray for hero/controls */
-  --panel-base-light: #d1d8e0;       /* Light panels (collapsed, master) */
-  --panel-base-dark: #1a1a1a;        /* Dark panels (expanded) */
+  /* ── Panel Base Colors ── */
+  --panel-base-warm: oklch(0.85 0.03 80);
+  --panel-base-cool: oklch(0.87 0.005 80);
+  --panel-base-light: oklch(0.87 0.01 240);
+  --panel-base-dark: oklch(0.12 0 0);
 
-  /* Computed Color Variants (using color-mix) */
-  /* Warm panel gradients */
-  --panel-warm-light: color-mix(in srgb, var(--panel-base-warm) 85%, white 15%);
-  --panel-warm-dark: color-mix(in srgb, var(--panel-base-warm) 80%, black 20%);
-
-  /* Cool panel gradients */
-  --panel-cool-light: color-mix(in srgb, var(--panel-base-cool) 90%, white 10%);
+  /* Computed Color Variants (color-mix in oklch) */
+  --panel-warm-light: color-mix(in oklch, var(--panel-base-warm) 85%, white 15%);
+  --panel-warm-dark: color-mix(in oklch, var(--panel-base-warm) 80%, black 20%);
+  --panel-cool-light: color-mix(in oklch, var(--panel-base-cool) 90%, white 10%);
   --panel-cool-dark: var(--panel-base-cool);
+  --panel-light-highlight: color-mix(in oklch, var(--panel-base-light) 95%, white 5%);
+  --panel-light-shadow: color-mix(in oklch, var(--panel-base-light) 85%, black 15%);
 
-  /* Light panel highlights */
-  --panel-light-highlight: color-mix(in srgb, var(--panel-base-light) 95%, white 5%);
-  --panel-light-shadow: color-mix(in srgb, var(--panel-base-light) 85%, black 15%);
-
-  /* Screen colors (base) */
-  --screen-base: #076443;
+  /* Screen colors */
+  --screen-base: oklch(0.38 0.1 160);
   --screen-bkg: var(--screen-base);
-
-  /* Computed screen variants */
-  --screen-edge: #514041;                                                      /* Brown edge (static) */
-  --screen-top: color-mix(in srgb, var(--screen-base) 50%, black 50%);        /* Darker top edge */
-  --screen-bottom: color-mix(in srgb, var(--screen-base) 70%, white 30%);     /* Lighter bottom edge */
+  --screen-edge: oklch(0.35 0.02 20);
+  --screen-top: color-mix(in oklch, var(--screen-base) 50%, black 50%);
+  --screen-bottom: color-mix(in oklch, var(--screen-base) 70%, white 30%);
 
   /* Projection margins - default to 0, updated by themeManager.js */
   --projection-margin-top: 0px;
@@ -130,12 +159,12 @@
   --radius-lg: 6px;
   --radius-xl: 8px;
 
-  /* Spacing */
-  --gap-xs: 4px;
-  --gap-sm: 8px;
-  --gap-md: 12px;
-  --gap-lg: 20px;
-  --gap-xl: 24px;
+  /* Spacing (tightened for dense layout) */
+  --gap-xs: 2px;
+  --gap-sm: 4px;
+  --gap-md: 8px;
+  --gap-lg: 12px;
+  --gap-xl: 16px;
 
   /* Layout Spacing (Main Panel Grid) */
   --side-gap: 43px;           /* Gap from edge of usable area to buttons (all sides) */
@@ -170,21 +199,21 @@
   --btn-icon-tiny: 18px;              /* Future: tiny buttons */
 
   /* Button shadows */
-  --btn-shadow-normal: 0 2px 4px rgba(0, 0, 0, 0.2);
-  --btn-shadow-normal-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
-  --btn-shadow-pressed: 0 1px 2px rgba(0, 0, 0, 0.1);
-  --btn-shadow-pressed-sm: 0 0.5px 1px rgba(0, 0, 0, 0.1);
+  --btn-shadow-normal: 0 2px 4px oklch(0 0 0 / 0.2);
+  --btn-shadow-normal-sm: 0 1px 3px oklch(0 0 0 / 0.2);
+  --btn-shadow-pressed: 0 1px 2px oklch(0 0 0 / 0.1);
+  --btn-shadow-pressed-sm: 0 0.5px 1px oklch(0 0 0 / 0.1);
 
   /* Bevel lighting (3D effect) */
-  --btn-bevel-light: rgba(255, 255, 255, 0.2);
-  --btn-bevel-dark: rgba(128, 128, 128, 0.5);
+  --btn-bevel-light: oklch(1 0 0 / 0.2);
+  --btn-bevel-dark: oklch(0.6 0 0 / 0.5);
 
   /* Press animation */
   --btn-press-move: 1px;
   --btn-press-move-sm: 0.5px;
 
   /* Button hover states */
-  --btn-hole-hover-bg: #4a5a5f;
+  --btn-hole-hover-bg: oklch(0.42 0.02 210);
 
   /* Typography */
   --font-family-base: 'Supertone', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -210,9 +239,9 @@
 
   /* Theme colors (default dark) */
   --bg-color: var(--cream);
-  --card-bg: #1a1a1a;
-  --text-color: #fff;
-  --border-color: #00ff00;
-  --header-color: #00ff00;
+  --card-bg: oklch(0.12 0 0);
+  --text-color: var(--text-primary);
+  --border-color: var(--color-primary);
+  --header-color: var(--color-primary);
 }
 
