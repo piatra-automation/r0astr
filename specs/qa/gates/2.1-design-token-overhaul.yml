@@ -1,0 +1,17 @@
+schema: 1
+story: "2.1"
+story_title: "Design Token Overhaul -- oklch Color System"
+gate: PASS
+status_reason: "All 12 ACs met. Every color token converted to oklch, brand palette/border/surface/semantic/foreground tokens match spec exactly, spacing tightened, zero legacy color formats remain."
+reviewer: "Quinn"
+updated: "2026-02-23"
+top_issues:
+  - id: "MNT-001"
+    severity: low
+    finding: "Glass skin (skin.json) still uses hex/rgba — functional but mixed color-space"
+    suggested_action: "Convert glass skin to oklch in a future skin-refresh story"
+  - id: "MNT-002"
+    severity: low
+    finding: "--bg-color references --cream (legacy warm tone) in a dark-first theme"
+    suggested_action: "Revisit --bg-color semantic mapping when tackling theme structure"
+waiver: { active: false }
