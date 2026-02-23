@@ -1,0 +1,25 @@
+schema: 1
+story: "2.4"
+story_title: "Settings Modal and Secondary UI"
+gate: PASS
+status_reason: "All 10 ACs verified. Settings modal, metronome, banner bar, menu bar, CodeMirror theme, add-panel, toasts, icon sizing, and oklch compliance all implemented correctly. Two low-severity consistency issues noted."
+reviewer: "Quinn (Test Architect)"
+updated: "2026-02-23T12:00:00Z"
+
+waiver: { active: false }
+
+top_issues:
+  - id: "MNT-001"
+    severity: low
+    finding: "settingsModal.js:814 still uses blocking alert() for skin pack path validation, while all other handlers use non-blocking showSettingsNotification()"
+    suggested_action: "Replace alert('Invalid path format') with showSettingsNotification('Invalid path format', 'error') for consistency"
+  - id: "MNT-002"
+    severity: low
+    finding: "base.css:271 uses --dark-green for active step instead of --color-primary directly; relies on indirection through variables.css alias"
+    suggested_action: "Replace var(--dark-green) with var(--color-primary) in base.css .step-box.active for directness"
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 0, low: 2 }
+  recommendations:
+    must_fix: []
+    monitor: []
