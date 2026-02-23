@@ -1,0 +1,38 @@
+schema: 1
+story: "3.2"
+story_title: "electron-builder Major Version Upgrade (25 -> 26)"
+gate: WAIVED
+status_reason: "All ACs met except AC2/AC8 partial — minimatch ReDoS persists upstream in EB 26.x internals. Accepted as known risk: build-time only, not user-controlled, not shipped. ARCH-005 resolved."
+reviewer: "Quinn (Test Architect)"
+updated: "2026-02-23"
+
+top_issues:
+  - id: "SEC-003"
+    severity: low
+    finding: "minimatch ReDoS (GHSA-3ppc-4f35-3m26) in 19 EB 26.x internal deps — upstream, not consumer-fixable"
+    suggested_action: "Monitor electron-builder releases for upstream fix"
+
+waiver:
+  active: true
+  reason: "minimatch ReDoS is build-time only, not in shipped code, glob inputs not user-controlled in CI. No consumer fix available — requires upstream electron-builder changes."
+  approved_by: "Project Owner"
+
+nfr_validation:
+  _assessed: [security, reliability, maintainability]
+  security:
+    status: PASS
+    notes: "4 of 5 target advisories resolved; remaining minimatch is build-time only (waived)"
+  reliability:
+    status: PASS
+    notes: "Build produces valid universal macOS artifacts, config validated for v26"
+  maintainability:
+    status: PASS
+    notes: "Clean files exclusion list, cross-story threshold fix applied"
+
+history:
+  - at: "2026-02-23"
+    gate: CONCERNS
+    note: "Initial review — ARCH-005 (file count threshold), SEC-003 (minimatch upstream)"
+  - at: "2026-02-23"
+    gate: WAIVED
+    note: "Re-review — ARCH-005 resolved, SEC-003 accepted as known risk (build-time only)"

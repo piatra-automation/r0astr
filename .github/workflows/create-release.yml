@@ -45,8 +45,8 @@ jobs:
           # Verify minimum expected files exist
           FILE_COUNT=$(find artifacts -type f \( -name '*.dmg' -o -name '*.zip' -o -name '*.exe' -o -name '*.AppImage' -o -name '*.deb' \) | wc -l)
           echo "Distributable file count: $FILE_COUNT"
-          if [ "$FILE_COUNT" -lt 8 ]; then
-            echo "::warning::Expected at least 8 distributable files (2 dmg + 2 zip + 2 exe + AppImage + deb), found $FILE_COUNT"
+          if [ "$FILE_COUNT" -lt 6 ]; then
+            echo "::warning::Expected at least 6 distributable files (dmg + zip + 2 exe + AppImage + deb), found $FILE_COUNT"
           fi
 
       - name: Create or update GitHub Release
