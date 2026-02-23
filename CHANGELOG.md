@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.12.0] - 2026-02-23
+
+### Added
+- **Epic 2: UI Redesign — Forest-Green Glassmorphism**
+  - Story 2.1: Design token overhaul — oklch color system with forest-green brand palette, translucent surface hierarchy, semantic color tokens
+  - Story 2.2: Default skin theme rewrite — all components converted to glassmorphism with oklch colors
+  - Story 2.3: Panel and component refresh — panel surfaces, buttons, sliders, modals rewritten with translucent glass design
+  - Story 2.4: Settings modal and secondary UI — settings tabs, metronome, banner bar, CodeMirror editor theme, toast notifications, icon sizing standardization
+  - Story 2.5: Remote control and responsive polish — remote CSS rewrite, mobile breakpoints, projection mode compatibility
+- Reduced motion support (`prefers-reduced-motion`) — modal opacity-only fade, disabled glow/pulse animations
+- High contrast support (`prefers-contrast: more`) — bumped border opacity, text contrast, surface distinction
+- CodeMirror glassmorphism theme — green cursor, selection highlight, translucent gutters
+
+### Changed
+- All CSS colors converted from hex/hsl/rgba to oklch color space
+- Remote base CSS now self-contained with local design tokens (documented sync requirement)
+- `body.reduced-motion` class uses targeted rules instead of nuclear `0.01ms` override
+- Toast notifications refactored from inline JS styles to CSS classes
+- `--dark-green` alias removed — all references use `--color-primary` directly
+- Blocking `alert()` dialogs in settings replaced with non-blocking `showSettingsNotification()` toasts
+
 ## [0.11.7] - 2026-02-23
 
 ### Fixed
