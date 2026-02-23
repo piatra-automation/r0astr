@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.12.1] - 2026-02-23
+
+### Fixed
+- Duplicate CodeMirror editors in master panel on skin switch — old editor views now destroyed and container cleared before recreation
+- Missing onChange callbacks after skin switch — editor auto-save, staleness detection, and master code evaluation now restored
+- macOS Electron crash (SIGABRT / Team ID mismatch) — unsigned CI builds now disable `hardenedRuntime` and clear entitlements
+
 ## [0.12.0] - 2026-02-23
 
 ### Added

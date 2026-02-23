@@ -490,8 +490,10 @@ export function renderPanel(panelId, options = {}) {
  * @param {Map} editorViews - Map to store editor views
  * @param {Function} renderSliders - Function to render sliders (optional)
  * @param {Function} getPanelSliders - Function to get panel slider data (optional)
+ * @param {Function} onChange - Callback for instrument panel editor changes (optional)
+ * @param {Function} onMasterChange - Callback for master panel editor changes (optional)
  */
-export async function reRenderAllPanels(createEditorView, editorViews, renderSliders = null, getPanelSliders = null) {
+export async function reRenderAllPanels(createEditorView, editorViews, renderSliders = null, getPanelSliders = null, onChange = null, onMasterChange = null) {
   console.log(`[PanelManager] Re-rendering ${panels.size} panels with new skin...`);
 
   // Clear DOM except master panel (keep internal state)
@@ -499,12 +501,21 @@ export async function reRenderAllPanels(createEditorView, editorViews, renderSli
   const existingPanels = panelTree.querySelectorAll('.level-panel:not([data-panel-id="panel-0"])');
   existingPanels.forEach(panel => panel.remove());
 
-  // Get master panel code before clearing editor views
+  // Get master panel code before destroying editor views
   const masterView = editorViews.get(MASTER_PANEL_ID);
   const masterCode = masterView?.state.doc.toString() || '';
 
-  // Clear editor views (will be recreated)
+  // Destroy existing editor views to prevent DOM leaks
+  for (const [, view] of editorViews) {
+    view.destroy();
+  }
   editorViews.clear();
+
+  // Clear master panel editor container DOM (master panel element persists across re-renders)
+  const masterContainer = getPanelEditorContainer(MASTER_PANEL_ID);
+  if (masterContainer) {
+    masterContainer.innerHTML = '';
+  }
 
   // Re-render each panel (including master)
   for (const [panelId, panelData] of panels) {
@@ -524,6 +535,7 @@ export async function reRenderAllPanels(createEditorView, editorViews, renderSli
         console.log(`[PanelManager] Creating editor for ${panelId}`, editorContainer);
         const view = createEditorView(editorContainer, {
           initialCode: panelData.code || '',
+          onChange: panelId === MASTER_PANEL_ID ? onMasterChange : onChange,
           panelId: panelId
         });
         editorViews.set(panelId, view);
@@ -548,11 +560,12 @@ export async function reRenderAllPanels(createEditorView, editorViews, renderSli
 
   // Re-create master panel editor (static HTML panel, not in panels Map)
   await new Promise(resolve => setTimeout(resolve, 0));
-  const masterContainer = getPanelEditorContainer(MASTER_PANEL_ID);
-  if (masterContainer) {
+  const masterContainerFresh = getPanelEditorContainer(MASTER_PANEL_ID);
+  if (masterContainerFresh) {
     console.log('[PanelManager] Recreating master panel editor');
-    const masterEditorView = createEditorView(masterContainer, {
+    const masterEditorView = createEditorView(masterContainerFresh, {
       initialCode: masterCode,
+      onChange: onMasterChange,
       panelId: MASTER_PANEL_ID
     });
     editorViews.set(MASTER_PANEL_ID, masterEditorView);

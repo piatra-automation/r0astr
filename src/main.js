@@ -1148,6 +1148,17 @@ function initializeCards() {
   const masterCodeContainer = document.getElementById('editor-panel-0') ||
                               document.getElementById('master-code');
   let masterCodeTimer;
+  const handleMasterChange = (code) => {
+    // Debounce master code evaluation (expensive regex parsing)
+    clearTimeout(masterCodeTimer);
+    masterCodeTimer = setTimeout(() => {
+      evaluateMasterCode();
+    }, 800); // 800ms debounce for master panel
+
+    // Auto-save master panel code (debounced separately)
+    autoSavePanelState();
+  };
+
   if (masterCodeContainer) {
     console.log('[Init] Initializing master panel CodeMirror');
 
@@ -1167,16 +1178,7 @@ function initializeCards() {
 
     const masterView = createEditorView(masterCodeContainer, {
       initialCode,
-      onChange: (code) => {
-        // Debounce master code evaluation (expensive regex parsing)
-        clearTimeout(masterCodeTimer);
-        masterCodeTimer = setTimeout(() => {
-          evaluateMasterCode();
-        }, 800); // 800ms debounce for master panel
-
-        // Auto-save master panel code (debounced separately)
-        autoSavePanelState();
-      },
+      onChange: handleMasterChange,
       panelId: MASTER_PANEL_ID,
     });
 
@@ -3506,7 +3508,7 @@ if (document.querySelector('.panel-tree')) {
     console.log('[SkinHotReload] Re-rendering panels with new skin...');
 
     // Re-render all panels with new templates (preserves internal state, including master)
-    await reRenderAllPanels(createEditorView, editorViews, smRenderSliders, getPanelSliders);
+    await reRenderAllPanels(createEditorView, editorViews, smRenderSliders, getPanelSliders, handleEditorChange, handleMasterChange);
 
     console.log('✓ All panels re-rendered with new skin');
   });

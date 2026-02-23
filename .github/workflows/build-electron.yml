@@ -83,8 +83,23 @@ jobs:
             [ -n "$APPLE_TEAM_ID" ] && echo "APPLE_TEAM_ID=$APPLE_TEAM_ID" >> "$GITHUB_ENV"
           else
             echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
+            echo "MAC_BUILD_UNSIGNED=true" >> "$GITHUB_ENV"
             echo "::warning::No signing certificate — macOS build will be unsigned"
           fi
+
+      - name: Disable hardenedRuntime for unsigned macOS builds
+        if: matrix.platform == 'mac' && env.MAC_BUILD_UNSIGNED == 'true'
+        shell: bash
+        run: |
+          node -e "
+            const fs = require('fs');
+            const cfg = JSON.parse(fs.readFileSync('electron-builder.json', 'utf8'));
+            cfg.mac.hardenedRuntime = false;
+            delete cfg.mac.entitlements;
+            delete cfg.mac.entitlementsInherit;
+            cfg.mac.identity = null;
+            fs.writeFileSync('electron-builder.json', JSON.stringify(cfg, null, 2));
+          "
 
       - name: Build Electron (${{ matrix.platform }})
         run: npx electron-builder --${{ matrix.platform }}
