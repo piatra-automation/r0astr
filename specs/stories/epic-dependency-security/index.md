@@ -1,7 +1,7 @@
 # Epic 3: Dependency Security Remediation
 
 ## Status
-Approved
+Done
 
 ## Epic Goal
 Remediate all actionable Dependabot/npm-audit vulnerabilities on the default branch -- 5 high, 2 moderate, 1 low across 10 root advisories -- while preserving build and runtime stability.
