@@ -5,3 +5,66 @@
   --md-hue: 230;
 }
 
+/* Header logo — banner.png, oversized but doesn't affect nav height */
+.md-header__button.md-logo {
+  overflow: visible;
+}
+.md-header__button.md-logo img {
+  height: 1.8rem !important;
+  width: auto !important;
+  margin: -0.3rem 0;
+}
+[data-md-color-scheme="default"] .md-header__button.md-logo img {
+  filter: invert(1);
+}
+
+/* Header tagline */
+.r0-header-tagline {
+  font-size: 0.65rem !important;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+/* Minimal footer */
+.md-footer {
+  background: transparent !important;
+}
+.md-footer-meta {
+  padding: 0.1rem 0 !important;
+  background: transparent !important;
+}
+.r0-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding: 0.1rem 1rem;
+}
+.r0-footer__text {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.02em;
+}
+[data-md-color-scheme="default"] .r0-footer__text {
+  color: rgba(0, 0, 0, 0.4);
+}
+.r0-footer__logo {
+  display: inline-flex;
+  align-items: center;
+}
+.r0-footer__img {
+  height: 1rem !important;
+  width: auto !important;
+  max-height: 1rem !important;
+  opacity: 0.45;
+  transition: opacity 0.2s;
+  vertical-align: middle;
+}
+.r0-footer__img:hover {
+  opacity: 0.75;
+}
+[data-md-color-scheme="default"] .r0-footer__img {
+  filter: invert(1);
+}
+

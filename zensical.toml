@@ -10,6 +10,8 @@ site_author = "r0astr project"
 repo_url = "https://github.com/piatra-automation/r0astr"
 repo_name = "piatra-automation/r0astr"
 
+copyright = " "
+
 docs_dir = "docs-source"
 site_dir = "docs"
 
@@ -63,7 +65,7 @@ nav = [
 [project.theme]
 custom_dir = "docs-source/overrides"
 language = "en"
-logo = "assets/images/icon.png"
+logo = "assets/images/banner.png"
 favicon = "assets/images/icon.png"
 
 features = [
