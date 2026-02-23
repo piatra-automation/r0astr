@@ -1,0 +1,25 @@
+schema: 1
+story: "2.3"
+story_title: "Panel Template and Component Refresh"
+gate: CONCERNS
+status_reason: "11/13 ACs fully met. AC-12 has button-in-hole remnants in index.html (visual bug), variables.css (dead variables), and accessibility.css (orphaned selectors). AC-13 has hex values in accessibility.css high-contrast mode."
+reviewer: "Quinn"
+updated: "2026-02-23"
+top_issues:
+  - id: "REQ-001"
+    severity: medium
+    finding: "index.html:282-283 still uses btn-hole/btn-surface classes — skin import button renders unstyled since CSS was removed"
+    suggested_action: "Replace with btn-primary or btn-ghost class; remove btn-surface span wrapper"
+  - id: "MNT-001"
+    severity: medium
+    finding: "variables.css:175-183,216 still defines --btn-hole-* and --btn-surface-* CSS variables now unused"
+    suggested_action: "Remove dead CSS variables from variables.css"
+  - id: "MNT-002"
+    severity: medium
+    finding: "accessibility.css:100,159-161 references .btn-hole and --btn-hole-*/--btn-surface-* variables that no longer apply"
+    suggested_action: "Update accessibility.css focus selector to button:focus-visible (already present) and remove btn-hole/surface variable overrides; convert remaining hex colors to oklch"
+  - id: "MNT-003"
+    severity: low
+    finding: "accessibility.css:102,155-167 contains hex color values (#000000, #ffffff, #333333, #e3ad43)"
+    suggested_action: "Convert to oklch for consistency — oklch(0 0 0), oklch(1 0 0), etc."
+waiver: { active: false }

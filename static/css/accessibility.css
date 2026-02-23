@@ -17,20 +17,20 @@
   position: absolute;
   top: -100px;
   left: 0;
-  background: var(--dark-green, #076443);
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--text-primary);
   padding: 12px 24px;
   z-index: 100000;
   text-decoration: none;
   font-weight: 600;
   font-size: 14px;
   border-radius: 0 0 4px 0;
-  transition: top 0.2s ease;
+  transition: top 150ms;
 }
 
 .skip-link:focus {
   top: 0;
-  outline: 3px solid var(--puke, #e3ad43);
+  outline: 3px solid var(--color-warning);
   outline-offset: 2px;
 }
 
@@ -67,7 +67,7 @@
 
 /* Default focus indicator */
 :focus {
-  outline: 2px solid var(--dark-green, #076443);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
@@ -77,29 +77,28 @@
 }
 
 :focus-visible {
-  outline: 2px solid var(--dark-green, #076443);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
 /* Enhanced focus indicator style (user preference) */
 body.focus-enhanced :focus-visible {
-  outline: 3px solid var(--puke, #e3ad43);
+  outline: 3px solid var(--color-warning);
   outline-offset: 3px;
-  box-shadow: 0 0 0 6px rgba(227, 173, 67, 0.3);
+  box-shadow: 0 0 0 6px oklch(0.75 0.15 85 / 0.3);
 }
 
 /* Outline only focus style (user preference) */
 body.focus-outline-only :focus-visible {
-  outline: 2px dashed var(--dark-green, #076443);
+  outline: 2px dashed var(--color-primary);
   outline-offset: 2px;
   box-shadow: none;
 }
 
 /* Button focus states */
 button:focus-visible,
-.btn-hole:focus-visible,
 .top-bar-btn:focus-visible {
-  outline: 2px solid var(--puke, #e3ad43);
+  outline: 2px solid var(--color-warning);
   outline-offset: 2px;
 }
 
@@ -107,21 +106,21 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--dark-green, #076443);
+  outline: 2px solid var(--color-primary);
   outline-offset: 0;
-  border-color: var(--dark-green, #076443);
+  border-color: var(--color-primary);
 }
 
 /* Panel title focus */
 .panel-title:focus-visible {
-  outline: 2px solid var(--dark-green, #076443);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
-  background: #2a2a2a;
+  background: var(--surface-card-30);
 }
 
 /* Settings section header focus */
 .settings-section h3:focus-visible {
-  outline: 2px solid var(--burnt-red, #f64c04);
+  outline: 2px solid var(--color-error);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -133,205 +132,212 @@ textarea:focus-visible {
 /* High contrast mode CSS variables */
 body.high-contrast {
   /* Override color palette for maximum contrast */
-  --pale-white: #ffffff;
-  --pearl: #ffffff;
-  --cream: #ffffff;
-  --darkness: #000000;
-  --dark-green: #00aa00;
-  --mid-green: #00cc00;
-  --burnt-red: #ff0000;
-  --puke: #ffff00;
+  --pale-white: oklch(1 0 0);
+  --pearl: oklch(1 0 0);
+  --cream: oklch(1 0 0);
+  --darkness: oklch(0 0 0);
+  --dark-green: oklch(0.65 0.2 145);
+  --mid-green: oklch(0.7 0.25 145);
+  --burnt-red: oklch(0.55 0.25 25);
+  --puke: oklch(0.9 0.2 100);
+  --color-primary: oklch(0.65 0.2 145);
 
   /* Text colors */
-  --text-color: #ffffff;
-  --bg-color: #000000;
-  --card-bg: #000000;
-  --border-color: #ffffff;
-  --header-color: #00ff00;
+  --text-color: oklch(1 0 0);
+  --text-primary: oklch(1 0 0);
+  --text-secondary: oklch(0.9 0 0);
+  --text-muted: oklch(0.8 0 0);
+  --bg-color: oklch(0 0 0);
+  --color-background: oklch(0 0 0);
+  --card-bg: oklch(0 0 0);
+  --border-color: oklch(1 0 0);
+  --border-default: oklch(1 0 0 / 0.8);
+  --header-color: oklch(0.7 0.25 145);
 
   /* Panel colors */
-  --panel-base-warm: #ffffff;
-  --panel-base-cool: #ffffff;
-  --panel-base-light: #ffffff;
-  --panel-base-dark: #000000;
+  --panel-base-warm: oklch(1 0 0);
+  --panel-base-cool: oklch(1 0 0);
+  --panel-base-light: oklch(1 0 0);
+  --panel-base-dark: oklch(0 0 0);
 
-  /* Button colors */
-  --btn-hole-bg: #000000;
-  --btn-surface-bg: #ffffff;
-  --btn-hole-hover-bg: #333333;
+  /* Surface overrides */
+  --surface-card-30: oklch(1 0 0 / 0.05);
+  --surface-card-50: oklch(1 0 0 / 0.08);
+  --surface-card-80: oklch(1 0 0 / 0.12);
+  --surface-accent: oklch(1 0 0 / 0.15);
 }
 
 /* High contrast specific styles */
 body.high-contrast {
-  background: #000000 !important;
-  color: #ffffff;
+  background: oklch(0 0 0) !important;
+  color: oklch(1 0 0);
 }
 
 body.high-contrast .banner-bar,
 body.high-contrast .top-menu-bar {
-  background: #000000;
-  border-bottom: 2px solid #ffffff;
+  background: oklch(0 0 0);
+  border-bottom: 2px solid oklch(1 0 0);
 }
 
 body.high-contrast .level-panel {
-  background: #000000;
-  border: 2px solid #ffffff;
+  background: oklch(0 0 0);
+  border: 2px solid oklch(1 0 0);
 }
 
 body.high-contrast .level-panel > details > summary {
-  background: #000000;
-  border-bottom: 1px solid #ffffff;
+  background: oklch(0 0 0);
+  border-bottom: 1px solid oklch(1 0 0);
 }
 
 body.high-contrast .level-panel > details > summary:hover {
-  background: #222222;
+  background: oklch(0.12 0 0);
 }
 
 body.high-contrast .panel-title {
-  color: #ffffff;
+  color: oklch(1 0 0);
 }
 
 body.high-contrast .panel-number-badge {
-  background: #ffffff;
-  color: #000000;
-  border: 2px solid #ffffff;
+  background: oklch(1 0 0);
+  color: oklch(0 0 0);
+  border: 2px solid oklch(1 0 0);
 }
 
 body.high-contrast .panel-actions button {
-  background: #000000;
-  color: #ffffff;
-  border: 2px solid #ffffff;
+  background: oklch(0 0 0);
+  color: oklch(1 0 0);
+  border: 2px solid oklch(1 0 0);
 }
 
 body.high-contrast .panel-actions button:hover {
-  background: #333333;
+  background: oklch(0.2 0 0);
 }
 
 body.high-contrast .add-panel-trigger {
-  border: 2px solid #ffffff;
-  background: #000000;
+  border: 2px solid oklch(1 0 0);
+  background: oklch(0 0 0);
 }
 
 body.high-contrast .add-panel-trigger:hover {
-  background: #222222;
-  border-color: #00ff00;
+  background: oklch(0.12 0 0);
+  border-color: oklch(0.7 0.25 145);
 }
 
 body.high-contrast .add-panel-text {
-  color: #ffffff;
+  color: oklch(1 0 0);
 }
 
 /* High contrast modal */
 body.high-contrast .modal-overlay {
-  background: rgba(0, 0, 0, 0.95);
+  background: oklch(0 0 0 / 0.95);
 }
 
 body.high-contrast .modal-content.settings-panel {
-  background: #000000;
-  border: 3px solid #ffffff;
+  background: oklch(0 0 0);
+  border: 3px solid oklch(1 0 0);
 }
 
 body.high-contrast .modal-header {
-  background: #000000;
-  border-bottom: 2px solid #ffffff;
+  background: oklch(0 0 0);
+  border-bottom: 2px solid oklch(1 0 0);
 }
 
 body.high-contrast .modal-header h2 {
-  color: #ffffff;
+  color: oklch(1 0 0);
 }
 
 body.high-contrast .settings-section h3 {
-  color: #ffffff;
-  border-bottom: 1px solid #ffffff;
+  color: oklch(1 0 0);
+  border-bottom: 1px solid oklch(1 0 0);
 }
 
 body.high-contrast .toggle-text,
 body.high-contrast .setting-item > label:not(.toggle-label) {
-  color: #ffffff;
+  color: oklch(1 0 0);
 }
 
 body.high-contrast .setting-description {
-  color: #cccccc;
+  color: oklch(0.82 0 0);
 }
 
 body.high-contrast .toggle-slider {
-  background: #333333;
-  border: 2px solid #ffffff;
+  background: oklch(0.2 0 0);
+  border: 2px solid oklch(1 0 0);
 }
 
 body.high-contrast .toggle-input:checked + .toggle-slider {
-  background: #006600;
-  border-color: #00ff00;
+  background: oklch(0.35 0.15 145);
+  border-color: oklch(0.7 0.25 145);
 }
 
 body.high-contrast .toggle-input:checked + .toggle-slider::before {
-  background: #00ff00;
+  background: oklch(0.7 0.25 145);
 }
 
 body.high-contrast .setting-select,
 body.high-contrast .setting-text-input,
 body.high-contrast .setting-number-input {
-  background: #000000;
-  color: #ffffff;
-  border: 2px solid #ffffff;
+  background: oklch(0 0 0);
+  color: oklch(1 0 0);
+  border: 2px solid oklch(1 0 0);
 }
 
 body.high-contrast .setting-select:focus,
 body.high-contrast .setting-text-input:focus,
 body.high-contrast .setting-number-input:focus {
-  border-color: #00ff00;
-  box-shadow: 0 0 0 2px #00ff00;
+  border-color: oklch(0.7 0.25 145);
+  box-shadow: 0 0 0 2px oklch(0.7 0.25 145);
 }
 
 body.high-contrast .btn-primary {
-  background: #00aa00;
-  color: #000000;
-  border: 2px solid #00ff00;
+  background: oklch(0.65 0.2 145);
+  color: oklch(0 0 0);
+  border: 2px solid oklch(0.7 0.25 145);
 }
 
 body.high-contrast .btn-primary:hover {
-  background: #00cc00;
+  background: oklch(0.7 0.25 145);
 }
 
 body.high-contrast .btn-secondary {
-  background: #000000;
-  color: #ffffff;
-  border: 2px solid #ffffff;
+  background: oklch(0 0 0);
+  color: oklch(1 0 0);
+  border: 2px solid oklch(1 0 0);
 }
 
 body.high-contrast .btn-secondary:hover {
-  background: #333333;
+  background: oklch(0.2 0 0);
 }
 
 /* High contrast code editor */
 body.high-contrast .code-editor-wrapper,
 body.high-contrast .panel-editor-container .code-editor-wrapper {
-  background: #000000;
-  border: 2px solid #ffffff;
+  background: oklch(0 0 0);
+  border: 2px solid oklch(1 0 0);
 }
 
 body.high-contrast .error-message {
-  background: #330000;
-  border-left: 4px solid #ff0000;
-  color: #ff6666;
+  background: oklch(0.15 0.05 25);
+  border-left: 4px solid oklch(0.55 0.25 25);
+  color: oklch(0.7 0.15 25);
 }
 
 /* High contrast focus indicators */
 body.high-contrast :focus-visible {
-  outline: 3px solid #ffff00 !important;
+  outline: 3px solid oklch(0.9 0.2 100) !important;
   outline-offset: 2px;
 }
 
 body.high-contrast button:focus-visible {
-  outline: 3px solid #ffff00 !important;
-  box-shadow: 0 0 0 5px rgba(255, 255, 0, 0.5);
+  outline: 3px solid oklch(0.9 0.2 100) !important;
+  box-shadow: 0 0 0 5px oklch(0.9 0.2 100 / 0.5);
 }
 
 /* High contrast info footer */
 body.high-contrast .info {
-  color: #cccccc;
-  background: #000000;
-  border-top: 1px solid #ffffff;
+  color: oklch(0.82 0 0);
+  background: oklch(0 0 0);
+  border-top: 1px solid oklch(1 0 0);
 }
 
 /* ============================================
@@ -371,19 +377,20 @@ body.reduced-motion .skip-link {
 
 @media (prefers-contrast: more) {
   :root {
-    --pale-white: #ffffff;
-    --darkness: #000000;
-    --dark-green: #00aa00;
-    --burnt-red: #ff0000;
-    --puke: #ffff00;
-    --text-color: #ffffff;
-    --bg-color: #000000;
-    --border-color: #ffffff;
+    --pale-white: oklch(1 0 0);
+    --darkness: oklch(0 0 0);
+    --dark-green: oklch(0.65 0.2 145);
+    --burnt-red: oklch(0.55 0.25 25);
+    --puke: oklch(0.9 0.2 100);
+    --text-color: oklch(1 0 0);
+    --bg-color: oklch(0 0 0);
+    --border-color: oklch(1 0 0);
+    --color-primary: oklch(0.65 0.2 145);
   }
 
   body {
-    background: #000000;
-    color: #ffffff;
+    background: oklch(0 0 0);
+    color: oklch(1 0 0);
   }
 
   .level-panel {
@@ -415,7 +422,7 @@ body.reduced-motion .skip-link {
 }
 
 .confirm-modal-btn:focus-visible {
-  outline: 3px solid var(--puke, #e3ad43);
+  outline: 3px solid var(--color-warning);
   outline-offset: 2px;
 }
 
@@ -435,7 +442,7 @@ body.reduced-motion .skip-link {
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--dark-green, #076443);
+  background: var(--color-primary);
 }
 
 .level-panel.error::after {
@@ -445,7 +452,7 @@ body.reduced-motion .skip-link {
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--burnt-red, #f64c04);
+  background: var(--color-error);
 }
 
 /* ============================================
@@ -454,7 +461,7 @@ body.reduced-motion .skip-link {
 
 /* Visual indicator for keyboard-focused panels */
 .level-panel:focus-within {
-  box-shadow: 0 0 0 2px var(--dark-green, #076443);
+  box-shadow: 0 0 0 2px var(--color-primary);
 }
 
 /* Settings section keyboard navigation */
@@ -466,17 +473,17 @@ body.reduced-motion .skip-link {
 }
 
 .settings-section h3:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--surface-card-30);
 }
 
 /* Tab panel navigation indicator */
 [role="tablist"] [role="tab"]:focus-visible {
-  outline: 2px solid var(--dark-green, #076443);
+  outline: 2px solid var(--color-primary);
   outline-offset: -2px;
 }
 
 [role="tab"][aria-selected="true"] {
-  border-bottom: 2px solid var(--dark-green, #076443);
+  border-bottom: 2px solid var(--color-primary);
 }
 
 /* ============================================
