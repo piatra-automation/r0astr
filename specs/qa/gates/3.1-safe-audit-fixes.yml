@@ -1,0 +1,23 @@
+schema: 1
+story: "3.1"
+story_title: "Safe Dependency Audit Fixes"
+gate: PASS
+status_reason: "All 6 ACs met. 5 target advisories confirmed resolved via npm audit. Build integrity verified live. Remaining 24 vulns documented and scoped to Story 3.2 (electron-builder) and upstream @strudel/csound."
+reviewer: "Quinn (Test Architect)"
+updated: "2026-02-23"
+
+top_issues: []
+
+waiver: { active: false }
+
+nfr_validation:
+  _assessed: [security, reliability, maintainability]
+  security:
+    status: PASS
+    notes: "5 advisories resolved (2 HIGH, 2 MODERATE, 1 LOW); remaining 24 are electron-builder and csound only"
+  reliability:
+    status: PASS
+    notes: "npm ci + npm run build verified live"
+  maintainability:
+    status: PASS
+    notes: "Lockfile-only change, remaining vulnerabilities documented with fix paths"
