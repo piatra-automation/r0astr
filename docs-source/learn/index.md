@@ -4,14 +4,28 @@
 
 r0astr is a multi-panel live coding interface built on top of these projects:
 
-- **[Tidal Cycles](https://tidalcycles.org)** by Alex McLean — the pattern language that started it all
-- **[Strudel](https://strudel.cc)** by Felix Roos — Tidal Cycles ported to JavaScript, the engine under r0astr's hood
+<div class="grid cards" markdown>
 
-For pattern syntax, mini notation, samples, scales, and effects, go straight to the source:
+-   <span style="font-size:1.5em">꩜</span> **[Strudel](https://strudel.cc){ target="_blank" }** by Felix Roos
 
-[:octicons-arrow-right-24: Strudel Learn](https://strudel.cc/learn/){ .md-button target="_blank" }
-[:octicons-arrow-right-24: Pattern Reference](https://strudel.cc/learn/functions/){ .md-button target="_blank" }
-[:octicons-arrow-right-24: Tidal Cycles Docs](https://tidalcycles.org/docs/){ .md-button target="_blank" }
+    ---
+
+    Tidal Cycles ported to JavaScript — the engine under r0astr's hood.
+
+    [꩜ Strudel Learn](https://strudel.cc/learn/){ .md-button target="_blank" }
+    [꩜ Pattern Reference](https://strudel.cc/learn/functions/){ .md-button target="_blank" }
+
+-   ![Tidal Cycles](../assets/images/tidal.png){ style="width:1.5em;vertical-align:middle" } **[Tidal Cycles](https://tidalcycles.org){ target="_blank" }** by Alex McLean
+
+    ---
+
+    The pattern language that started it all.
+
+    [:octicons-arrow-right-24: Tidal Cycles Docs](https://tidalcycles.org/docs/){ .md-button target="_blank" }
+
+</div>
+
+For pattern syntax, mini notation, samples, scales, and effects, go straight to the source.
 
 ---
 
