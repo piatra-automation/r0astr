@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.14.1] - 2026-02-25
+
+### Fixed
+- **Memory leaks for long sessions** — ref-counted console.error interception, master slider/global cleanup on re-eval, Blob URL revocation on skin swap, fontSizeCompartments pruning on panel delete, WebSocket listener teardown on disconnect
+- **Beat-lock timing off by one 1/16 step** — moved waitForBeatLock() to immediately before evaluate() and added 1/64 cycle lookahead to prevent boundary edge case
+- **Metronome WebSocket spam** — throttled step broadcast to downbeats only (4/cycle vs 16), removed debug console.log
+- **Duplicate delete-button handlers** — deduplicated click listeners to prevent double execution
+
+### Added
+- **Pending button state** — pulsing dimmed play icon gives immediate visual feedback when beat-locking delays playback start
+
 ## [0.14.0] - 2026-02-24
 
 ### Added
