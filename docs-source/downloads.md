@@ -1,6 +1,9 @@
 # Downloads
 
-Get the full r0astr desktop application with remote control and WebSocket features.
+<div class="download-hero">
+  <img src="assets/images/icon.png" alt="r0astr" class="download-hero__icon">
+  <p>Get the full r0astr desktop application with remote control and WebSocket features.</p>
+</div>
 
 <div id="download-section">
 <h2>Latest Release: <span id="release-version">Loading...</span></h2>
@@ -127,8 +130,7 @@ If you don't hear sound:
 
 | Platform | Formats |
 |----------|---------|
-| macOS (Intel) | `.dmg`, `.zip` |
-| macOS (Apple Silicon) | `.dmg`, `.zip` |
+| macOS (Universal — Intel + Apple Silicon) | `.dmg`, `.zip` |
 | Windows | `.exe` (installer), `.exe` (portable) |
 | Linux | `.AppImage`, `.deb` |
 
@@ -165,6 +167,13 @@ Don't want to install anything? [Try r0astr Lite](app/index.html) directly in yo
 Having issues? Check the [Troubleshooting Guide](guides/troubleshooting.md) for solutions to common problems.
 
 <script>
+// Platform SVG icons (simple, recognizable silhouettes)
+var ICONS = {
+  macos: '<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>',
+  windows: '<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M3 12V6.5l8-1.1V12H3zm0 .5h8v6.6l-8-1.1V12.5zM11.5 5.3l9.5-1.3v8.5h-9.5V5.3zm0 7.2h9.5v8.5l-9.5-1.3V12.5z"/></svg>',
+  linux: '<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 00-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.536.058.399.116.728.04.97-.249.68-.28 1.145-.106 1.484.174.334.535.47.94.601.81.2 1.91.135 2.774.6.926.466 1.866.67 2.616.47.526-.116.97-.464 1.208-.946.587-.003 1.23-.269 2.26-.334.699-.058 1.574.267 2.577.2.025.134.063.198.114.333l.003.003c.391.778 1.113 1.368 1.884 1.43.199.008.395-.024.585-.069l-.003.003c.759-.2 1.324-.667 1.495-1.334.201-.733-.038-1.476-.09-2.14-.03-.2-.04-.4-.04-.6.014-.178.042-.357.076-.535.088-.392.164-.785.166-1.182.008-.392-.06-.785-.186-1.157-.067-.217-.146-.43-.146-.648 0-.228.136-.47.196-.7.063-.468-.034-.725-.072-1.153-.066-.436-.1-.895-.28-1.328-.188-.398-.452-.764-.732-1.098-.258-.3-.579-.643-.75-.961-.05-.104-.089-.216-.099-.334-.156-1.178-.387-2.105-1.07-2.978C15.25 2.2 13.846.002 12.504 0z"/></svg>'
+};
+
 // Fetch latest release from GitHub API and build download links.
 // Runs as an IIFE — DOMContentLoaded does not fire on MkDocs instant
 // navigation (XHR-based SPA transitions), so we execute immediately.
@@ -174,25 +183,13 @@ Having issues? Check the [Troubleshooting Guide](guides/troubleshooting.md) for 
   const allDownloadsContainer = document.getElementById('all-downloads');
   if (!versionEl || !primaryContainer || !allDownloadsContainer) return;
 
-  // Detect OS and architecture
+  // Detect OS
   const platform = navigator.platform.toLowerCase();
   const userAgent = navigator.userAgent.toLowerCase();
 
   let detectedOS = 'unknown';
-  let isAppleSilicon = false;
-
   if (platform.includes('mac')) {
     detectedOS = 'macos';
-    // Check for Apple Silicon (M1/M2/M3)
-    // navigator.userAgentData is more reliable but not always available
-    if (navigator.userAgentData && navigator.userAgentData.platform === 'macOS') {
-      // Modern detection via userAgentData
-      isAppleSilicon = navigator.userAgent.includes('ARM');
-    } else {
-      // Fallback: check if running on ARM via canvas fingerprinting hint or just default to arm64 for newer Macs
-      // For simplicity, we'll show both options for Mac users
-      isAppleSilicon = true; // Assume Apple Silicon is more common now
-    }
   } else if (platform.includes('win')) {
     detectedOS = 'windows';
   } else if (platform.includes('linux') || userAgent.includes('linux')) {
@@ -210,9 +207,9 @@ Having issues? Check the [Troubleshooting Guide](guides/troubleshooting.md) for 
     // Update version display
     versionEl.textContent = version;
 
-    // Categorize assets
+    // Categorize assets — handles universal, arm64, and x64 builds
     const downloads = {
-      macos: { arm64: { dmg: null, zip: null }, x64: { dmg: null, zip: null } },
+      macos: { dmg: [], zip: [] },
       windows: { installer: null, portable: null },
       linux: { appimage: null, deb: null }
     };
@@ -221,52 +218,48 @@ Having issues? Check the [Troubleshooting Guide](guides/troubleshooting.md) for 
       const name = asset.name.toLowerCase();
       const url = asset.browser_download_url;
       const size = (asset.size / (1024 * 1024)).toFixed(1) + ' MB';
+      const info = { url, name: asset.name, size };
+
+      // Determine architecture label from filename
+      let archLabel = null;
+      if (name.includes('universal')) archLabel = 'Universal';
+      else if (name.includes('arm64')) archLabel = 'Apple Silicon';
+      else if (name.includes('x64') || name.includes('x86_64')) archLabel = 'Intel';
 
       if (name.endsWith('.dmg')) {
-        if (name.includes('arm64')) {
-          downloads.macos.arm64.dmg = { url, name: asset.name, size };
-        } else {
-          downloads.macos.x64.dmg = { url, name: asset.name, size };
-        }
-      } else if (name.endsWith('.zip') && name.includes('mac')) {
-        if (name.includes('arm64')) {
-          downloads.macos.arm64.zip = { url, name: asset.name, size };
-        } else {
-          downloads.macos.x64.zip = { url, name: asset.name, size };
-        }
+        info.archLabel = archLabel || 'Universal';
+        downloads.macos.dmg.push(info);
+      } else if (name.endsWith('.zip') && (name.includes('mac') || name.includes('darwin'))) {
+        info.archLabel = archLabel || 'Universal';
+        downloads.macos.zip.push(info);
       } else if (name.includes('setup') && name.endsWith('.exe')) {
-        downloads.windows.installer = { url, name: asset.name, size };
+        downloads.windows.installer = info;
       } else if (name.endsWith('.exe') && !name.includes('setup') && !name.includes('blockmap')) {
-        downloads.windows.portable = { url, name: asset.name, size };
+        downloads.windows.portable = info;
       } else if (name.endsWith('.appimage')) {
-        downloads.linux.appimage = { url, name: asset.name, size };
+        downloads.linux.appimage = info;
       } else if (name.endsWith('.deb')) {
-        downloads.linux.deb = { url, name: asset.name, size };
+        downloads.linux.deb = info;
       }
     });
 
     // Build primary download section based on detected OS
     let primaryHTML = '';
+    const osIcon = ICONS[detectedOS] || '';
 
     if (detectedOS === 'macos') {
-      const arch = isAppleSilicon ? 'arm64' : 'x64';
-      const archLabel = isAppleSilicon ? 'Apple Silicon' : 'Intel';
-      const dmg = downloads.macos[arch].dmg;
-      const altArch = isAppleSilicon ? 'x64' : 'arm64';
-      const altLabel = isAppleSilicon ? 'Intel' : 'Apple Silicon';
-      const altDmg = downloads.macos[altArch].dmg;
-
+      const dmg = downloads.macos.dmg[0];
       primaryHTML = `
-        <p style="margin-bottom: 0.5rem;"><strong>Detected: macOS (${archLabel})</strong></p>
+        <div class="download-card__icon">${osIcon}</div>
+        <p style="margin-bottom: 0.5rem;"><strong>Detected: macOS</strong></p>
         <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8;">Version ${version}</p>
-        ${dmg ? `<a href="${dmg.url}" class="md-button md-button--primary download-btn">Download for ${archLabel} (${dmg.size})</a>` : ''}
-        ${altDmg ? `<p style="margin-top: 1rem;"><a href="${altDmg.url}">Download for ${altLabel} instead</a></p>` : ''}
+        ${dmg ? `<a href="${dmg.url}" class="md-button md-button--primary download-btn">Download ${dmg.archLabel} .dmg (${dmg.size})</a>` : ''}
       `;
     } else if (detectedOS === 'windows') {
       const installer = downloads.windows.installer;
       const portable = downloads.windows.portable;
-
       primaryHTML = `
+        <div class="download-card__icon">${osIcon}</div>
         <p style="margin-bottom: 0.5rem;"><strong>Detected: Windows</strong></p>
         <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8;">Version ${version}</p>
         ${installer ? `<a href="${installer.url}" class="md-button md-button--primary download-btn">Download Installer (${installer.size})</a>` : ''}
@@ -275,8 +268,8 @@ Having issues? Check the [Troubleshooting Guide](guides/troubleshooting.md) for 
     } else if (detectedOS === 'linux') {
       const appimage = downloads.linux.appimage;
       const deb = downloads.linux.deb;
-
       primaryHTML = `
+        <div class="download-card__icon">${osIcon}</div>
         <p style="margin-bottom: 0.5rem;"><strong>Detected: Linux</strong></p>
         <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8;">Version ${version}</p>
         ${appimage ? `<a href="${appimage.url}" class="md-button md-button--primary download-btn">Download AppImage (${appimage.size})</a>` : ''}
@@ -288,35 +281,23 @@ Having issues? Check the [Troubleshooting Guide](guides/troubleshooting.md) for 
 
     primaryContainer.innerHTML = primaryHTML;
 
-    // Build all downloads section
+    // Build all downloads section — one card per platform with icon
     let allHTML = '<div class="download-grid">';
 
     // macOS
-    allHTML += `
-      <div class="download-platform">
-        <h3>macOS</h3>
-        <ul>
-    `;
-    if (downloads.macos.arm64.dmg) {
-      allHTML += `<li><a href="${downloads.macos.arm64.dmg.url}">Apple Silicon .dmg</a> (${downloads.macos.arm64.dmg.size})</li>`;
-    }
-    if (downloads.macos.x64.dmg) {
-      allHTML += `<li><a href="${downloads.macos.x64.dmg.url}">Intel .dmg</a> (${downloads.macos.x64.dmg.size})</li>`;
-    }
-    if (downloads.macos.arm64.zip) {
-      allHTML += `<li><a href="${downloads.macos.arm64.zip.url}">Apple Silicon .zip</a> (${downloads.macos.arm64.zip.size})</li>`;
-    }
-    if (downloads.macos.x64.zip) {
-      allHTML += `<li><a href="${downloads.macos.x64.zip.url}">Intel .zip</a> (${downloads.macos.x64.zip.size})</li>`;
-    }
+    allHTML += `<div class="download-platform">
+        <h3>${ICONS.macos} macOS</h3><ul>`;
+    downloads.macos.dmg.forEach(d => {
+      allHTML += `<li><a href="${d.url}">${d.archLabel} .dmg</a> (${d.size})</li>`;
+    });
+    downloads.macos.zip.forEach(d => {
+      allHTML += `<li><a href="${d.url}">${d.archLabel} .zip</a> (${d.size})</li>`;
+    });
     allHTML += '</ul></div>';
 
     // Windows
-    allHTML += `
-      <div class="download-platform">
-        <h3>Windows</h3>
-        <ul>
-    `;
+    allHTML += `<div class="download-platform">
+        <h3>${ICONS.windows} Windows</h3><ul>`;
     if (downloads.windows.installer) {
       allHTML += `<li><a href="${downloads.windows.installer.url}">Installer .exe</a> (${downloads.windows.installer.size})</li>`;
     }
@@ -326,11 +307,8 @@ Having issues? Check the [Troubleshooting Guide](guides/troubleshooting.md) for 
     allHTML += '</ul></div>';
 
     // Linux
-    allHTML += `
-      <div class="download-platform">
-        <h3>Linux</h3>
-        <ul>
-    `;
+    allHTML += `<div class="download-platform">
+        <h3>${ICONS.linux} Linux</h3><ul>`;
     if (downloads.linux.appimage) {
       allHTML += `<li><a href="${downloads.linux.appimage.url}">AppImage</a> (${downloads.linux.appimage.size})</li>`;
     }
@@ -340,7 +318,6 @@ Having issues? Check the [Troubleshooting Guide](guides/troubleshooting.md) for 
     allHTML += '</ul></div>';
 
     allHTML += '</div>';
-
     allDownloadsContainer.innerHTML = allHTML;
 
   } catch (error) {
@@ -358,12 +335,30 @@ Having issues? Check the [Troubleshooting Guide](guides/troubleshooting.md) for 
 </script>
 
 <style>
+.download-hero {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.download-hero__icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  margin-bottom: 0.75rem;
+}
+
 .download-card.primary {
   background: var(--md-primary-fg-color--light);
   padding: 2rem;
   border-radius: 8px;
   text-align: center;
   margin-bottom: 2rem;
+}
+
+.download-card__icon {
+  margin-bottom: 0.75rem;
+}
+.download-card__icon svg {
+  opacity: 0.85;
 }
 
 .download-btn {
@@ -379,9 +374,18 @@ Having issues? Check the [Troubleshooting Guide](guides/troubleshooting.md) for 
 }
 
 .download-platform h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 0.5rem;
   border-bottom: 1px solid var(--md-default-fg-color--lighter);
   padding-bottom: 0.5rem;
+}
+.download-platform h3 svg {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  opacity: 0.7;
 }
 
 .download-platform ul {
