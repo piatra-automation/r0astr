@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.13.2] - 2026-02-24
+
+### Fixed
+- Downloads page: release info never loaded on SPA navigation — replaced `DOMContentLoaded` listener with IIFE since MkDocs instant navigation doesn't fire that event
+- Downloads page: markdown headers rendered as raw `##` text inside HTML div — converted to `<h2>` tags
+
 ## [0.13.1] - 2026-02-24
 
 ### Fixed

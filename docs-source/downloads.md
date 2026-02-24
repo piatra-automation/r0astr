@@ -3,19 +3,14 @@
 Get the full r0astr desktop application with remote control and WebSocket features.
 
 <div id="download-section">
-
-## Latest Release: <span id="release-version">Loading...</span>
-
+<h2>Latest Release: <span id="release-version">Loading...</span></h2>
 <div id="detected-os-download" class="download-card primary">
   <p>Loading release information...</p>
 </div>
-
-## All Platforms
-
+<h2>All Platforms</h2>
 <div id="all-downloads">
   <p>Loading downloads...</p>
 </div>
-
 </div>
 
 ---
@@ -170,11 +165,14 @@ Don't want to install anything? [Try r0astr Lite](app/index.html) directly in yo
 Having issues? Check the [Troubleshooting Guide](guides/troubleshooting.md) for solutions to common problems.
 
 <script>
-// Fetch latest release from GitHub API and build download links
-document.addEventListener('DOMContentLoaded', async function() {
+// Fetch latest release from GitHub API and build download links.
+// Runs as an IIFE — DOMContentLoaded does not fire on MkDocs instant
+// navigation (XHR-based SPA transitions), so we execute immediately.
+(async function() {
   const versionEl = document.getElementById('release-version');
   const primaryContainer = document.getElementById('detected-os-download');
   const allDownloadsContainer = document.getElementById('all-downloads');
+  if (!versionEl || !primaryContainer || !allDownloadsContainer) return;
 
   // Detect OS and architecture
   const platform = navigator.platform.toLowerCase();
@@ -356,7 +354,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       <p><a href="https://github.com/piatra-automation/r0astr/releases/latest">View all downloads on GitHub</a></p>
     `;
   }
-});
+})();
 </script>
 
 <style>
