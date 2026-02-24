@@ -368,10 +368,10 @@ var ICONS = {
 }
 .download-hero__lead {
   text-align: left;
-  font-size: 0.95rem;
-  line-height: 1.7;
+  font-size: 0.8rem;
+  line-height: 1.6;
   max-width: 42rem;
-  margin: 0 auto 0.75rem;
+  margin: 0 auto 0.6rem;
   color: var(--md-default-fg-color--light);
 }
 .download-hero__lead code {
