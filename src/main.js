@@ -260,6 +260,15 @@ const titleBroadcastTimers = {};
 // Debounce timers for pattern pre-registration (panel ID -> timer ID)
 const patternRegistrationTimers = {};
 
+// Track master panel globals for cleanup on re-evaluation
+const masterGlobalNames = new Set();
+const masterSliderIds = new Set();
+
+// Shared console.error interception for concurrent activatePanel calls
+let consoleErrorInterceptDepth = 0;
+const originalConsoleError = console.error;
+const panelEvaluationErrors = new Map(); // panelId -> first error message
+
 /**
  * Debounced pattern pre-registration on code change
  * Validates code and registers pattern for cross-panel references
@@ -315,6 +324,9 @@ function cleanupPanel(panelId) {
     editorViews.delete(panelId);
     console.log(`[Cleanup] Destroyed EditorView for ${panelId}`);
   }
+
+  // 1b. Clean up font size compartment for this panel
+  fontSizeCompartments.delete(panelId);
 
   // 2. Clear pattern registration timer
   if (patternRegistrationTimers[panelId]) {
@@ -481,6 +493,17 @@ async function evaluateMasterCode(reRenderSliders = true) {
     const sliderVars = {};
     let match;
 
+    // Clean up previous master globals and slider values before re-eval
+    // Prevents orphaned window[varName] refs and stale sliderValues keys
+    for (const name of masterGlobalNames) {
+      delete window[name];
+    }
+    masterGlobalNames.clear();
+    for (const id of masterSliderIds) {
+      delete sliderValues[id];
+    }
+    masterSliderIds.clear();
+
     while ((match = sliderRegex.exec(cleanCode)) !== null) {
       const varName = match[1];
       const value = parseFloat(match[2]);
@@ -500,8 +523,9 @@ async function evaluateMasterCode(reRenderSliders = true) {
         sliderId
       });
 
-      // Initialize slider value
+      // Initialize slider value and track for future cleanup
       sliderValues[sliderId] = value;
+      masterSliderIds.add(sliderId);
     }
 
     // Store sliders globally for remote sync
@@ -516,6 +540,7 @@ async function evaluateMasterCode(reRenderSliders = true) {
     widgets.forEach(({ varName, sliderId }) => {
       // Create a ref that reads from sliderValues
       window[varName] = ref(() => sliderValues[sliderId]);
+      masterGlobalNames.add(varName);
     });
 
     console.log('✓ Master controls updated - variables available globally:', Object.keys(sliderVars));
@@ -533,8 +558,15 @@ async function evaluateMasterCode(reRenderSliders = true) {
         let globalCode = hasNonSliderCode;
 
         // Handle optional leading whitespace with capture groups
-        globalCode = globalCode.replace(/^(\s*)(let|const|var)\s+(\w+)\s*=/gm, '$1window.$3 =');
-        globalCode = globalCode.replace(/^(\s*)function\s+(\w+)\s*\(/gm, '$1window.$2 = function $2(');
+        // Track the global names being created so they can be cleaned up on re-eval
+        globalCode = globalCode.replace(/^(\s*)(let|const|var)\s+(\w+)\s*=/gm, (m, ws, kw, name) => {
+          masterGlobalNames.add(name);
+          return `${ws}window.${name} =`;
+        });
+        globalCode = globalCode.replace(/^(\s*)function\s+(\w+)\s*\(/gm, (m, ws, name) => {
+          masterGlobalNames.add(name);
+          return `${ws}window.${name} = function ${name}(`;
+        });
 
         // Evaluate WITHOUT transpilation and WITHOUT .p() - just run the code globally
         // This allows register(), samples(), variable assignments, etc.
@@ -1378,10 +1410,12 @@ async function initializeCards() {
     }
   });
 
-  // Tree layout: Use event delegation for DELETE button clicks
+  // Tree layout: Use event delegation for DELETE button clicks (.btn-delete only)
+  // Note: .delete-btn with dataset.panel is handled by the separate handler below
+  // which includes confirmation dialog and WebSocket broadcast
   document.addEventListener('click', (e) => {
-    const deleteBtn = e.target.closest('.btn-delete, .delete-btn');
-    if (deleteBtn) {
+    const deleteBtn = e.target.closest('.btn-delete');
+    if (deleteBtn && !deleteBtn.classList.contains('delete-btn')) {
       // Try legacy data-card/data-panel, then find from tree parent
       let panelId = deleteBtn.dataset.panel || deleteBtn.dataset.card;
       if (!panelId) {
@@ -2075,22 +2109,23 @@ async function activatePanel(panelId) {
     await waitForBeatLock();
 
     // Story 7.3: Intercept console.error to detect Strudel evaluation errors
+    // Ref-counted wrapper prevents permanent nesting when multiple activatePanel()
+    // calls run concurrently (e.g., "Update All"). All concurrent evals share a
+    // single wrapper installed at depth 0→1, removed at depth 1→0.
     let evaluationError = null;
-    const originalConsoleError = console.error;
-    console.error = (...args) => {
-      // Capture first error during evaluation
-      if (!evaluationError && args[0]) {
-        // Handle Error objects and strings
-        if (args[0] instanceof Error) {
-          evaluationError = args[0].message;
-        } else if (typeof args[0] === 'string') {
-          evaluationError = args.join(' ');
-        } else {
-          evaluationError = String(args[0]);
+    consoleErrorInterceptDepth++;
+    if (consoleErrorInterceptDepth === 1) {
+      console.error = (...args) => {
+        if (args[0]) {
+          const msg = args[0] instanceof Error ? args[0].message
+            : typeof args[0] === 'string' ? args.join(' ')
+            : String(args[0]);
+          panelEvaluationErrors.set('__latest', msg);
         }
-      }
-      originalConsoleError(...args); // Still log to console
-    };
+        originalConsoleError(...args);
+      };
+    }
+    panelEvaluationErrors.delete('__latest');
 
     let evalResult;
     try {
@@ -2264,8 +2299,13 @@ async function activatePanel(panelId) {
       // Story 7.3: Wait a moment for any async errors to be logged
       await new Promise(resolve => setTimeout(resolve, 50));
     } finally {
-      // Restore console.error
-      console.error = originalConsoleError;
+      // Ref-counted restore: only unwrap when last concurrent eval finishes
+      evaluationError = panelEvaluationErrors.get('__latest') || null;
+      panelEvaluationErrors.delete('__latest');
+      consoleErrorInterceptDepth--;
+      if (consoleErrorInterceptDepth === 0) {
+        console.error = originalConsoleError;
+      }
     }
 
     // Story 7.3: Check if evaluation failed

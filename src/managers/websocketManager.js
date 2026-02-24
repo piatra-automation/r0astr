@@ -264,14 +264,23 @@ export function broadcast(type, payload) {
   return send(type, payload);
 }
 
+// Store handler refs so they can be removed on disconnect
+const outgoingHandlers = [];
+
 /**
  * Setup listeners for outgoing events from event bus
  * @private
  * @returns {void}
  */
 function setupOutgoingListeners() {
+  // Helper to register and track handlers for clean teardown
+  function listen(event, handler) {
+    eventBus.on(event, handler);
+    outgoingHandlers.push({ event, handler });
+  }
+
   // Panel lifecycle events
-  eventBus.on('panel:created', (data) => {
+  listen('panel:created', (data) => {
     send(MESSAGE_TYPES.PANEL_CREATED, {
       id: data.id,
       title: data.title,
@@ -279,20 +288,18 @@ function setupOutgoingListeners() {
     });
   });
 
-  eventBus.on('panel:deleted', (panelId) => {
+  listen('panel:deleted', (panelId) => {
     send(MESSAGE_TYPES.PANEL_DELETED, { panel: panelId });
   });
 
-  eventBus.on('panel:codeUpdated', (data) => {
-    // Only broadcast if significant code change (not just keystrokes)
-    // This could be debounced in the future
+  listen('panel:codeUpdated', (data) => {
     send(MESSAGE_TYPES.PANEL_UPDATE_CODE, {
       panelId: data.panelId,
       code: data.code
     });
   });
 
-  eventBus.on('panel:playingChanged', (data) => {
+  listen('panel:playingChanged', (data) => {
     send(MESSAGE_TYPES.PANEL_STATE_CHANGED, {
       panel: data.panelId,
       playing: data.playing
@@ -300,7 +307,7 @@ function setupOutgoingListeners() {
   });
 
   // Slider events
-  eventBus.on('slider:changed', (data) => {
+  listen('slider:changed', (data) => {
     send(MESSAGE_TYPES.PANEL_SLIDERS, {
       panelId: data.panelId,
       sliderId: data.sliderId,
@@ -308,25 +315,31 @@ function setupOutgoingListeners() {
     });
   });
 
-  eventBus.on('sliders:rendered', (data) => {
+  listen('sliders:rendered', (data) => {
     send(MESSAGE_TYPES.PANEL_SLIDERS, {
       panelId: data.panelId,
       sliders: data.sliders
     });
   });
 
-  // Metronome step broadcast
-  eventBus.on('metronome:step', (data) => {
-    // Debug: log step 0 to confirm listener is receiving events
-    if (data.step === 0) {
-      const sent = send(MESSAGE_TYPES.METRONOME_STEP, data);
-      console.log('[WebSocket] Step 0 send result:', sent, 'wsState:', ws?.readyState);
-    } else {
-      send(MESSAGE_TYPES.METRONOME_STEP, data);
-    }
+  // Metronome step broadcast (downbeats only — throttled in visualization.js)
+  listen('metronome:step', (data) => {
+    send(MESSAGE_TYPES.METRONOME_STEP, data);
   });
 
   console.log('[WebSocket] Outgoing event listeners setup complete');
+}
+
+/**
+ * Remove all outgoing event listeners from event bus
+ * @private
+ * @returns {void}
+ */
+function teardownOutgoingListeners() {
+  for (const { event, handler } of outgoingHandlers) {
+    eventBus.off(event, handler);
+  }
+  outgoingHandlers.length = 0;
 }
 
 /**
@@ -343,6 +356,11 @@ export function disconnect() {
     ws.close();
     ws = null;
   }
+
+  // Remove outgoing event listeners and reset flag so they're
+  // re-registered on next connect() without duplicates
+  teardownOutgoingListeners();
+  outgoingListenersSetup = false;
 
   console.log('[WebSocket] Disconnected');
 }

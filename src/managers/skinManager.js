@@ -72,9 +72,12 @@ class SkinManager {
 
       // Load CSS from stored file
       if (files['theme.css']) {
-        // Remove old skin CSS
+        // Remove old skin CSS and revoke its Blob URL to prevent memory leak
         const oldLink = document.getElementById('skin-css');
         if (oldLink) {
+          if (oldLink.href && oldLink.href.startsWith('blob:')) {
+            URL.revokeObjectURL(oldLink.href);
+          }
           oldLink.remove();
         }
 

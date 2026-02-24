@@ -88,15 +88,14 @@ export function initializeMetronome() {
 
         lastStep = currentStep;
 
-        // Broadcast step to remote clients on every step change
-        // Debug: log every 16th step to confirm emission
-        if (currentStep === 0) {
-          console.log('[Metronome] Emitting step 0');
+        // Broadcast step to remote clients on downbeats only (every 4 steps)
+        // to reduce WebSocket traffic and GC pressure during long sessions
+        if (currentStep % 4 === 0) {
+          eventBus.emit('metronome:step', {
+            step: currentStep,
+            isDownbeat: true
+          });
         }
-        eventBus.emit('metronome:step', {
-          step: currentStep,
-          isDownbeat: currentStep % 4 === 0
-        });
       }
 
       animationFrameId = requestAnimationFrame(loop);
