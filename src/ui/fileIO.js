@@ -172,7 +172,7 @@ export function loadLayoutFromFile(onLoad) {
  * @param {Object} layout - Layout object to validate
  * @returns {{valid: boolean, error?: string}} Validation result
  */
-function validateLayout(layout) {
+export function validateLayout(layout) {
   if (!layout || typeof layout !== 'object') {
     return { valid: false, error: 'Not a valid JSON object' };
   }

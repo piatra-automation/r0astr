@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "name": "starter-layout",
+  "timestamp": "2026-02-24T00:00:00.000Z",
+  "panels": [
+    {
+      "id": "panel-0",
+      "title": "Global Panel",
+      "code": "let TEMPO = slider(120, 60, 200);\nlet MASTER_LPF = slider(4000, 200, 8000);",
+      "isMaster": true,
+      "compact": false
+    },
+    {
+      "id": "panel-starter-1",
+      "title": "Drums",
+      "code": "s(\"bd*4, ~ sd ~ sd, hh*8\")\n  .gain(0.8)",
+      "number": 1
+    },
+    {
+      "id": "panel-starter-2",
+      "title": "Bass",
+      "code": "note(\"c2 ~ c2 eb2\")\n  .s(\"sawtooth\")\n  .lpf(MASTER_LPF)\n  .gain(0.6)",
+      "number": 2
+    },
+    {
+      "id": "panel-starter-3",
+      "title": "Melody",
+      "code": "n(\"0 3 5 7\").scale(\"C:minor\")\n  .s(\"triangle\")\n  .room(0.4)\n  .gain(0.4)",
+      "number": 3
+    }
+  ]
+}

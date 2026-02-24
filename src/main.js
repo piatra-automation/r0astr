@@ -11,7 +11,7 @@ import { initializeSettingsModal, openSettingsModal } from './ui/settingsModal.j
 import { applyAllAppearanceSettings, updatePanelOpacities } from './managers/themeManager.js';
 import { initializeAccessibility, announcePanelState } from './managers/accessibilityManager.js';
 import { openSnippetModal } from './ui/snippetModal.js';
-import { saveLayoutToFile, loadLayoutFromFile } from './ui/fileIO.js';
+import { saveLayoutToFile, loadLayoutFromFile, validateLayout } from './ui/fileIO.js';
 import { loadSnippets } from './managers/snippetManager.js';
 import './ui/snippetModal.css';
 import * as prettier from 'prettier/standalone';
@@ -1034,18 +1034,49 @@ function ensureAddPanelRowAtEnd() {
   }
 }
 
+// Load starter layout for first-time users (no saved state)
+async function loadStarterLayout() {
+  try {
+    const resp = await fetch(new URL('starter-layout.json', import.meta.url));
+    if (!resp.ok) {
+      console.log('[Init] No starter layout available (HTTP ' + resp.status + ')');
+      return;
+    }
+    const layout = await resp.json();
+    const validation = validateLayout(layout);
+    if (!validation.valid) {
+      console.warn('[Init] Starter layout invalid:', validation.error);
+      return;
+    }
+    console.log('[Init] Loading starter layout for first-time user');
+    await restoreLayoutFromFile(layout);
+  } catch (e) {
+    console.log('[Init] No starter layout available:', e.message);
+  }
+}
+
 // Initialize card UI
-function initializeCards() {
+async function initializeCards() {
   // Check if we should restore panels from saved state
-  if (appSettings && appSettings.behavior.restoreSession) {
-    console.log('Restoring panels from saved state (restoreSession: true)');
-    restorePanels();
+  if (appSettings?.behavior.restoreSession) {
+    const savedPanels = loadPanelState();
+    if (savedPanels && savedPanels.length > 0) {
+      console.log('Restoring panels from saved state (restoreSession: true)');
+      restorePanels();
+      ensureAddPanelRowAtEnd();
+    } else {
+      // No saved state — try loading starter layout for first-time users
+      await loadStarterLayout();
+      ensureAddPanelRowAtEnd();
+    }
   } else {
     console.log('Panel restoration disabled (restoreSession: false or no settings)');
+    // Still try starter layout if no settings at all (fresh install)
+    if (!appSettings) {
+      await loadStarterLayout();
+    }
+    ensureAddPanelRowAtEnd();
   }
-
-  // Ensure add-panel-row is at end (fixes any corrupted DOM order)
-  ensureAddPanelRowAtEnd();
 
   // Initialize CodeMirror for existing panel containers
   // Note: This handles both restored panels and any panels already in HTML
@@ -3427,7 +3458,7 @@ async function init() {
 }
 
 // Continue with rest of initialization
-function continueInitialization() {
+async function continueInitialization() {
 
 // Story 4.4: Initialize auto-save timer with current settings
 startAutoSaveTimer(appSettings.behavior?.autoSaveInterval || 'manual');
@@ -3442,7 +3473,7 @@ setTimeout(() => {
   console.log('[STARTUP] Initial panel opacities applied');
 }, 100);
 
-initializeCards();
+await initializeCards();
 initializeSettingsModal();
 initializeAccessibility();
 initializeKeyboardShortcuts();
