@@ -123,10 +123,10 @@ Now you have a full arrangement with drums, bass, melody, and ambient texture!
 
 ## What You've Learned
 
-- [x] Panels are independent instruments
-- [x] `s()` plays samples, `note()` plays synths
-- [x] All panels share the same clock (they stay in sync)
-- [x] Play/Pause controls each panel independently
+- Panels are independent instruments
+- `s()` plays samples, `note()` plays synths
+- All panels share the same clock (they stay in sync)
+- Play/Pause controls each panel independently
 
 ---
 
