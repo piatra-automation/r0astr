@@ -1,7 +1,7 @@
 # Downloads
 
 <div class="download-hero">
-  <img src="assets/images/icon.png" alt="r0astr" class="download-hero__icon">
+  <img src="../assets/images/icon.png" alt="r0astr" class="download-hero__icon">
   <p>Get the full r0astr desktop application with remote control and WebSocket features.</p>
 </div>
 
