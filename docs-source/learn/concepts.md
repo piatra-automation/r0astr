@@ -138,17 +138,13 @@ Understanding how patterns work as you edit and play them.
 
 ### The Flow
 
-```
-┌─────────┐ ┌─────────┐ ┌──────────────┐
-│ Write │ --> │ Play │ --> │ Live Update │
-│ Pattern │ │ │ │ (optional) │
-└─────────┘ └─────────┘ └──────────────┘
- │ │
- v v
- ┌─────────┐ ┌─────────┐
- │ Hear │ │ Changes │
- │ Sound │ │ Applied │
- └─────────┘ └─────────┘
+```mermaid
+flowchart LR
+  Write["✏️ Write\nPattern"] --> Play["▶️ Play"]
+  Play --> Sound["🔊 Hear\nSound"]
+  Play --> Edit["✏️ Edit\nLive"]
+  Edit --> Update["🔄 Changes\nApplied"]
+  Update --> Sound
 ```
 
 ### Step by Step
