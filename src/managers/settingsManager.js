@@ -61,7 +61,8 @@ export const DEFAULT_SETTINGS = {
   },
   snippetLocation: '',            // URL/path to snippet JSON
   remoteWSLayout: 'side-panel',   // 'side-panel', 'modal', 'hidden'
-  skinPack: ''                    // Path to WinAmp-style skin folder (future)
+  skinPack: '',                   // Path to WinAmp-style skin folder (future)
+  beatLocking: 'immediate'        // Pattern evaluation timing: 'immediate', 'beat', 'cycle'
 };
 
 // Current settings in memory
@@ -181,6 +182,13 @@ function validateSettings(settings) {
   if (!allowedLayouts.includes(valid.remoteWSLayout)) {
     console.warn(`Invalid remoteWSLayout: ${valid.remoteWSLayout}, using default`);
     valid.remoteWSLayout = 'side-panel';
+  }
+
+  // Validate beatLocking
+  const allowedBeatLocking = ['immediate', 'beat', 'cycle'];
+  if (!allowedBeatLocking.includes(valid.beatLocking)) {
+    console.warn(`Invalid beatLocking: ${valid.beatLocking}, using default`);
+    valid.beatLocking = 'immediate';
   }
 
   // Validate string fields

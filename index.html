@@ -120,6 +120,28 @@
                 How frequently to save panel state to localStorage
               </p>
             </div>
+
+            <!-- Beat-Locking -->
+            <div class="setting-item">
+              <label>Beat-Locking</label>
+              <p class="setting-description">
+                Choose how urgently to apply panel updates
+              </p>
+              <div class="radio-group" id="beat-locking-group">
+                <label class="radio-label">
+                  <input type="radio" name="beat-locking" value="immediate" class="radio-input">
+                  <span class="radio-text">Immediately</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="beat-locking" value="beat" class="radio-input">
+                  <span class="radio-text">Next beat</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="beat-locking" value="cycle" class="radio-input">
+                  <span class="radio-text">Next cycle</span>
+                </label>
+              </div>
+            </div>
           </div>
         </section>
 

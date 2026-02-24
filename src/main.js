@@ -1925,6 +1925,30 @@ function pausePanel(panelId) {
  * Story 6.2: Separate PAUSE and ACTIVATE Buttons
  * @param {string} panelId - Panel ID
  */
+/**
+ * Wait for the next beat or cycle boundary based on beat-locking setting.
+ * Returns immediately if mode is 'immediate' or scheduler isn't running.
+ */
+async function waitForBeatLock() {
+  const settings = getSettings();
+  const mode = settings.beatLocking || 'immediate';
+  if (mode === 'immediate') return;
+
+  const now = strudelCore.scheduler.now();
+  const cps = strudelCore.scheduler.cps;
+  if (!cps || cps <= 0) return;
+
+  const target = mode === 'beat'
+    ? Math.ceil(now * 4) / 4
+    : Math.ceil(now);
+
+  const delayCycles = target - now;
+  if (delayCycles <= 0) return;
+
+  const delayMs = (delayCycles / cps) * 1000;
+  await new Promise(resolve => setTimeout(resolve, delayMs));
+}
+
 async function activatePanel(panelId) {
   // Check if Strudel is initialized
   if (!strudelCore.evaluate || !strudelCore.scheduler) {
@@ -2046,6 +2070,10 @@ async function activatePanel(panelId) {
     // Evaluate transpiled code with unique ID using .p() method
     // Only append .p(panelId) if code doesn't use labeled statements
     // (labeled statements already have .p() calls)
+
+    // Beat-locking: wait for next beat/cycle boundary if configured
+    await waitForBeatLock();
+
     // Story 7.3: Intercept console.error to detect Strudel evaluation errors
     let evaluationError = null;
     const originalConsoleError = console.error;

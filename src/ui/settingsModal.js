@@ -237,6 +237,13 @@ async function loadSettingsIntoForm() {
     autoSaveSelect.value = settings.behavior?.autoSaveInterval || 'manual';
   }
 
+  // Beat-Locking radio group
+  const beatLockingValue = settings.beatLocking || 'immediate';
+  const beatLockingRadio = document.querySelector(`input[name="beat-locking"][value="${beatLockingValue}"]`);
+  if (beatLockingRadio) {
+    beatLockingRadio.checked = true;
+  }
+
   if (restoreSessionToggle) {
     restoreSessionToggle.checked = settings.behavior?.restoreSession !== false;
   }
@@ -413,6 +420,12 @@ function collectSettingsFromForm() {
       settings.behavior = {};
     }
     settings.behavior.autoSaveInterval = autoSaveSelect.value;
+  }
+
+  // Beat-Locking radio group
+  const beatLockingRadio = document.querySelector('input[name="beat-locking"]:checked');
+  if (beatLockingRadio) {
+    settings.beatLocking = beatLockingRadio.value;
   }
 
   if (restoreSessionToggle) {
