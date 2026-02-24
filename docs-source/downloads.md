@@ -258,39 +258,40 @@ var ICONS = {
     // Build primary download section based on detected OS
     let primaryHTML = '';
     const osIcon = ICONS[detectedOS] || '';
-    const appIcon = '<img src="../assets/images/icon.png" alt="" class="download-card__app-icon">';
+    const appIconImg = '<img src="../assets/images/icon.png" alt="r0astr" class="download-card__app-icon">';
+
+    function buildCard(osLabel, buttons) {
+      return `
+        <div class="download-card__layout">
+          <div class="download-card__icons">
+            ${appIconImg}
+            <div class="download-card__os-icon">${osIcon}</div>
+          </div>
+          <div class="download-card__details">
+            <p class="download-card__os-label">${osLabel}</p>
+            <p class="download-card__version">Version ${version}</p>
+            ${buttons}
+          </div>
+        </div>`;
+    }
 
     if (detectedOS === 'macos') {
       const dmg = downloads.macos.dmg[0];
-      primaryHTML = `
-        ${appIcon}
-        <div class="download-card__icon">${osIcon}</div>
-        <p style="margin-bottom: 0.5rem;"><strong>Detected: macOS</strong></p>
-        <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8;">Version ${version}</p>
-        ${dmg ? `<a href="${dmg.url}" class="md-button md-button--primary download-btn">Download ${dmg.archLabel} .dmg (${dmg.size})</a>` : ''}
-      `;
+      primaryHTML = buildCard('macOS', dmg
+        ? `<a href="${dmg.url}" class="md-button md-button--primary download-btn">Download ${dmg.archLabel} .dmg (${dmg.size})</a>`
+        : '');
     } else if (detectedOS === 'windows') {
       const installer = downloads.windows.installer;
       const portable = downloads.windows.portable;
-      primaryHTML = `
-        ${appIcon}
-        <div class="download-card__icon">${osIcon}</div>
-        <p style="margin-bottom: 0.5rem;"><strong>Detected: Windows</strong></p>
-        <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8;">Version ${version}</p>
-        ${installer ? `<a href="${installer.url}" class="md-button md-button--primary download-btn">Download Installer (${installer.size})</a>` : ''}
-        ${portable ? `<p style="margin-top: 1rem;"><a href="${portable.url}">Download Portable Version (${portable.size})</a></p>` : ''}
-      `;
+      primaryHTML = buildCard('Windows',
+        (installer ? `<a href="${installer.url}" class="md-button md-button--primary download-btn">Download Installer (${installer.size})</a>` : '')
+        + (portable ? `<p class="download-card__alt"><a href="${portable.url}">Portable Version (${portable.size})</a></p>` : ''));
     } else if (detectedOS === 'linux') {
       const appimage = downloads.linux.appimage;
       const deb = downloads.linux.deb;
-      primaryHTML = `
-        ${appIcon}
-        <div class="download-card__icon">${osIcon}</div>
-        <p style="margin-bottom: 0.5rem;"><strong>Detected: Linux</strong></p>
-        <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8;">Version ${version}</p>
-        ${appimage ? `<a href="${appimage.url}" class="md-button md-button--primary download-btn">Download AppImage (${appimage.size})</a>` : ''}
-        ${deb ? `<p style="margin-top: 1rem;"><a href="${deb.url}">Download .deb package (${deb.size})</a></p>` : ''}
-      `;
+      primaryHTML = buildCard('Linux',
+        (appimage ? `<a href="${appimage.url}" class="md-button md-button--primary download-btn">Download AppImage (${appimage.size})</a>` : '')
+        + (deb ? `<p class="download-card__alt"><a href="${deb.url}">.deb package (${deb.size})</a></p>` : ''));
     } else {
       primaryHTML = '<p>Please select your platform below.</p>';
     }
@@ -420,33 +421,65 @@ var ICONS = {
   color: rgba(0, 0, 0, 0.8);
 }
 
-/* OS icon inside the primary card */
-.download-card__icon {
-  margin-bottom: 0.75rem;
+/* Horizontal layout: icons left, details right */
+.download-card__layout {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  justify-content: center;
 }
-.download-card__icon svg {
-  opacity: 0.85;
+.download-card__icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.download-card__app-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+.download-card__os-icon svg {
+  width: 40px;
+  height: 40px;
+  opacity: 0.8;
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
 }
-[data-md-color-scheme="default"] .download-card__icon svg {
+[data-md-color-scheme="default"] .download-card__os-icon svg {
   filter: none;
 }
-
-/* App icon badge in the primary card corner */
-.download-card__app-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 10px;
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 2;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+.download-card__details {
+  text-align: left;
+}
+.download-card__os-label {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0 0 0.15rem;
+}
+.download-card__version {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin: 0 0 1rem;
+}
+.download-card__alt {
+  margin: 0.75rem 0 0;
 }
 
 .download-btn {
-  font-size: 1.1rem !important;
-  padding: 0.8rem 2rem !important;
+  font-size: 1.05rem !important;
+  padding: 0.7rem 1.8rem !important;
+}
+
+@media (max-width: 480px) {
+  .download-card__layout {
+    flex-direction: column;
+    text-align: center;
+  }
+  .download-card__details {
+    text-align: center;
+  }
 }
 
 /* All-platforms grid — glass cards */
