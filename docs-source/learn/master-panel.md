@@ -1,18 +1,18 @@
 # Master Panel Guide
 
-Learn to control global tempo and create shared parameters across all cards.
+Learn to control global tempo and create shared parameters across all panels.
 
 ---
 
 ## What is the Master Panel?
 
-The **master panel** sits above the four cards and provides controls that affect **everything at once**:
+The **master panel** sits above all panels and provides controls that affect **everything at once**:
 
 - **TEMPO**: Controls the speed of all patterns
-- **Global Sliders**: Variables that any card can reference
-- **Stop All**: Stops all cards simultaneously
+- **Global Sliders**: Variables that any panel can reference
+- **Stop All**: Stops all panels simultaneously
 
-Think of the master panel as the conductor - it sets the tempo and overall tone, while each card (musician) plays their own part.
+Think of the master panel as the conductor - it sets the tempo and overall tone, while each panel (musician) plays their own part.
 
 ---
 
@@ -20,7 +20,7 @@ Think of the master panel as the conductor - it sets the tempo and overall tone,
 
 ### What TEMPO Does
 
-TEMPO controls how fast patterns play across all cards. When you adjust TEMPO, every playing pattern speeds up or slows down together.
+TEMPO controls how fast patterns play across all panels. When you adjust TEMPO, every playing pattern speeds up or slows down together.
 
 ### Default Setup
 
@@ -57,11 +57,11 @@ r0astr uses **CPS (Cycles Per Second)** internally. You don't need to understand
 
 ## Global Effect Sliders
 
-Create sliders in the master panel that control parameters across all cards.
+Create sliders in the master panel that control parameters across all panels.
 
 ### Why Use Global Sliders?
 
-Instead of adding separate filter sliders to each card, create one in the master panel:
+Instead of adding separate filter sliders to each panel, create one in the master panel:
 
 - Single control affects everything
 - Consistent effect across all instruments
@@ -80,22 +80,22 @@ This creates:
 - Starting at 800 Hz
 - Range from 100 Hz to 5000 Hz
 
-### Using in Cards
+### Using in Panels
 
-Reference the variable name in any card:
+Reference the variable name in any panel:
 
 ```javascript
-// Card 1
+// Panel 1
 s("bd*4").lpf(SLIDER_LPF)
 
-// Card 2
+// Panel 2
 note("c2 ~ c2 e2").s("sawtooth").lpf(SLIDER_LPF)
 
-// Card 3
+// Panel 3
 n("0 2 4").scale("C4:minor").s("triangle").lpf(SLIDER_LPF)
 ```
 
-Now one slider controls the filter on all three cards.
+Now one slider controls the filter on all three panels.
 
 ### Multiple Global Sliders
 
@@ -108,7 +108,7 @@ let REVERB = slider(0.3, 0, 1);
 let MASTER_GAIN = slider(0.8, 0, 1);
 ```
 
-Use them in cards:
+Use them in panels:
 
 ```javascript
 note("c2").lpf(SLIDER_LPF).room(REVERB).gain(MASTER_GAIN)
@@ -127,12 +127,12 @@ let FILTER = slider(1000, 200, 4000);
 let SPACE = slider(0.5, 0, 1);
 ```
 
-### Step 2: Use in Card Patterns
+### Step 2: Use in Panel Patterns
 
-Reference the variable names (exactly as written) in any card:
+Reference the variable names (exactly as written) in any panel:
 
 ```javascript
-// This card uses both global sliders
+// This panel uses both global sliders
 note("c2 e2 g2")
   .s("sawtooth")
   .lpf(FILTER)
@@ -167,7 +167,7 @@ let NAME = slider(default, min, max);
 
 | Part | Description |
 |------|-------------|
-| `let NAME` | Variable name to use in cards |
+| `let NAME` | Variable name to use in panels |
 | `slider()` | Creates a slider control |
 | `default` | Starting value |
 | `min` | Minimum value |
@@ -205,7 +205,7 @@ let REVERB = slider(0.3, 0, 0.9);
 let MASTER = slider(0.8, 0, 1);
 ```
 
-Card using globals:
+Panel using globals:
 ```javascript
 note("c2 e2 g2 e2")
   .s("sawtooth")
@@ -220,7 +220,7 @@ note("c2 e2 g2 e2")
 
 ### What It Does
 
-The **Stop All** button immediately stops every playing pattern across all cards.
+The **Stop All** button immediately stops every playing pattern across all panels.
 
 ### When to Use
 
@@ -233,8 +233,8 @@ The **Stop All** button immediately stops every playing pattern across all cards
 When you click Stop All:
 
 1. All cards stop immediately
-2. Cards remain paused (not reset)
-3. Code in each card is preserved
+2. Panels remain paused (not reset)
+3. Code in each panel is preserved
 4. Click Play on individual cards to restart
 
 ---
@@ -248,7 +248,7 @@ When you click Stop All:
 
 The master panel works differently from cards:
 
-| Feature | Cards | Master Panel |
+| Feature | Panels | Master Panel |
 |---------|-------|--------------|
 | Code evaluation | Strudel transpiler | Regex parsing |
 | Pattern execution | Yes | No |
@@ -287,7 +287,7 @@ For detailed technical information, see the [Architecture documentation](../deve
 
 ## Global Variables and Functions
 
-Beyond sliders, the master panel can define **variables, constants, and functions** that are accessible in all cards.
+Beyond sliders, the master panel can define **variables, constants, and functions** that are accessible in all panels.
 
 ### Defining Global Variables
 
@@ -300,13 +300,13 @@ const ROOT = "c3"
 let NOTES = [0, 2, 4, 5, 7]
 ```
 
-Use them in any card:
+Use them in any panel:
 
 ```javascript
-// Card 1
+// Panel 1
 n("0 2 4").scale(SCALE)
 
-// Card 2
+// Panel 2
 note(ROOT).s("bass")
 ```
 
@@ -325,7 +325,7 @@ function activeWhen(phase) {
 }
 ```
 
-Use in cards:
+Use in panels:
 
 ```javascript
 // This pattern fades in only during phase 0
@@ -347,7 +347,7 @@ function activeWhen(phase) {
 }
 ```
 
-Cards can then create patterns that fade in/out based on the current phase:
+Panels can then create patterns that fade in/out based on the current phase:
 
 ```javascript
 stack(
@@ -374,7 +374,7 @@ let REVERB = slider(0.3, 0, 1);
 let GAIN = slider(0.7, 0, 1);
 ```
 
-### Card Usage
+### Panel Usage
 
 ```javascript
 // Reference global sliders by name

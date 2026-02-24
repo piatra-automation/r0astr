@@ -4,18 +4,18 @@ Learn to use multiple cards together for layered compositions.
 
 ---
 
-## The Four-Card Setup
+## Panel Setup
 
-r0astr gives you four independent cards. Think of them as four musicians in a band - each plays their own part, but they all follow the same beat.
+r0astr gives you independent panels — create as many as you need. Think of each panel as a musician in a band: each plays their own part, but they all follow the same beat.
 
-| Card | Typical Role |
-|------|--------------|
-| Card 1 | Drums / Percussion |
-| Card 2 | Bass |
-| Card 3 | Melody / Lead |
-| Card 4 | Ambient / Texture |
+| Panel | Typical Role |
+|-------|--------------|
+| Panel 1 | Drums / Percussion |
+| Panel 2 | Bass |
+| Panel 3 | Melody / Lead |
+| Panel 4 | Ambient / Texture |
 
-This is a common setup, but you can use cards however you like.
+This is a common starting point, but you can use panels however you like.
 
 ---
 
@@ -23,45 +23,45 @@ This is a common setup, but you can use cards however you like.
 
 ### Individual Control
 
-Each card has its own Play/Pause button:
+Each panel has its own Play/Pause button:
 
-- **Play**: Starts the pattern in that card
-- **Pause**: Stops only that card (others keep playing)
+- **Play**: Starts the pattern in that panel
+- **Pause**: Stops only that panel (others keep playing)
 
-### What Happens to Other Cards?
+### What Happens to Other Panels?
 
-Nothing. When you start or stop a card, all other cards continue unchanged. This is the key to live performance - you can bring instruments in and out dynamically.
+Nothing. When you start or stop a panel, all others continue unchanged. This is the key to live performance — you can bring instruments in and out dynamically.
 
 ### Stop All
 
-The master panel has a **Stop All** button that stops every card at once. Use this when you want complete silence or to reset your performance.
+The master panel has a **Stop All** button that stops every panel at once.
 
 ---
 
 ## Synchronization
 
-All cards share a **single audio clock**. This is fundamental to how r0astr works.
+All panels share a **single audio clock**. This is fundamental to how r0astr works.
 
 ### How It Works
 
 1. The master panel sets the global tempo
-2. Every card receives timing from this shared clock
-3. When you press Play on a card, it waits for the next cycle boundary
+2. Every panel receives timing from this shared clock
+3. When you press Play on a panel, it waits for the next cycle boundary
 4. The pattern joins in perfect sync with anything already playing
 
 ### Why This Matters
 
-- **No drift**: Cards never slowly go out of sync
+- **No drift**: Panels never slowly go out of sync
 - **Musical timing**: New patterns start at musically sensible moments
 - **Confidence**: You can add/remove instruments knowing they'll stay in time
 
 ### Example Scenario
 
-1. Press Play on Card 1 (drums) - it starts immediately
-2. Press Play on Card 2 (bass) - it waits for the next cycle, then joins in sync
+1. Press Play on Panel 1 (drums) — it starts immediately
+2. Press Play on Panel 2 (bass) — it waits for the next cycle, then joins in sync
 3. Both patterns now play together, locked to the same beat
-4. Press Pause on Card 1 - drums stop, bass continues
-5. Press Play on Card 1 - drums rejoin on the next cycle
+4. Press Pause on Panel 1 — drums stop, bass continues
+5. Press Play on Panel 1 — drums rejoin on the next cycle
 
 ---
 
@@ -69,7 +69,7 @@ All cards share a **single audio clock**. This is fundamental to how r0astr work
 
 Design patterns that work together, not against each other.
 
-### Role of Drums (Card 1)
+### Role of Drums (Panel 1)
 
 Drums provide the **rhythmic foundation**:
 
@@ -82,7 +82,7 @@ Drums provide the **rhythmic foundation**:
 s("bd*4, ~ sd ~ sd, hh*8").gain(0.8)
 ```
 
-### Role of Bass (Card 2)
+### Role of Bass (Panel 2)
 
 Bass provides the **harmonic foundation**:
 
@@ -95,7 +95,7 @@ Bass provides the **harmonic foundation**:
 note("c2 ~ c2 e2").s("sawtooth").lpf(300).gain(0.6)
 ```
 
-### Role of Melody (Card 3)
+### Role of Melody (Panel 3)
 
 Melody provides **interest and movement**:
 
@@ -108,7 +108,7 @@ Melody provides **interest and movement**:
 n("0 2 3 5 3 2").scale("C4:minor").s("triangle").gain(0.5)
 ```
 
-### Role of Ambient (Card 4)
+### Role of Ambient (Panel 4)
 
 Ambient provides **texture and space**:
 
@@ -123,7 +123,7 @@ n("0 3 7").scale("C3:minor").s("sawtooth").lpf(600).room(0.9).slow(4).gain(0.4)
 
 ---
 
-## Different Instruments Per Card
+## Different Instruments Per Panel
 
 ### Samples vs Synths
 
@@ -153,47 +153,47 @@ Keep your mix clear by separating frequencies:
 
 ## Cross-Panel Pattern References
 
-Cards can reference patterns from other cards by their title. This enables powerful orchestration where one card controls multiple patterns.
+Panels can reference patterns from other panels by their title. This enables powerful orchestration where one panel controls multiple patterns.
 
 ### How It Works
 
-1. **Name your cards**: Double-click the card title to rename (e.g., "BASS", "LEAD")
-2. **Write patterns**: Each card's pattern is automatically registered under its title
-3. **Reference in other cards**: Use the title name to access the pattern
+1. **Name your panels**: Double-click the panel title to rename (e.g., "BASS", "LEAD")
+2. **Write patterns**: Each panel's pattern is automatically registered under its title
+3. **Reference in other panels**: Use the title name to access the pattern
 
 ### Example Setup
 
-**Card titled "BASS":**
+**Panel titled "BASS":**
 ```javascript
 n("0 2 0 5").scale("E:minor").s("sawtooth").lpf(400)
 ```
 
-**Card titled "LEAD":**
+**Panel titled "LEAD":**
 ```javascript
 n("0 4 7 11").scale("E:minor").s("triangle")
 ```
 
-**Card titled "COMBO":**
+**Panel titled "COMBO":**
 ```javascript
 stack(BASS, LEAD.fast(2))
 ```
 
-The COMBO card now plays both patterns stacked together, with LEAD playing twice as fast.
+The COMBO panel now plays both patterns stacked together, with LEAD playing twice as fast.
 
 ### Evaluation Order
 
-Cards evaluate **top to bottom** based on their position in the panel list. This means:
+Panels evaluate **top to bottom** based on their position in the panel list. This means:
 
-- A card can only reference patterns from cards **above** it
-- Drag cards to reorder if needed
+- A panel can only reference patterns from panels **above** it
+- Drag panels to reorder if needed
 - The master panel always evaluates first
 
 ### Dynamic Updates
 
-When you update a card's pattern:
+When you update a panel's pattern:
 
 1. The pattern re-registers under its title
-2. Any playing cards below that reference it automatically re-evaluate
+2. Any playing panels below that reference it automatically re-evaluate
 3. Changes cascade through your arrangement
 
 ### Pattern Manipulation
@@ -201,7 +201,7 @@ When you update a card's pattern:
 Once referenced, you can transform patterns:
 
 ```javascript
-// In a card titled "MIX"
+// In a panel titled "MIX"
 stack(
   BASS.gain(0.7),
   LEAD.fast(2),
@@ -239,7 +239,7 @@ A classic performance technique:
 
 Use stops for contrast:
 
-- **Drop the bass**: Pause Card 2 for 8 bars, then bring it back
+- **Drop the bass**: Pause Panel 2 for 8 bars, then bring it back
 - **Drums only**: Stop everything except drums for a breakdown
 - **Ambient interlude**: Stop drums and bass, let ambient breathe
 
@@ -255,9 +255,9 @@ While patterns are playing:
 
 ## Full Arrangement Example
 
-Here's a complete four-card arrangement. Copy each pattern into its respective card.
+Here's a complete four-panel arrangement. Copy each pattern into its respective panel.
 
-### Card 1: Drums
+### Panel 1: Drums
 
 ```javascript
 s("bd*4, ~ sd ~ sd, hh*8")
@@ -266,7 +266,7 @@ s("bd*4, ~ sd ~ sd, hh*8")
 
 Establishes the beat with kick, snare, and hi-hats.
 
-### Card 2: Bass
+### Panel 2: Bass
 
 ```javascript
 note("c2 ~ c2 e2")
@@ -277,7 +277,7 @@ note("c2 ~ c2 e2")
 
 Sub bass locked to the kick, with a slider for filter sweeps.
 
-### Card 3: Melody
+### Panel 3: Melody
 
 ```javascript
 n("0 2 3 5 3 2")
@@ -289,7 +289,7 @@ n("0 2 3 5 3 2")
 
 Minor scale melody with volume control.
 
-### Card 4: Ambient
+### Panel 4: Ambient
 
 ```javascript
 n("0 3 7")
@@ -316,11 +316,11 @@ Slow chord pad with heavy reverb for atmosphere.
 
 Try this sequence:
 
-1. **Start drums** (Card 1) - Let it groove for 4 bars
-2. **Add bass** (Card 2) - Foundation locked in
-3. **Add melody** (Card 3) - Music takes shape
-4. **Add ambient** (Card 4) - Full arrangement
-5. **Drop melody** - Pause Card 3 for tension
+1. **Start drums** (Panel 1) - Let it groove for 4 bars
+2. **Add bass** (Panel 2) - Foundation locked in
+3. **Add melody** (Panel 3) - Music takes shape
+4. **Add ambient** (Panel 4) - Full arrangement
+5. **Drop melody** - Pause Panel 3 for tension
 6. **Bring melody back** - Release
 7. **Stop all except ambient** - Breakdown
 8. **Restart drums** - Build back up

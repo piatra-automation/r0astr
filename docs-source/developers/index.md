@@ -1,6 +1,6 @@
 # Developer Documentation
 
-Resources for developers building on r0astr or contributing to the project.
+Resources for developers building integrations with r0astr.
 
 <div class="grid cards" markdown>
 
@@ -8,33 +8,17 @@ Resources for developers building on r0astr or contributing to the project.
 
     ---
 
-    WebSocket and HTTP endpoints for integrations.
+    REST and WebSocket endpoints for remote control and integrations.
 
     [:octicons-arrow-right-24: API Docs](api.md)
-
--   :material-puzzle:{ .lg .middle } **Plugin Development**
-
-    ---
-
-    Build plugins that extend r0astr functionality.
-
-    [:octicons-arrow-right-24: Plugin Guide](plugins.md)
 
 -   :material-file-tree:{ .lg .middle } **Architecture**
 
     ---
 
-    System design and component overview.
+    System design, component overview, and key files.
 
     [:octicons-arrow-right-24: Architecture](architecture.md)
-
--   :material-source-pull:{ .lg .middle } **Contributing**
-
-    ---
-
-    How to contribute code, docs, or patterns.
-
-    [:octicons-arrow-right-24: Contributing Guide](contributing.md)
 
 </div>
 

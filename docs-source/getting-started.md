@@ -44,13 +44,13 @@ Get up and running with r0astr in under 5 minutes.
 
 Let's make some noise.
 
-### Step 1: Find Card 1
+### Step 1: Find Panel 1
 
-You'll see four cards on screen. Each card is an independent instrument. Find **Card 1** (or **Panel 1**).
+You'll see several panels on screen. Each panel is an independent instrument. Find **Panel 1**.
 
 ### Step 2: Enter a Pattern
 
-Click in the text area and paste this drum pattern:
+Click in the editor and paste this drum pattern:
 
 ```javascript
 s("bd*4, ~ sd ~ sd, hh*8").gain(0.8)
@@ -65,7 +65,7 @@ s("bd*4, ~ sd ~ sd, hh*8").gain(0.8)
 
 ### Step 3: Hit Play
 
-Click the **Play** button on Card 1. You should hear a basic drum beat!
+Click the **Play** button on Panel 1. You should hear a basic drum beat!
 
 !!! success "Congratulations!"
     You just wrote your first live coding pattern.
@@ -76,13 +76,13 @@ Click the **Play** button on Card 1. You should hear a basic drum beat!
 
 Now let's layer in some bass.
 
-### Step 1: Find Card 2
+### Step 1: Find Panel 2
 
-Leave Card 1 playing. Find **Card 2**.
+Leave Panel 1 playing. Find **Panel 2**.
 
 ### Step 2: Enter a Bass Pattern
 
-Paste this into Card 2:
+Paste this into Panel 2:
 
 ```javascript
 note("c2 ~ c2 e2").s("sawtooth").lpf(400).gain(0.6)
@@ -95,23 +95,23 @@ note("c2 ~ c2 e2").s("sawtooth").lpf(400).gain(0.6)
     - `.lpf(400)` = low-pass filter at 400Hz
     - `.gain(0.6)` = volume at 60%
 
-### Step 3: Hit Play on Card 2
+### Step 3: Hit Play on Panel 2
 
-Click Play. The bass joins the drums - perfectly in sync!
+Click Play. The bass joins the drums — perfectly in sync!
 
 ---
 
 ## Try More Patterns
 
-Add these to Cards 3 and 4:
+Add these to Panels 3 and 4:
 
-### Card 3: Melody
+### Panel 3: Melody
 
 ```javascript
 n("0 2 3 5 3 2").scale("C4:minor").s("triangle").gain(0.5)
 ```
 
-### Card 4: Ambient Pad
+### Panel 4: Ambient Pad
 
 ```javascript
 n("0 3 7").scale("C3:minor").s("sawtooth").lpf(600).room(0.8).slow(4).gain(0.4)
@@ -123,10 +123,10 @@ Now you have a full arrangement with drums, bass, melody, and ambient texture!
 
 ## What You've Learned
 
-- [x] Cards are independent instruments
+- [x] Panels are independent instruments
 - [x] `s()` plays samples, `note()` plays synths
-- [x] All cards share the same clock (they stay in sync)
-- [x] Play/Pause controls each card independently
+- [x] All panels share the same clock (they stay in sync)
+- [x] Play/Pause controls each panel independently
 
 ---
 

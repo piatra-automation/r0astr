@@ -108,7 +108,7 @@ Get the full r0astr desktop application with remote control and WebSocket featur
 
 After installation, launch r0astr. You should see:
 
-1. **Main interface** with 4 panels and a master panel
+1. **Main interface** with panels and a master panel
 2. **Default patterns** loaded in each panel
 
 ### First Steps

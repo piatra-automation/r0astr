@@ -6,34 +6,34 @@ Understand the mental model behind r0astr to make the interface intuitive.
 
 ## The Big Picture
 
-r0astr is a multi-instrument live coding environment. Think of it as having four independent instruments on stage, all connected to the same metronome. You write code to control each instrument, and they all play together in perfect sync.
+r0astr is a multi-instrument live coding environment. Think of it as having multiple independent instruments on stage, all connected to the same metronome. You write code to control each instrument, and they all play together in perfect sync. You can create as many panels as you need.
 
 ```mermaid
 graph TB
  subgraph r0astr["r0astr Interface"]
  MP[" Master Panel<br/>TEMPO, Global Effects"]
- C1[" Card 1<br/>Drums"]
- C2[" Card 2<br/>Bass"]
- C3[" Card 3<br/>Melody"]
- C4[" Card 4<br/>Ambient"]
+ C1[" Panel 1<br/>Drums"]
+ C2[" Panel 2<br/>Bass"]
+ C3[" Panel 3<br/>Melody"]
+ CN[" Panel N<br/>..."]
  end
  CLOCK((" Shared Clock"))
  MP --> CLOCK
  CLOCK --> C1
  CLOCK --> C2
  CLOCK --> C3
- CLOCK --> C4
+ CLOCK --> CN
 ```
 
 
 
 ## Cards
 
-Each **card** is an independent instrument in r0astr.
+Each **panel** is an independent instrument in r0astr.
 
-### What is a Card?
+### What is a Panel?
 
-A card is a self-contained unit that includes:
+A panel is a self-contained unit that includes:
 
 - A **code editor** where you write patterns
 - A **Play/Pause button** to control playback
@@ -41,24 +41,24 @@ A card is a self-contained unit that includes:
 
 ### Independence
 
-Cards operate independently:
+Panels operate independently:
 
-- **Different patterns**: Each card can play completely different music
-- **Separate controls**: Start, stop, and modify each card without affecting others
-- **Own parameters**: Each card can have its own sliders and settings
+- **Different patterns**: Each panel can play completely different music
+- **Separate controls**: Start, stop, and modify each panel without affecting others
+- **Own parameters**: Each panel can have its own sliders and settings
 
 ### Typical Setup
 
-Most compositions use cards for different roles:
+A common starting point:
 
-| Card | Common Use |
-|------|------------|
-| Card 1 | Drums and percussion |
-| Card 2 | Bass line |
-| Card 3 | Melody or lead |
-| Card 4 | Ambient or effects |
+| Panel | Common Use |
+|-------|------------|
+| Panel 1 | Drums and percussion |
+| Panel 2 | Bass line |
+| Panel 3 | Melody or lead |
+| Panel 4 | Ambient or effects |
 
-This is just a suggestion - use cards however you like!
+This is just a suggestion — use panels however you like, and add more as needed.
 
 [:octicons-arrow-right-24: Learn more in the Multi-Instrument Guide](multi-instrument.md)
 
@@ -66,24 +66,24 @@ This is just a suggestion - use cards however you like!
 
 ## Synchronization
 
-All cards share a **single audio clock**. This is the key to how r0astr works.
+All panels share a **single audio clock**. This is the key to how r0astr works.
 
 ### Shared Clock
 
-- Every card receives timing from the same master clock
-- When you start a new card, it automatically syncs with already-playing patterns
+- Every panel receives timing from the same master clock
+- When you start a new panel, it automatically syncs with already-playing patterns
 - No drift or timing issues between instruments
 
 ### What This Means in Practice
 
-1. **Start Card 1** with a drum pattern
-2. **Start Card 2** with a bass line - it immediately locks to the beat
-3. **Start Card 3** with a melody - also perfectly in sync
+1. **Start Panel 1** with a drum pattern
+2. **Start Panel 2** with a bass line — it immediately locks to the beat
+3. **Start Panel 3** with a melody — also perfectly in sync
 4. All three play together as if they were designed as one piece
 
 ### Quantization
 
-When you press Play on a card:
+When you press Play on a panel:
 
 - The pattern doesn't start immediately at a random point
 - It waits for the next cycle boundary
@@ -93,14 +93,14 @@ When you press Play on a card:
 
 ## Master Panel
 
-The **master panel** sits above all cards and provides global controls.
+The **master panel** sits above all panels and provides global controls.
 
 ### Purpose
 
 The master panel affects **everything at once**:
 
 - **TEMPO**: Set the speed (in CPS - cycles per second)
-- **Global Sliders**: Create variables like `SLIDER_LPF` that all cards can use
+- **Global Sliders**: Create variables like `SLIDER_LPF` that all panels can use
 - **Master Effects**: Apply filters or effects to the entire mix
 
 ### TEMPO Control
@@ -112,17 +112,17 @@ The master panel is where you set the global tempo using a slider:
 let TEMPO = slider(30, 15, 45); // 30 CPS, range 15-45
 ```
 
-All cards automatically follow this tempo.
+All panels automatically follow this tempo.
 
 ### Global Sliders
 
-Define sliders in the master panel that any card can reference:
+Define sliders in the master panel that any panel can reference:
 
 ```javascript
 // Master Panel
 let SLIDER_LPF = slider(800, 100, 5000);
 
-// Card 1 (or any card) can use it:
+// Any panel can use it:
 s("bd*4").lpf(SLIDER_LPF)
 ```
 
@@ -153,12 +153,12 @@ Understanding how patterns work as you edit and play them.
 
 ### Step by Step
 
-1. **Write**: Type or paste a pattern into a card's text area
+1. **Write**: Type or paste a pattern into a panel's editor
 2. **Play**: Click the Play button to start the pattern
 3. **Listen**: Audio plays immediately through your speakers
 4. **Edit (optional)**: Modify the pattern while it's playing
 5. **Update**: Changes take effect on the next cycle
-6. **Pause**: Click Pause to stop only that card
+6. **Pause**: Click Pause to stop only that panel
 
 ### Live Coding
 
@@ -178,8 +178,8 @@ The magic of r0astr is **live coding**:
 
 Let's tie all the concepts together:
 
-1. **You write patterns** in each card using Strudel's mini notation
-2. **Cards are independent** - each runs its own pattern
+1. **You write patterns** in each panel using Strudel's mini notation
+2. **Panels are independent** — each runs its own pattern
 3. **The master panel** provides global controls like TEMPO
 4. **A shared clock** keeps everything synchronized
 5. **Live updates** let you evolve your music in real-time

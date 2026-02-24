@@ -10,7 +10,7 @@ Technical overview of r0astr's system design.
 │  ┌─────────────────────────────────────────────────┐    │
 │  │                  r0astr UI                       │    │
 │  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌───────┐ │    │
-│  │  │ Panel 1 │ │ Panel 2 │ │ Panel 3 │ │Panel 4│ │    │
+│  │  │ Panel 1 │ │ Panel 2 │ │ Panel 3 │ │Panel N│ │    │
 │  │  └────┬────┘ └────┬────┘ └────┬────┘ └───┬───┘ │    │
 │  │       │           │           │          │      │    │
 │  │       └───────────┼───────────┼──────────┘      │    │
@@ -37,9 +37,9 @@ Technical overview of r0astr's system design.
 
 ## Core Components
 
-### UI Layer (`src/main.js`)
+### UI Layer
 
-- Panel management (create, update, delete)
+- Panel management (create, update, delete — dynamic panel count)
 - Pattern editor with CodeMirror
 - Slider controls (auto-generated from patterns)
 - Master panel for global controls
@@ -56,10 +56,10 @@ const { evaluate, scheduler } = repl({
 
 Key integration points:
 
-- **repl()** - Creates the pattern evaluation environment
-- **evaluate()** - Compiles and runs pattern code
-- **scheduler** - Manages pattern timing and synchronization
-- **transpiler** - Converts pattern code to executable JavaScript
+- **repl()** — Creates the pattern evaluation environment
+- **evaluate()** — Compiles and runs pattern code
+- **scheduler** — Manages pattern timing and synchronization
+- **transpiler** — Converts pattern code to executable JavaScript
 
 ### Audio Engine
 
@@ -69,7 +69,7 @@ Key integration points:
 
 ### WebSocket Server
 
-- Runs on the Vite dev server
+- Runs on the Vite dev server (dev) or Electron main process (production)
 - Handles remote control connections
 - Broadcasts state changes to all clients
 
@@ -78,10 +78,18 @@ Key integration points:
 | File | Purpose |
 |------|---------|
 | `index.html` | Main HTML structure |
-| `src/main.js` | Application logic |
-| `src/panels.js` | Panel management |
-| `src/websocket.js` | Real-time communication |
-| `vite.config.mjs` | Build configuration |
+| `src/main.js` | Application logic, Strudel initialization |
+| `src/state.js` | Shared state (cardStates, editorViews, AudioContext) |
+| `src/managers/panelManager.js` | Panel lifecycle and state Map |
+| `src/managers/websocketManager.js` | WebSocket client (browser-side) |
+| `src/managers/sliderManager.js` | Slider rendering and synchronization |
+| `src/managers/settingsManager.js` | localStorage persistence |
+| `src/managers/skinManager.js` | UI skin loading and switching |
+| `src/panels/panelEditor.js` | CodeMirror integration |
+| `src/panels/panelUI.js` | Button state and visual indicators |
+| `src/utils/eventBus.js` | Pub/sub event system |
+| `src/websocket-server.mjs` | WebSocket server (Node.js side) |
+| `vite.config.mjs` | Build config + REST API + WebSocket setup |
 
 ## Data Flow
 
@@ -102,6 +110,7 @@ Key integration points:
 | `@strudel/webaudio` | Audio output |
 | `@strudel/tonal` | Music theory |
 | `@strudel/soundfonts` | SoundFont support |
+| `@strudel/codemirror` | Editor integration |
 
 ## Build Pipeline
 
@@ -121,7 +130,3 @@ Vite Build
               ▼
          GitHub Pages
 ```
-
----
-
-*See [Contributing](contributing.md) for development setup.*

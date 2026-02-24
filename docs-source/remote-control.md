@@ -161,105 +161,31 @@ If the connection drops:
 
 ---
 
-## Security Considerations
+## Security
 
 !!! warning "Local Network Only"
-    The remote control is designed for local network use only. Do not expose to the public internet.
-
-### Current Security Model
-
-- **No authentication** - Anyone on your network can connect
-- **Local only** - Only accessible within your network
-- **Trust model** - Assumes trusted local environment
-
-### Recommendations
-
-- Use on trusted networks only
-- Avoid public WiFi for performances
-- Consider a dedicated portable router for gigs
-- Keep r0astr updated
-
-### Future Considerations
-
-Future versions may include:
-
-- Optional PIN protection
-- Connection allowlists
-- Encrypted connections
-
----
-
-## WebSocket Protocol
-
-!!! abstract "For Advanced Users"
-    This section is for developers building custom integrations.
-
-The remote control uses WebSocket for real-time communication.
-
-### Connection
-
-```javascript
-const ws = new WebSocket('ws://192.168.1.100:5173/ws');
-```
-
-### Message Types
-
-| Type | Direction | Purpose |
-|------|-----------|---------|
-| `panel:start` | Client → Server | Start a panel |
-| `panel:stop` | Client → Server | Stop a panel |
-| `playback:stop-all` | Client → Server | Stop all panels |
-| `state:get` | Client → Server | Request current state |
-| `state:current` | Server → Client | Current state response |
-| `event:panel-state` | Server → Client | Panel state changed |
-
-### Example
-
-```javascript
-// Start panel 1
-ws.send(JSON.stringify({
-  type: 'panel:start',
-  payload: { panelId: 'panel-1' }
-}));
-```
-
-See [API Reference](developers/api.md) for complete documentation.
+    The remote control is designed for local network use only. No authentication is enforced — anyone on your network can connect. Use on trusted networks only.
 
 ---
 
 ## Tips for Live Performance
 
-### Before the Performance
-
-1. Test the connection at the venue
-2. Note your IP address (it may change on different networks)
-3. Bookmark the remote URL on your device
-4. Disable auto-sleep on your remote device
-
-### During the Performance
-
-- Keep the remote interface visible
-- Use Stop All for clean transitions
+- Test the connection at the venue beforehand
+- Bookmark the remote URL on your device
+- Disable auto-sleep on your remote device
+- Use **Stop All** for clean transitions
 - Have a backup plan if WiFi fails
-
-### Recommended Setup
-
-```
-┌─────────────────┐         ┌─────────────────┐
-│   Main Laptop   │ ◄──────►│   WiFi Router   │
-│   (r0astr)      │  WiFi   │                 │
-└─────────────────┘         └────────┬────────┘
-                                     │ WiFi
-                            ┌────────▼────────┐
-                            │  iPad/Phone     │
-                            │  (Remote)       │
-                            └─────────────────┘
-```
 
 ---
 
-## Related Documentation
+## WebSocket Protocol
 
-- [API Reference](developers/api.md) - Full WebSocket API documentation
-- [Troubleshooting](guides/troubleshooting.md) - General troubleshooting guide
-- [FAQ](community/faq.md) - Common questions and answers
+The remote control uses WebSocket for real-time communication. See the [API Reference](developers/api.md) for the full protocol specification.
+
+---
+
+## Related
+
+- [API Reference](developers/api.md) — REST and WebSocket endpoints
+- [Troubleshooting](guides/troubleshooting.md)
+- [FAQ](community/faq.md)

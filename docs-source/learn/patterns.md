@@ -208,7 +208,7 @@ This creates a slider that:
 
 ### Multiple Sliders
 
-Each slider appears in the card's control area:
+Each slider appears in the panel's control area:
 
 ```javascript
 note("c2 ~ c2 e2")
@@ -313,7 +313,7 @@ s("bd*4, [~ sd]*2, [hh hh hh ~]*2")
 
 - **Practice**: Copy patterns above and modify them
 - **Experiment**: Change numbers, add modifiers, break things
-- **Explore**: See [Multi-Instrument Guide](multi-instrument.md) for using multiple cards
+- **Explore**: See [Multi-Instrument Guide](multi-instrument.md) for using multiple panels
 
 ---
 

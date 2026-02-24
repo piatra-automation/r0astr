@@ -6,7 +6,7 @@ Quick answers to common questions.
 
 ### What is r0astr?
 
-r0astr is a multi-instrument live coding interface built on Strudel. It provides a card-based UI where each card is an independent instrument, all synchronized to a shared clock.
+r0astr is a multi-instrument live coding interface built on Strudel. It provides a panel-based UI where each panel is an independent instrument, all synchronized to a shared clock.
 
 ### Is r0astr free?
 
@@ -65,7 +65,7 @@ This creates a control that you can adjust in real-time.
 3. On your iPad/phone, open `http://192.168.1.100:5173/remote.html`
 4. Both devices must be on the same WiFi network
 
-See [Remote Control](../guides/remote-control.md) for detailed instructions.
+See [Remote Control](../remote-control.md) for detailed instructions.
 
 ### Why won't my remote connect?
 
@@ -106,10 +106,6 @@ cd r0astr
 npm install
 npm run dev
 ```
-
-### How do I contribute?
-
-See [Contributing](../developers/contributing.md) for guidelines.
 
 ### Where's the source code?
 

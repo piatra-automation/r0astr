@@ -8,7 +8,7 @@ Welcome to the r0astr learning path. Start here to understand how r0astr works a
 
     ---
 
-    Understand the mental model: cards, patterns, and synchronization.
+    Understand the mental model: panels, patterns, and synchronization.
 
     [:octicons-arrow-right-24: Read Concepts](concepts.md)
 
@@ -24,7 +24,7 @@ Welcome to the r0astr learning path. Start here to understand how r0astr works a
 
     ---
 
-    Use multiple cards together for layered compositions.
+    Use multiple panels together for layered compositions.
 
     [:octicons-arrow-right-24: Multi-Instrument Guide](multi-instrument.md)
 
@@ -32,7 +32,7 @@ Welcome to the r0astr learning path. Start here to understand how r0astr works a
 
     ---
 
-    Control global tempo and effects across all cards.
+    Control global tempo and effects across all panels.
 
     [:octicons-arrow-right-24: Master Panel Guide](master-panel.md)
 
@@ -40,10 +40,10 @@ Welcome to the r0astr learning path. Start here to understand how r0astr works a
 
 ## Learning Path
 
-1. **Start with Concepts** - Understand how r0astr organizes instruments
-2. **Learn Pattern Syntax** - Master the mini notation language
-3. **Explore Multi-Instrument** - Combine cards for full arrangements
-4. **Use the Master Panel** - Control global parameters
+1. **Start with Concepts** — Understand how r0astr organizes instruments
+2. **Learn Pattern Syntax** — Master the mini notation language
+3. **Explore Multi-Instrument** — Combine panels for full arrangements
+4. **Use the Master Panel** — Control global parameters
 
 ## Ready-to-Use Patterns
 

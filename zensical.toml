@@ -32,30 +32,15 @@ nav = [
   ] },
   { "Guides" = [
     { "Remote Control" = "remote-control.md" },
-    { "Custom Samples" = "guides/samples.md" },
-    { "SoundFonts" = "guides/soundfonts.md" },
     { "Troubleshooting" = "guides/troubleshooting.md" },
   ] },
   { "Developers" = [
     { "Overview" = "developers/index.md" },
     { "API Reference" = "developers/api.md" },
-    { "Plugin Development" = "developers/plugins.md" },
     { "Architecture" = "developers/architecture.md" },
-    { "Contributing" = "developers/contributing.md" },
   ] },
-  { "Extend" = [
-    { "Skins Overview" = "extend/skins.md" },
-    { "Creating Skins" = "extend/creating-skins.md" },
-    { "Skin Gallery" = "extend/skin-gallery.md" },
-  ] },
-  { "Tools" = [
-    { "Pattern Validator" = "tools/validator.md" },
-  ] },
-  { "Community" = [
-    { "Showcase" = "community/showcase.md" },
-    { "FAQ" = "community/faq.md" },
-    { "Changelog" = "community/changelog.md" },
-  ] },
+  { "Skins" = "extend/skins.md" },
+  { "FAQ" = "community/faq.md" },
 ]
 
 # ---------------------------------------------------------------------------

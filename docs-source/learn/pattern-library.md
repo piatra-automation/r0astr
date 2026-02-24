@@ -1,6 +1,6 @@
 # Pattern Library
 
-A collection of ready-to-use patterns. Copy and paste into any card.
+A collection of ready-to-use patterns. Copy and paste into any panel.
 
 **Difficulty Levels:**
 
@@ -238,22 +238,22 @@ Copy these patterns to their respective cards for complete tracks.
 
 A simple, cohesive arrangement.
 
-**Card 1 (Drums):**
+**Panel 1 (Drums):**
 ```javascript
 s("bd*4, ~ sd ~ sd, hh*8").gain(0.8)
 ```
 
-**Card 2 (Bass):**
+**Panel 2 (Bass):**
 ```javascript
 note("c2 ~ c2 e2").s("sawtooth").lpf(300).gain(0.6)
 ```
 
-**Card 3 (Lead):**
+**Panel 3 (Lead):**
 ```javascript
 n("0 2 3 5 3 2").scale("C4:minor").s("triangle").gain(0.5)
 ```
 
-**Card 4 (Pad):**
+**Panel 4 (Pad):**
 ```javascript
 n("0 3 7").scale("C3:minor").s("sawtooth").lpf(600).room(0.8).slow(4).gain(0.4)
 ```
@@ -262,22 +262,22 @@ n("0 3 7").scale("C3:minor").s("sawtooth").lpf(600).room(0.8).slow(4).gain(0.4)
 
 Heavy, driving techno arrangement.
 
-**Card 1 (Drums):**
+**Panel 1 (Drums):**
 ```javascript
 s("bd*4, ~ cp ~ ~, hh*16").gain(0.85)
 ```
 
-**Card 2 (Bass):**
+**Panel 2 (Bass):**
 ```javascript
 note("c1 ~ c1 c1").s("sawtooth").lpf(slider(250, 100, 800)).gain(0.7)
 ```
 
-**Card 3 (Stab):**
+**Panel 3 (Stab):**
 ```javascript
 n("[0,3,7] ~ ~ ~").scale("C3:minor").s("sawtooth").lpf(1500).room(0.3).gain(0.4)
 ```
 
-**Card 4 (Texture):**
+**Panel 4 (Texture):**
 ```javascript
 s("noise").lpf(slider(300, 50, 2000)).gain(0.1)
 ```
@@ -286,22 +286,22 @@ s("noise").lpf(slider(300, 50, 2000)).gain(0.1)
 
 Relaxed, atmospheric arrangement.
 
-**Card 1 (Light Percussion):**
+**Panel 1 (Light Percussion):**
 ```javascript
 s("~ hh ~ hh, ~ ~ rim ~").gain(0.4)
 ```
 
-**Card 2 (Bass):**
+**Panel 2 (Bass):**
 ```javascript
 note("c2 ~ ~ e2").s("sine").lpf(400).gain(0.5).slow(2)
 ```
 
-**Card 3 (Melody):**
+**Panel 3 (Melody):**
 ```javascript
 n("0 ~ 4 ~, ~ 7 ~ 5").scale("C4:minor").s("triangle").room(0.7).gain(0.4).slow(2)
 ```
 
-**Card 4 (Pad):**
+**Panel 4 (Pad):**
 ```javascript
 n("0 3 7 10").scale("C3:minor").s("sawtooth").lpf(500).room(0.95).slow(8).gain(0.3)
 ```
@@ -325,7 +325,3 @@ Start with a pattern and experiment:
 - Add effects: `.room(0.5)` or `.delay(0.25)`
 - Add sliders: `.lpf(slider(800, 100, 4000))`
 
----
-
-!!! tip "Contribute a Pattern"
-    Have a great pattern? We'd love to add it! See the [Contributing Guide](../developers/contributing.md) for instructions on submitting patterns to this library.
