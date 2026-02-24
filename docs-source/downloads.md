@@ -429,23 +429,42 @@ var ICONS = {
   justify-content: center;
 }
 .download-card__icons {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+  position: relative;
   flex-shrink: 0;
+  width: 144px;
+  height: 144px;
 }
 .download-card__app-icon {
-  width: 72px;
-  height: 72px;
-  border-radius: 14px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  width: 144px;
+  height: 144px;
+  border-radius: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+.download-card__os-icon {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+[data-md-color-scheme="default"] .download-card__os-icon {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.1);
 }
 .download-card__os-icon svg {
-  width: 40px;
-  height: 40px;
-  opacity: 0.8;
-  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
+  width: 28px;
+  height: 28px;
+  opacity: 0.9;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
 }
 [data-md-color-scheme="default"] .download-card__os-icon svg {
   filter: none;
