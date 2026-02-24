@@ -1972,9 +1972,16 @@ async function waitForBeatLock() {
   const cps = strudelCore.scheduler.cps;
   if (!cps || cps <= 0) return;
 
+  // Minimum lookahead in cycles — accounts for the small delay between
+  // this function returning and evaluate() actually firing. Without this,
+  // landing exactly on (or just before) a boundary means evaluate runs
+  // a fraction late, placing playback on the next 1/16 subdivision.
+  const lookahead = 1 / 64;
+
+  const adjustedNow = now + lookahead;
   const target = mode === 'beat'
-    ? Math.ceil(now * 4) / 4
-    : Math.ceil(now);
+    ? Math.ceil(adjustedNow * 4) / 4
+    : Math.ceil(adjustedNow);
 
   const delayCycles = target - now;
   if (delayCycles <= 0) return;
@@ -2014,6 +2021,14 @@ async function activatePanel(panelId) {
 
   // Start/resume audio context (required for browser autoplay policies)
   ctx.resume();
+
+  // Show immediate "pending" button feedback when beat-locking is active
+  // so the user knows their click was acknowledged even before playback starts
+  const beatLockMode = getSettings().beatLocking || 'immediate';
+  if (beatLockMode !== 'immediate') {
+    panel.pending = true;
+    updateVisualIndicators(panelId);
+  }
 
   try {
     // Check if pattern highlighting should be enabled
@@ -2104,9 +2119,6 @@ async function activatePanel(panelId) {
     // Evaluate transpiled code with unique ID using .p() method
     // Only append .p(panelId) if code doesn't use labeled statements
     // (labeled statements already have .p() calls)
-
-    // Beat-locking: wait for next beat/cycle boundary if configured
-    await waitForBeatLock();
 
     // Story 7.3: Intercept console.error to detect Strudel evaluation errors
     // Ref-counted wrapper prevents permanent nesting when multiple activatePanel()
@@ -2207,6 +2219,10 @@ async function activatePanel(panelId) {
           leafViz.style.display = 'none';
         }
       }
+
+      // Beat-locking: wait for next beat/cycle boundary right before evaluate
+      // Placed here (not earlier) to avoid processing gaps between wait and playback
+      await waitForBeatLock();
 
       if (hasLabeledStatements || hasNamedPattern) {
         // User already registered pattern - evaluate without auto-appending .p(panelId)
@@ -2342,6 +2358,7 @@ async function activatePanel(panelId) {
       }
 
       // Keep panel in paused state
+      panel.pending = false;
       panel.playing = false;
       panel.stale = false;
       updateVisualIndicators(panelId);
@@ -2351,6 +2368,7 @@ async function activatePanel(panelId) {
     }
 
     // Update state
+    panel.pending = false;
     panel.playing = true;
     panel.stale = false;
     panel.lastEvaluatedCode = patternCode;

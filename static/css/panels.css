@@ -172,6 +172,17 @@
   color: var(--color-warning);
 }
 
+.panel-actions .btn-playback.pending {
+  color: var(--text-muted);
+  opacity: 0.6;
+  animation: pulse-pending 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse-pending {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
 /* Delete button */
 .panel-actions .btn-delete {
   color: var(--text-muted);

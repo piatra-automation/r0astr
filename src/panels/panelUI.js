@@ -105,9 +105,14 @@ export function updatePlaybackButton(panelId) {
   if (!icon) return;
 
   // Remove all state classes
-  button.classList.remove('playing', 'stale', 'paused');
+  button.classList.remove('playing', 'stale', 'paused', 'pending');
 
-  if (panel.playing && !panel.stale) {
+  if (panel.pending) {
+    // Waiting for beat-lock boundary -> Show pulsing play icon
+    icon.textContent = 'play_arrow';
+    button.title = 'Waiting for beat...';
+    button.classList.add('pending');
+  } else if (panel.playing && !panel.stale) {
     // Playing and in sync -> Show pause icon
     icon.textContent = 'pause';
     button.title = 'Pause';
@@ -196,9 +201,13 @@ export function updateVisualIndicators(panelId) {
   const isTreeLayout = panelElement.classList.contains('level-panel');
 
   if (isTreeLayout) {
-    // Tree layout uses simpler class names: playing, stale, error
-    panelElement.classList.remove('playing', 'stale', 'error');
+    // Tree layout uses simpler class names: playing, stale, error, pending
+    panelElement.classList.remove('playing', 'stale', 'error', 'pending');
 
+    // Add pending class if waiting for beat-lock boundary
+    if (panel.pending) {
+      panelElement.classList.add('pending');
+    }
     // Add playing class if panel is playing (stale panels are still playing)
     if (panel.playing) {
       panelElement.classList.add('playing');
