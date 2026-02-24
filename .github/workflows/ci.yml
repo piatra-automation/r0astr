@@ -51,7 +51,8 @@ jobs:
       is_prerelease: ${{ needs.detect-version.outputs.is_prerelease }}
     secrets: inherit
 
-  # --- Pages deployment (always, parallel with release pipeline) ---
+  # --- Pages deployment (after version detection so git tags are available) ---
   deploy-pages:
+    needs: detect-version
     uses: ./.github/workflows/deploy-pages.yml
     secrets: inherit
