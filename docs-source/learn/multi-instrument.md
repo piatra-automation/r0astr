@@ -339,12 +339,12 @@ Try this sequence:
 
     [:octicons-arrow-right-24: Master Panel Guide](master-panel.md)
 
--   :material-content-copy:{ .lg .middle } **Pattern Library**
+-   :material-content-copy:{ .lg .middle } **Example Arrangements**
 
     ---
 
-    More ready-to-use patterns for each role.
+    Complete multi-panel tracks to try.
 
-    [:octicons-arrow-right-24: Pattern Library](pattern-library.md)
+    [:octicons-arrow-right-24: Example Arrangements](example-arrangements.md)
 
 </div>

@@ -387,13 +387,13 @@ note("c2").lpf(SLIDER_LPF).room(REVERB).gain(GAIN)
 
 <div class="grid cards" markdown>
 
--   :material-content-copy:{ .lg .middle } **Pattern Library**
+-   :material-content-copy:{ .lg .middle } **Example Arrangements**
 
     ---
 
-    Ready-to-use patterns that work with global sliders.
+    Complete multi-panel tracks with sliders.
 
-    [:octicons-arrow-right-24: Pattern Library](pattern-library.md)
+    [:octicons-arrow-right-24: Example Arrangements](example-arrangements.md)
 
 -   :material-cog:{ .lg .middle } **Architecture**
 

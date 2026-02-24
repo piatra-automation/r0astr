@@ -60,14 +60,10 @@ nav:
   - Learn:
     - learn/index.md
     - Concepts: learn/concepts.md
-    - Pattern Syntax: learn/patterns.md
     - Multi-Instrument: learn/multi-instrument.md
     - Master Panel: learn/master-panel.md
-    - Pattern Library: learn/pattern-library.md
-  - Guides:
     - Remote Control: remote-control.md
-    - Custom Samples: guides/samples.md
-    - SoundFonts: guides/soundfonts.md
+    - Example Arrangements: learn/example-arrangements.md
     - Troubleshooting: guides/troubleshooting.md
   - Developers:
     - developers/index.md

@@ -18,8 +18,8 @@
     "electron:build:win": "npm run build && electron-builder --win",
     "electron:build:linux": "npm run build && electron-builder --linux",
     "electron:pack": "npm run build && electron-builder --dir",
-    "docs:serve": "cd site && poetry run mkdocs serve",
-    "docs:build": "cd site && poetry run mkdocs build",
+    "docs:serve": "zensical serve",
+    "docs:build": "zensical build",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {

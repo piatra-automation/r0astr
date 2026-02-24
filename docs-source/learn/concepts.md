@@ -196,7 +196,7 @@ Let's tie all the concepts together:
 
  Learn the mini notation language for writing patterns.
 
- [:octicons-arrow-right-24: Pattern Syntax](patterns.md)
+ [:octicons-arrow-right-24: Strudel Learn](https://strudel.cc/learn/){ target="_blank" }
 
 - :material-view-grid:{ .lg .middle } **Multi-Instrument**
 

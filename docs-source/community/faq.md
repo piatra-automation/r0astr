@@ -37,7 +37,7 @@ Click the **Stop All** button in the master panel, or use keyboard shortcut (com
 
 ### Can I use my own samples?
 
-Yes! See [Custom Samples](../guides/samples.md) for instructions.
+Yes! See the [Strudel samples documentation](https://strudel.cc/learn/samples){ target="_blank" } for instructions.
 
 ### What's the difference between `s()` and `note()`?
 

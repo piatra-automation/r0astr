@@ -251,4 +251,4 @@ Validates JavaScript syntax only. Does not check Strudel-specific semantics.
 
 ---
 
-*For pattern syntax help, see [Pattern Syntax](../learn/patterns.md).*
+*For pattern syntax help, see [Strudel Learn](https://strudel.cc/learn/){ target="_blank" }.*

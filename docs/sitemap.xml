@@ -16,25 +16,16 @@
         <loc>https://r0astr.org/learn/concepts/</loc>
       </url>
       <url>
-        <loc>https://r0astr.org/learn/patterns/</loc>
-      </url>
-      <url>
         <loc>https://r0astr.org/learn/multi-instrument/</loc>
       </url>
       <url>
         <loc>https://r0astr.org/learn/master-panel/</loc>
       </url>
       <url>
-        <loc>https://r0astr.org/learn/pattern-library/</loc>
-      </url>
-      <url>
         <loc>https://r0astr.org/remote-control/</loc>
       </url>
       <url>
-        <loc>https://r0astr.org/guides/samples/</loc>
-      </url>
-      <url>
-        <loc>https://r0astr.org/guides/soundfonts/</loc>
+        <loc>https://r0astr.org/learn/example-arrangements/</loc>
       </url>
       <url>
         <loc>https://r0astr.org/guides/troubleshooting/</loc>
@@ -46,33 +37,12 @@
         <loc>https://r0astr.org/developers/api/</loc>
       </url>
       <url>
-        <loc>https://r0astr.org/developers/plugins/</loc>
-      </url>
-      <url>
         <loc>https://r0astr.org/developers/architecture/</loc>
-      </url>
-      <url>
-        <loc>https://r0astr.org/developers/contributing/</loc>
       </url>
       <url>
         <loc>https://r0astr.org/extend/skins/</loc>
       </url>
       <url>
-        <loc>https://r0astr.org/extend/creating-skins/</loc>
-      </url>
-      <url>
-        <loc>https://r0astr.org/extend/skin-gallery/</loc>
-      </url>
-      <url>
-        <loc>https://r0astr.org/tools/validator/</loc>
-      </url>
-      <url>
-        <loc>https://r0astr.org/community/showcase/</loc>
-      </url>
-      <url>
         <loc>https://r0astr.org/community/faq/</loc>
-      </url>
-      <url>
-        <loc>https://r0astr.org/community/changelog/</loc>
       </url>
 </urlset>

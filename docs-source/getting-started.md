@@ -134,29 +134,21 @@ Now you have a full arrangement with drums, bass, melody, and ambient texture!
 
 <div class="grid cards" markdown>
 
--   :material-music-note:{ .lg .middle } **Pattern Syntax**
+-   :material-lightbulb:{ .lg .middle } **Concepts**
 
     ---
 
-    Learn mini notation and all the pattern functions.
-
-    [:octicons-arrow-right-24: Pattern Guide](learn/patterns.md)
-
--   :material-view-grid:{ .lg .middle } **Concepts**
-
-    ---
-
-    Understand cards, the master panel, and synchronization.
+    Understand panels, the master panel, and synchronization.
 
     [:octicons-arrow-right-24: Concepts](learn/concepts.md)
 
--   :material-content-copy:{ .lg .middle } **Pattern Library**
+-   :material-content-copy:{ .lg .middle } **Example Arrangements**
 
     ---
 
-    Ready-to-use patterns you can copy and paste.
+    Complete multi-panel tracks you can copy and paste.
 
-    [:octicons-arrow-right-24: Pattern Library](learn/pattern-library.md)
+    [:octicons-arrow-right-24: Example Arrangements](learn/example-arrangements.md)
 
 -   :material-download:{ .lg .middle } **Desktop App**
 

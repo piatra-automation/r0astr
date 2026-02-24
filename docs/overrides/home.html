@@ -314,8 +314,7 @@
       <img src="assets/images/banner.png" alt="r0astr" class="r0-hero__banner">
       <h2 class="r0-hero__title">Live code music, instrument by instrument</h2>
       <p class="r0-hero__subtitle">
-        A multi-instrument live coding interface built on Strudel.
-        Write patterns, hear them instantly, perform live.
+        Built for live performers, coders, streamers, and hobbyists
       </p>
       <div class="r0-hero__actions">
         <a href="app/index.html" class="md-button md-button--primary">Launch app</a>
@@ -335,7 +334,7 @@
           <span class="r0-feature__icon">&#9835;</span>
           <h3 class="r0-feature__title">Multiple Instruments</h3>
           <p class="r0-feature__text">
-            Independent cards for drums, bass, melody, ambient.
+            Independent panels for drums, bass, melody, ambient.
             Layer patterns freely &mdash; each with its own editor and controls.
           </p>
         </div>
@@ -344,7 +343,7 @@
           <h3 class="r0-feature__title">Perfect Sync</h3>
           <p class="r0-feature__text">
             All instruments share a single audio clock.
-            Start, stop, and modify cards &mdash; they always stay in time.
+            Start, stop, and modify panels &mdash; they always stay in time.
           </p>
         </div>
         <div class="r0-feature">
@@ -359,24 +358,40 @@
           <span class="r0-feature__icon">&#10094;/&#10095;</span>
           <h3 class="r0-feature__title">Code as Music</h3>
           <p class="r0-feature__text">
-            Strudel's mini notation turns terse expressions into rich rhythmic patterns.
-            Powerful for experts, approachable for beginners.
+            Rooted in the Tidal Cycles tradition and fully compatible with Strudel.
+            Mini notation turns concise expressions into complex musical patterns.
           </p>
         </div>
         <div class="r0-feature">
           <span class="r0-feature__icon">&#9881;</span>
           <h3 class="r0-feature__title">Master Panel</h3>
           <p class="r0-feature__text">
-            Global controls for tempo and effects that apply across all instruments
-            with reactive slider bindings.
+            Globally available controls for tempo, effects, and custom JS functions
+            shared across all instruments.
           </p>
         </div>
         <div class="r0-feature">
           <span class="r0-feature__icon">&#128241;</span>
           <h3 class="r0-feature__title">Remote Control</h3>
           <p class="r0-feature__text">
-            Control r0astr from a phone or tablet over WebSocket.
-            Perfect for untethered live sets.
+            A faux-MIDI control surface on your tablet or phone.
+            Touch-optimized, connected over WebSocket for untethered live sets.
+          </p>
+        </div>
+        <div class="r0-feature">
+          <span class="r0-feature__icon">&#128268;</span>
+          <h3 class="r0-feature__title">REST API</h3>
+          <p class="r0-feature__text">
+            HTTP and WebSocket API for external integration.
+            MCP-ready, programmatic control from any language or tool.
+          </p>
+        </div>
+        <div class="r0-feature">
+          <span class="r0-feature__icon">&#127912;</span>
+          <h3 class="r0-feature__title">Skins</h3>
+          <p class="r0-feature__text">
+            WinAmp-style skin system. Swap the entire UI look
+            with ZIP-based skin packages.
           </p>
         </div>
       </div>
@@ -386,14 +401,14 @@
     <section class="r0-code">
       <div class="r0-code__inner">
         <h2 class="r0-code__heading">Start with two lines</h2>
-        <p class="r0-code__subheading">Paste into a card, hit play, hear music</p>
+        <p class="r0-code__subheading">Paste into a panel, hit play, hear music</p>
         <div class="r0-code__blocks">
           <div class="r0-code__block">
             <p class="r0-code__label">Card 1 &mdash; Drums</p>
             <code>s("bd*4, ~ sd ~ sd, hh*8").gain(0.8)</code>
           </div>
           <div class="r0-code__block">
-            <p class="r0-code__label">Card 2 &mdash; Bass</p>
+            <p class="r0-code__label">Card 2 &mdash; Bass (Strudel / Tidal syntax)</p>
             <code>note("c2 ~ c2 e2")
   .s("sawtooth")
   .lpf(slider(800, 200, 4000))
@@ -411,7 +426,7 @@
       </p>
       <div class="r0-cta__actions">
         <a href="https://github.com/piatra-automation/r0astr" class="md-button" target="_blank">View on GitHub</a>
-        <a href="developers/contributing/" class="md-button">Contribute</a>
+        <a href="getting-started/" class="md-button">Get started</a>
       </div>
     </section>
   </div>
