@@ -7,7 +7,7 @@ Thank you for your interest in contributing to r0astr!
 - **Code** - Bug fixes, features, improvements
 - **Documentation** - Tutorials, guides, corrections
 - **Patterns** - Add to the [Example Arrangements](../learn/example-arrangements.md)
-- **Skins** - Create themes (see [Skins](../extend/skins.md))
+- **Skins** - Create themes (see [Skins](skins.md))
 - **Bug Reports** - Help us identify issues
 - **Ideas** - Feature requests and suggestions
 

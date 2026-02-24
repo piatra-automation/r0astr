@@ -107,6 +107,23 @@
       font-size: 0.95rem;
       padding: 0.7em 1.8em;
     }
+    /* Non-primary buttons: visible border + readable text over backdrop */
+    .md-button:not(.md-button--primary) {
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.95);
+    }
+    .md-button:not(.md-button--primary):hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.7);
+    }
+    [data-md-color-scheme="default"] .md-button:not(.md-button--primary) {
+      border-color: rgba(0, 0, 0, 0.4);
+      color: rgba(0, 0, 0, 0.8);
+    }
+    [data-md-color-scheme="default"] .md-button:not(.md-button--primary):hover {
+      background: rgba(0, 0, 0, 0.06);
+      border-color: rgba(0, 0, 0, 0.6);
+    }
 
     /* Scrollable content sections — transparent so backdrop shows through */
     .r0-section {
@@ -149,9 +166,10 @@
       gap: 1.5rem;
     }
     .r0-feature {
-      background: rgba(0, 0, 0, 0.25);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 0.5rem;
       padding: 1.75rem;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -161,7 +179,8 @@
       box-shadow: 0 4px 24px rgba(0,0,0,0.1);
     }
     [data-md-color-scheme="default"] .r0-feature {
-      background: rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.55);
+      border-color: rgba(0, 0, 0, 0.08);
     }
     [data-md-color-scheme="slate"] .r0-feature:hover {
       box-shadow: 0 4px 24px rgba(0,0,0,0.3);
@@ -189,72 +208,6 @@
     }
     [data-md-color-scheme="default"] .r0-feature__text {
       color: rgba(0, 0, 0, 0.6);
-    }
-
-    /* Code showcase */
-    .r0-code {
-      padding: 5rem 2rem;
-    }
-    .r0-code__inner {
-      max-width: 54rem;
-      margin: 0 auto;
-    }
-    .r0-code__heading {
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: 600;
-      margin: 0 0 0.5rem;
-      color: rgba(255, 255, 255, 0.95);
-      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
-    }
-    [data-md-color-scheme="default"] .r0-code__heading {
-      color: rgba(0, 0, 0, 0.85);
-      text-shadow: none;
-    }
-    .r0-code__subheading {
-      text-align: center;
-      color: rgba(255, 255, 255, 0.7);
-      text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      margin: 0 0 2.5rem;
-      font-size: 1.05rem;
-    }
-    [data-md-color-scheme="default"] .r0-code__subheading {
-      color: rgba(0, 0, 0, 0.6);
-      text-shadow: none;
-    }
-    .r0-code__blocks {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
-      gap: 1.5rem;
-    }
-    .r0-code__block {
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border-radius: 0.5rem;
-      padding: 1.5rem;
-    }
-    .r0-code__label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--md-primary-fg-color);
-      margin: 0 0 0.75rem;
-    }
-    [data-md-color-scheme="default"] .r0-code__block {
-      background: rgba(255, 255, 255, 0.4);
-    }
-    .r0-code__block code {
-      font-family: var(--md-code-font-family, "JetBrains Mono", monospace);
-      font-size: 0.85rem;
-      line-height: 1.7;
-      display: block;
-      white-space: pre;
-      color: rgba(255, 255, 255, 0.9);
-    }
-    [data-md-color-scheme="default"] .r0-code__block code {
-      color: rgba(0, 0, 0, 0.8);
     }
 
     /* CTA banner */
@@ -295,7 +248,7 @@
 
     @media (max-width: 600px) {
       .r0-hero { min-height: 80vh; }
-      .r0-features, .r0-code, .r0-cta { padding: 3rem 1.25rem; }
+      .r0-features, .r0-cta { padding: 3rem 1.25rem; }
     }
   </style>
 {% endblock %}
@@ -393,27 +346,6 @@
             WinAmp-style skin system. Swap the entire UI look
             with ZIP-based skin packages.
           </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Code showcase -->
-    <section class="r0-code">
-      <div class="r0-code__inner">
-        <h2 class="r0-code__heading">Start with two lines</h2>
-        <p class="r0-code__subheading">Paste into a panel, hit play, hear music</p>
-        <div class="r0-code__blocks">
-          <div class="r0-code__block">
-            <p class="r0-code__label">Card 1 &mdash; Drums</p>
-            <code>s("bd*4, ~ sd ~ sd, hh*8").gain(0.8)</code>
-          </div>
-          <div class="r0-code__block">
-            <p class="r0-code__label">Card 2 &mdash; Bass (Strudel / Tidal syntax)</p>
-            <code>note("c2 ~ c2 e2")
-  .s("sawtooth")
-  .lpf(slider(800, 200, 4000))
-  .gain(0.6)</code>
-          </div>
         </div>
       </div>
     </section>

@@ -35,8 +35,12 @@ nav = [
     { "Overview" = "developers/index.md" },
     { "API Reference" = "developers/api.md" },
     { "Architecture" = "developers/architecture.md" },
+    { "Plugin Development" = "developers/plugins.md" },
+    { "Skins" = "developers/skins.md" },
+    { "Creating Skins" = "developers/creating-skins.md" },
+    { "Skin Gallery" = "developers/skin-gallery.md" },
+    { "Contributing" = "developers/contributing.md" },
   ] },
-  { "Skins" = "extend/skins.md" },
   { "FAQ" = "community/faq.md" },
 ]
 
@@ -120,6 +124,10 @@ permalink = true
 anchor_linenums = true
 
 [project.markdown_extensions.pymdownx.superfences]
+[[project.markdown_extensions.pymdownx.superfences.custom_fences]]
+name = "mermaid"
+class = "mermaid"
+format = "pymdownx.superfences.fence_code_format"
 
 [project.markdown_extensions.pymdownx.tabbed]
 alternate_style = true
