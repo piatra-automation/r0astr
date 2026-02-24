@@ -1,8 +1,20 @@
 # Downloads
 
 <div class="download-hero">
-  <img src="../assets/images/icon.png" alt="r0astr" class="download-hero__icon">
-  <p>Get the full r0astr desktop application with remote control and WebSocket features.</p>
+  <img src="../assets/images/banner.png" alt="r0astr" class="download-hero__banner">
+  <p class="download-hero__lead">
+    The desktop app is the full r0astr interface wrapped in Electron.
+    All Strudel packages ship bundled&mdash;core, mini notation, transpiler, Web Audio,
+    tonal, soundfonts, draw, xen, osc, serial, csound, and CodeMirror&mdash;so
+    startup is instant with no network fetch required. Samples and SoundFonts
+    stream on first play from the Strudel CDN.
+  </p>
+  <p class="download-hero__lead">
+    The desktop build also starts an Express + WebSocket server on <code>localhost:3000</code>,
+    enabling the <strong>remote control surface</strong> (open <code>/remote.html</code> on
+    a tablet or phone on the same network) and a <strong>REST / WebSocket API</strong> for
+    programmatic control from external tools, scripts, or MCP agents.
+  </p>
 </div>
 
 <div id="download-section">
@@ -246,10 +258,12 @@ var ICONS = {
     // Build primary download section based on detected OS
     let primaryHTML = '';
     const osIcon = ICONS[detectedOS] || '';
+    const appIcon = '<img src="../assets/images/icon.png" alt="" class="download-card__app-icon">';
 
     if (detectedOS === 'macos') {
       const dmg = downloads.macos.dmg[0];
       primaryHTML = `
+        ${appIcon}
         <div class="download-card__icon">${osIcon}</div>
         <p style="margin-bottom: 0.5rem;"><strong>Detected: macOS</strong></p>
         <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8;">Version ${version}</p>
@@ -259,6 +273,7 @@ var ICONS = {
       const installer = downloads.windows.installer;
       const portable = downloads.windows.portable;
       primaryHTML = `
+        ${appIcon}
         <div class="download-card__icon">${osIcon}</div>
         <p style="margin-bottom: 0.5rem;"><strong>Detected: Windows</strong></p>
         <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8;">Version ${version}</p>
@@ -269,6 +284,7 @@ var ICONS = {
       const appimage = downloads.linux.appimage;
       const deb = downloads.linux.deb;
       primaryHTML = `
+        ${appIcon}
         <div class="download-card__icon">${osIcon}</div>
         <p style="margin-bottom: 0.5rem;"><strong>Detected: Linux</strong></p>
         <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8;">Version ${version}</p>
@@ -335,30 +351,97 @@ var ICONS = {
 </script>
 
 <style>
+/* Hero banner */
 .download-hero {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-.download-hero__icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 16px;
-  margin-bottom: 0.75rem;
-}
-
-.download-card.primary {
-  background: var(--md-primary-fg-color--light);
-  padding: 2rem;
-  border-radius: 8px;
   text-align: center;
   margin-bottom: 2rem;
 }
+.download-hero__banner {
+  display: block;
+  width: min(16rem, 60vw);
+  height: auto;
+  margin: 0 auto 1.25rem;
+}
+[data-md-color-scheme="default"] .download-hero__banner {
+  filter: invert(1);
+}
+.download-hero__lead {
+  text-align: left;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  max-width: 42rem;
+  margin: 0 auto 0.75rem;
+  color: var(--md-default-fg-color--light);
+}
+.download-hero__lead code {
+  font-size: 0.85em;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  background: var(--md-code-bg-color);
+}
 
+/* Primary download card — glass over background image */
+.download-card.primary {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.download-card.primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('../assets/images/background.jpg') center / cover no-repeat;
+  z-index: 0;
+}
+.download-card.primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 1;
+}
+[data-md-color-scheme="default"] .download-card.primary::after {
+  background: rgba(255, 255, 255, 0.6);
+}
+.download-card.primary > * {
+  position: relative;
+  z-index: 2;
+}
+.download-card.primary p {
+  color: rgba(255, 255, 255, 0.9);
+}
+[data-md-color-scheme="default"] .download-card.primary p {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+/* OS icon inside the primary card */
 .download-card__icon {
   margin-bottom: 0.75rem;
 }
 .download-card__icon svg {
   opacity: 0.85;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
+}
+[data-md-color-scheme="default"] .download-card__icon svg {
+  filter: none;
+}
+
+/* App icon badge in the primary card corner */
+.download-card__app-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
 }
 
 .download-btn {
@@ -366,11 +449,30 @@ var ICONS = {
   padding: 0.8rem 2rem !important;
 }
 
+/* All-platforms grid — glass cards */
 .download-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
+  gap: 1.5rem;
   margin-top: 1rem;
+}
+
+.download-platform {
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 8px;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.download-platform:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+[data-md-color-scheme="default"] .download-platform {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 .download-platform h3 {
