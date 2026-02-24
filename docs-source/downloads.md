@@ -260,7 +260,7 @@ var ICONS = {
     const osIcon = ICONS[detectedOS] || '';
     const appIconImg = '<img src="../assets/images/icon.png" alt="r0astr" class="download-card__app-icon">';
 
-    function buildCard(osLabel, buttons) {
+    function buildCard(osLabel, fileInfo, altLink) {
       return `
         <div class="download-card__layout">
           <div class="download-card__icons">
@@ -270,28 +270,29 @@ var ICONS = {
           <div class="download-card__details">
             <p class="download-card__os-label">${osLabel}</p>
             <p class="download-card__version">Version ${version}</p>
-            ${buttons}
+            ${fileInfo ? `<p class="download-card__file">${fileInfo.label} &middot; ${fileInfo.size}</p>
+            <a href="${fileInfo.url}" class="md-button md-button--primary download-btn">Download</a>` : ''}
+            ${altLink || ''}
           </div>
         </div>`;
     }
 
     if (detectedOS === 'macos') {
       const dmg = downloads.macos.dmg[0];
-      primaryHTML = buildCard('macOS', dmg
-        ? `<a href="${dmg.url}" class="md-button md-button--primary download-btn">Download ${dmg.archLabel} .dmg (${dmg.size})</a>`
-        : '');
+      primaryHTML = buildCard('macOS',
+        dmg ? { label: dmg.archLabel + ' .dmg', size: dmg.size, url: dmg.url } : null);
     } else if (detectedOS === 'windows') {
       const installer = downloads.windows.installer;
       const portable = downloads.windows.portable;
       primaryHTML = buildCard('Windows',
-        (installer ? `<a href="${installer.url}" class="md-button md-button--primary download-btn">Download Installer (${installer.size})</a>` : '')
-        + (portable ? `<p class="download-card__alt"><a href="${portable.url}">Portable Version (${portable.size})</a></p>` : ''));
+        installer ? { label: 'Installer .exe', size: installer.size, url: installer.url } : null,
+        portable ? `<p class="download-card__alt"><a href="${portable.url}">Portable .exe (${portable.size})</a></p>` : '');
     } else if (detectedOS === 'linux') {
       const appimage = downloads.linux.appimage;
       const deb = downloads.linux.deb;
       primaryHTML = buildCard('Linux',
-        (appimage ? `<a href="${appimage.url}" class="md-button md-button--primary download-btn">Download AppImage (${appimage.size})</a>` : '')
-        + (deb ? `<p class="download-card__alt"><a href="${deb.url}">.deb package (${deb.size})</a></p>` : ''));
+        appimage ? { label: 'AppImage', size: appimage.size, url: appimage.url } : null,
+        deb ? `<p class="download-card__alt"><a href="${deb.url}">.deb package (${deb.size})</a></p>` : '');
     } else {
       primaryHTML = '<p>Please select your platform below.</p>';
     }
@@ -480,6 +481,11 @@ var ICONS = {
 .download-card__version {
   font-size: 0.9rem;
   opacity: 0.7;
+  margin: 0 0 0.25rem;
+}
+.download-card__file {
+  font-size: 0.85rem;
+  opacity: 0.6;
   margin: 0 0 1rem;
 }
 .download-card__alt {
