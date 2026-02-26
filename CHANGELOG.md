@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.14.3] - 2026-02-27
+
+### Added
+- **Play All button** — new master panel button between Update All and Stop All; click activates stopped/paused panels, Shift+click re-evaluates all panels including playing ones
+- **Play All keyboard shortcut** — Cmd+A (Electron) / Cmd+Alt+A (browser), with Shift modifier for force re-evaluate
+- **Play All remote control** — WebSocket `global.playAll` command and button on remote.html
+
 ## [0.14.2] - 2026-02-26
 
 ### Added

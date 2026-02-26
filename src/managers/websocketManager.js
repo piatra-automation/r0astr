@@ -17,6 +17,7 @@ export const MESSAGE_TYPES = {
   PANEL_UPDATE_CODE: 'panel.updateCode',
   PANEL_SLIDER_CHANGE: 'panel.sliderChange',
   STOP_ALL: 'global.stopAll',
+  PLAY_ALL: 'global.playAll',
   UPDATE_ALL: 'global.updateAll',
   REQUEST_STATE: 'server.requestFullState',
   SLIDER_CHANGE: 'master.sliderChange',
@@ -164,6 +165,10 @@ function handleMessage(message) {
 
     case MESSAGE_TYPES.STOP_ALL:
       eventBus.emit('global:stopAll');
+      break;
+
+    case MESSAGE_TYPES.PLAY_ALL:
+      eventBus.emit('global:playAll');
       break;
 
     case MESSAGE_TYPES.UPDATE_ALL:

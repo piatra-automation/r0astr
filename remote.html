@@ -76,6 +76,7 @@
 
     <div class="global-controls">
       <button class="update-all-btn" id="update-all" disabled>UPDATE ALL</button>
+      <button class="play-all-btn" id="play-all">▶ PLAY ALL</button>
       <button class="stop-all-btn" id="stop-all">⏹ STOP ALL</button>
     </div>
   </div>
@@ -781,6 +782,11 @@
     // Attach stop-all button listener
     document.getElementById('stop-all').addEventListener('click', () => {
       sendCommand('global.stopAll');
+    });
+
+    // Attach play-all button listener
+    document.getElementById('play-all').addEventListener('click', () => {
+      sendCommand('global.playAll');
     });
 
     // Attach update-all button listener

@@ -1148,6 +1148,15 @@ async function initializeCards() {
     updateVisualIndicators(panelId);
   });
 
+  // Attach play-all button listener
+  const playAllBtn = document.getElementById('play-all-btn');
+  if (playAllBtn) {
+    playAllBtn.addEventListener('click', (e) => {
+      if (playAllBtn.disabled) return;
+      playAll(e.shiftKey);
+    });
+  }
+
   // Attach stop-all button listener
   const stopAllBtn = document.getElementById('stop-all');
   if (stopAllBtn) {
@@ -2503,6 +2512,55 @@ async function updateAllPanels() {
   console.log('Batch update complete');
 }
 
+/**
+ * Play All: activate all non-playing panels.
+ * If forceAll is true, re-evaluate ALL panels (including already playing ones).
+ */
+async function playAll(forceAll = false) {
+  const allPanels = getAllPanels();
+  const panelIds = Array.from(allPanels.values())
+    .filter(p => p.id !== MASTER_PANEL_ID)
+    .filter(p => forceAll || !cardStates[p.id]?.playing)
+    .map(p => p.id);
+
+  if (panelIds.length === 0) {
+    console.log('No panels to play');
+    return;
+  }
+
+  console.log(`▶ Playing ${panelIds.length} panel(s)${forceAll ? ' (force re-evaluate)' : ''}:`, panelIds);
+
+  const button = document.getElementById('play-all-btn');
+  if (button) {
+    button.disabled = true;
+    button.classList.add('updating');
+  }
+
+  for (const panelId of panelIds) {
+    const panelElement = document.getElementById(panelId);
+    if (panelElement) {
+      panelElement.classList.add('panel-updating');
+    }
+
+    await activatePanel(panelId);
+
+    setTimeout(() => {
+      if (panelElement) {
+        panelElement.classList.remove('panel-updating');
+      }
+    }, 300);
+
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+
+  if (button) {
+    button.disabled = false;
+    button.classList.remove('updating');
+  }
+
+  console.log('Play all complete');
+}
+
 // Stop all patterns and reset all cards to paused state
 function stopAll() {
   if (!scheduler) {
@@ -2599,6 +2657,11 @@ function wireWebSocketEventListeners() {
     if (panel && cardStates[panel] && cardStates[panel].playing) {
       pausePanel(panel);
     }
+  });
+
+  // Global play all
+  eventBus.on('global:playAll', (opts) => {
+    playAll(opts?.forceAll || false);
   });
 
   // Global stop all
@@ -3288,6 +3351,22 @@ function initializeKeyboardShortcuts() {
         }
         break;
 
+      case 'KeyA':
+        e.preventDefault();
+        pressedButton = document.getElementById('play-all-btn');
+        if (pressedButton && !pressedButton.disabled) {
+          animatePressStart(pressedButton);
+          const forceAll = e.shiftKey;
+          setTimeout(() => {
+            animatePressRelease(pressedButton);
+            playAll(forceAll);
+            console.log(`[Keyboard] Play All triggered${forceAll ? ' (force)' : ''}`);
+            pressedKey = null;
+            pressedButton = null;
+          }, 150);
+        }
+        break;
+
       case 'KeyP':
         e.preventDefault();
         const focusedPanelP = findFocusedPanel();
@@ -3569,7 +3648,7 @@ initializeKeyboardShortcuts();
 initElectronHandlers({
   onPanicStopAll: stopAll,
   onStopAllPanels: stopAll,
-  onPlayAllPanels: updateAllPanels,
+  onPlayAllPanels: () => playAll(false),
   onTogglePanel: (panelNumber) => {
     // F1-F8 toggle panel playback
     const allPanels = getAllPanels();

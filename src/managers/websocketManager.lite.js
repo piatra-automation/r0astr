@@ -11,6 +11,7 @@ export const MESSAGE_TYPES = {
   PANEL_UPDATE_CODE: 'panel.updateCode',
   PANEL_SLIDER_CHANGE: 'panel.sliderChange',
   STOP_ALL: 'global.stopAll',
+  PLAY_ALL: 'global.playAll',
   UPDATE_ALL: 'global.updateAll',
   REQUEST_STATE: 'server.requestFullState',
   SLIDER_CHANGE: 'master.sliderChange',
