@@ -1,0 +1,642 @@
+/* ============================================================
+   TACTICAL CONSOLE SKIN
+   Sci-fi military command terminal aesthetic
+   ============================================================ */
+
+/* --- Bundled Font --- */
+
+@font-face {
+  font-family: 'Orbitron';
+  src: url('./Orbitron-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Orbitron';
+  src: url('./Orbitron-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* --- Base & Background --- */
+
+body {
+  background: #0a0e17;
+  font-family: 'Orbitron', 'Courier New', 'Lucida Console', monospace;
+  color: var(--text-primary, #c0e8ff);
+}
+
+/* Grid background pattern */
+body::before {
+  background:
+    linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(rgba(0, 229, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.015) 1px, transparent 1px) !important;
+  background-size:
+    100px 100px,
+    100px 100px,
+    20px 20px,
+    20px 20px !important;
+  pointer-events: none;
+}
+
+/* CRT scan lines overlay */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 99999;
+}
+
+/* --- Banner Bar --- */
+
+.banner-bar {
+  background: rgba(5, 10, 20, 0.95) !important;
+  border-bottom: 1px solid var(--tactical-border, rgba(0, 229, 255, 0.25));
+  box-shadow: 0 1px 20px rgba(0, 229, 255, 0.08);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.banner-bar .app-title,
+.banner-bar .app-subtitle {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: var(--primary-color, #00e5ff);
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+/* --- Top Menu Bar --- */
+
+.top-menu-bar {
+  position: fixed;
+  top: var(--projection-margin-top);
+  right: calc(var(--projection-margin-right) + 16px);
+  left: auto;
+  height: var(--banner-bar-height);
+  width: auto;
+  padding: 0 8px;
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  background: rgba(5, 10, 20, 0.92) !important;
+  border: 1px solid var(--tactical-border, rgba(0, 229, 255, 0.25));
+  border-top: none;
+  border-radius: 0;
+  box-shadow: 0 4px 30px rgba(0, 229, 255, 0.1);
+  backdrop-filter: blur(8px);
+  z-index: calc(var(--z-panel) + 1);
+}
+
+/* Icon-only buttons with Material Icons */
+.top-menu-bar .top-bar-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 0;
+}
+
+.top-menu-bar .top-bar-btn::before {
+  font-family: var(--font-family-icons);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.top-menu-bar #save-btn::before { content: 'save'; }
+.top-menu-bar #load-btn::before { content: 'folder_open'; }
+.top-menu-bar #remote-btn::before { content: 'cloud'; }
+.top-menu-bar #config-btn::before { content: 'settings'; }
+
+.top-bar-btn {
+  font-family: 'Orbitron', 'Courier New', monospace !important;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 11px;
+  color: var(--primary-color, #00e5ff) !important;
+  background: transparent !important;
+  border: 1px solid var(--tactical-border, rgba(0, 229, 255, 0.25)) !important;
+  transition: all 0.2s ease;
+}
+
+.top-bar-btn:hover {
+  background: rgba(0, 229, 255, 0.1) !important;
+  border-color: var(--primary-color, #00e5ff) !important;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.2), inset 0 0 12px rgba(0, 229, 255, 0.05);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+}
+
+.top-bar-btn:active {
+  background: rgba(255, 145, 0, 0.15) !important;
+  border-color: var(--secondary-color, #ff9100) !important;
+  color: var(--secondary-color, #ff9100) !important;
+}
+
+/* --- Metronome --- */
+
+.metronome-section {
+  background: rgba(5, 10, 20, 0.8) !important;
+  border-bottom: 1px solid var(--tactical-border, rgba(0, 229, 255, 0.15));
+}
+
+.step-box {
+  background: rgba(0, 229, 255, 0.04);
+  border: 1px solid rgba(0, 229, 255, 0.1);
+  border-radius: 1px;
+  transition: all 0.1s ease;
+}
+
+.step-box:nth-child(4n+1) {
+  background: rgba(0, 229, 255, 0.07);
+  border-color: rgba(0, 229, 255, 0.15);
+}
+
+.step-box.active {
+  background: var(--primary-color, #00e5ff) !important;
+  border-color: var(--primary-color, #00e5ff) !important;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.6), 0 0 20px rgba(0, 229, 255, 0.2);
+}
+
+/* --- Panels --- */
+
+.level-panel {
+  background: var(--tactical-bg, rgba(0, 20, 40, 0.85));
+  border: 1px solid var(--tactical-border, rgba(0, 229, 255, 0.25));
+  border-radius: 2px;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 16px) 0,
+    100% 16px,
+    100% 100%,
+    16px 100%,
+    0 calc(100% - 16px)
+  );
+  box-shadow:
+    0 0 15px rgba(0, 229, 255, 0.08),
+    inset 0 0 30px rgba(0, 229, 255, 0.02);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.level-panel:hover {
+  border-color: var(--tactical-border-bright, rgba(0, 229, 255, 0.5));
+  box-shadow:
+    0 0 20px rgba(0, 229, 255, 0.15),
+    0 0 40px rgba(0, 229, 255, 0.05),
+    inset 0 0 30px rgba(0, 229, 255, 0.03);
+}
+
+/* Playing panel pulse */
+.level-panel.is-playing {
+  animation: tactical-pulse 3s ease-in-out infinite;
+}
+
+@keyframes tactical-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.1), inset 0 0 30px rgba(0, 229, 255, 0.02);
+    border-color: var(--tactical-border, rgba(0, 229, 255, 0.25));
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.2), 0 0 50px rgba(0, 229, 255, 0.05), inset 0 0 30px rgba(0, 229, 255, 0.04);
+    border-color: var(--tactical-border-bright, rgba(0, 229, 255, 0.5));
+  }
+}
+
+/* Error state */
+.level-panel.has-error {
+  border-color: rgba(255, 61, 0, 0.4) !important;
+  box-shadow: 0 0 15px rgba(255, 61, 0, 0.1), inset 0 0 20px rgba(255, 61, 0, 0.02) !important;
+}
+
+/* Stale state */
+.level-panel.is-stale .panel-number-badge {
+  background: var(--secondary-color, #ff9100) !important;
+  box-shadow: 0 0 8px rgba(255, 145, 0, 0.4);
+}
+
+/* --- Panel Header (Summary) --- */
+
+.level-panel summary {
+  background: rgba(0, 229, 255, 0.04);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.12);
+  font-family: 'Orbitron', 'Courier New', monospace;
+  padding: 8px 12px;
+}
+
+.panel-number-badge {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 2px !important;
+  background: var(--primary-color, #00e5ff);
+  color: #0a0e17;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+  transition: all 0.3s ease;
+}
+
+.level-panel.is-playing .panel-number-badge {
+  background: var(--primary-color, #00e5ff);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+}
+
+.level-panel.has-error .panel-number-badge {
+  background: #ff3d00 !important;
+  box-shadow: 0 0 8px rgba(255, 61, 0, 0.5);
+}
+
+.panel-title {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 12px;
+  color: var(--text-primary, #c0e8ff);
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.2);
+}
+
+/* --- Panel Action Buttons --- */
+
+.panel-actions button,
+.panel-actions-left button {
+  background: transparent;
+  color: var(--primary-color, #00e5ff);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.panel-actions button:hover,
+.panel-actions-left button:hover {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: var(--primary-color, #00e5ff);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+.btn-playback .material-icons {
+  color: var(--primary-color, #00e5ff);
+}
+
+.btn-delete:hover {
+  border-color: #ff3d00 !important;
+  color: #ff3d00 !important;
+  box-shadow: 0 0 10px rgba(255, 61, 0, 0.2) !important;
+}
+
+.btn-delete:hover .material-icons {
+  color: #ff3d00 !important;
+}
+
+/* --- CodeMirror Editor --- */
+
+.code-editor-wrapper {
+  background: rgba(5, 10, 20, 0.6);
+}
+
+.cm-editor {
+  background: transparent !important;
+  font-family: 'Courier New', 'Lucida Console', monospace !important;
+}
+
+.cm-editor .cm-content {
+  font-family: 'Courier New', 'Lucida Console', monospace !important;
+  color: var(--text-primary, #c0e8ff);
+  caret-color: var(--primary-color, #00e5ff);
+}
+
+.cm-editor .cm-cursor {
+  border-left-color: var(--primary-color, #00e5ff) !important;
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.5);
+}
+
+.cm-editor .cm-selectionBackground {
+  background: rgba(0, 229, 255, 0.12) !important;
+}
+
+.cm-editor .cm-gutters {
+  background: rgba(0, 15, 30, 0.5) !important;
+  border-right: 1px solid rgba(0, 229, 255, 0.1);
+  color: rgba(0, 229, 255, 0.3);
+  font-family: 'Courier New', monospace;
+}
+
+.cm-editor .cm-activeLineGutter {
+  background: rgba(0, 229, 255, 0.08) !important;
+  color: var(--primary-color, #00e5ff);
+}
+
+.cm-editor .cm-activeLine {
+  background: rgba(0, 229, 255, 0.04) !important;
+}
+
+/* Syntax highlighting overrides */
+.cm-editor .ͼb { color: #4dd0e1; }  /* keywords - lighter cyan */
+.cm-editor .ͼc { color: #80cbc4; }  /* strings - teal */
+.cm-editor .ͼd { color: #ffcc80; }  /* numbers - warm amber */
+.cm-editor .ͼe { color: #546e7a; }  /* comments - muted blue-grey */
+
+/* --- Error Messages --- */
+
+.error-message {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  color: #ff3d00;
+  background: rgba(255, 61, 0, 0.08);
+  border-left: 2px solid #ff3d00;
+  padding: 6px 10px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* --- Sliders --- */
+
+.leaf-slider {
+  background: rgba(0, 20, 40, 0.6);
+  border: 1px solid rgba(0, 229, 255, 0.12);
+  border-radius: 2px;
+  padding: 6px 10px;
+}
+
+.leaf-slider label {
+  font-family: 'Orbitron', monospace;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 10px;
+  color: rgba(0, 229, 255, 0.6);
+}
+
+.leaf-slider .slider-value {
+  font-family: 'Orbitron', monospace;
+  color: var(--primary-color, #00e5ff);
+  font-size: 12px;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.3);
+}
+
+/* Range input track */
+.leaf-slider input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: rgba(0, 229, 255, 0.15);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 0;
+  outline: none;
+}
+
+.leaf-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 18px;
+  background: var(--primary-color, #00e5ff);
+  border: none;
+  border-radius: 1px;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+  clip-path: polygon(0 15%, 50% 0, 100% 15%, 100% 85%, 50% 100%, 0 85%);
+}
+
+.leaf-slider input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 18px;
+  background: var(--primary-color, #00e5ff);
+  border: none;
+  border-radius: 1px;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+}
+
+/* --- Visualization --- */
+
+.viz-container {
+  border: 1px solid rgba(0, 229, 255, 0.1);
+  background: rgba(0, 10, 25, 0.5);
+  border-radius: 2px;
+}
+
+/* --- Add Panel Button --- */
+
+.add-panel-btn,
+.btn-add-panel {
+  font-family: 'Orbitron', monospace !important;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--primary-color, #00e5ff) !important;
+  background: transparent !important;
+  border: 1px dashed rgba(0, 229, 255, 0.3) !important;
+  border-radius: 2px !important;
+  transition: all 0.2s ease;
+}
+
+.add-panel-btn:hover,
+.btn-add-panel:hover {
+  border-color: var(--primary-color, #00e5ff) !important;
+  background: rgba(0, 229, 255, 0.05) !important;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.1);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+}
+
+/* --- Settings Modal --- */
+
+.modal-overlay,
+.settings-overlay {
+  background: rgba(5, 10, 20, 0.92) !important;
+  backdrop-filter: blur(12px);
+}
+
+.modal-content,
+.settings-content,
+.settings-panel {
+  background: rgba(8, 15, 30, 0.98) !important;
+  border: 1px solid var(--tactical-border, rgba(0, 229, 255, 0.25));
+  border-radius: 2px;
+  box-shadow: 0 0 40px rgba(0, 229, 255, 0.08);
+  clip-path: polygon(
+    0 0,
+    calc(100% - 20px) 0,
+    100% 20px,
+    100% 100%,
+    20px 100%,
+    0 calc(100% - 20px)
+  );
+  color: var(--text-primary, #c0e8ff);
+  font-family: 'Orbitron', 'Courier New', monospace;
+}
+
+.settings-panel h2,
+.settings-panel h3,
+.modal-content h2,
+.modal-content h3 {
+  font-family: 'Orbitron', monospace;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--primary-color, #00e5ff);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+  padding-bottom: 8px;
+}
+
+.settings-panel label {
+  font-family: 'Orbitron', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 11px;
+  color: rgba(0, 229, 255, 0.6);
+}
+
+.settings-panel input,
+.settings-panel select,
+.settings-panel textarea {
+  background: rgba(0, 15, 30, 0.8) !important;
+  border: 1px solid rgba(0, 229, 255, 0.2) !important;
+  border-radius: 2px !important;
+  color: var(--text-primary, #c0e8ff) !important;
+  font-family: 'Orbitron', 'Courier New', monospace !important;
+}
+
+.settings-panel input:focus,
+.settings-panel select:focus,
+.settings-panel textarea:focus {
+  border-color: var(--primary-color, #00e5ff) !important;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
+  outline: none;
+}
+
+.settings-panel button {
+  font-family: 'Orbitron', monospace !important;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-radius: 2px !important;
+}
+
+/* Section headers in settings (collapsible) */
+.settings-section-header {
+  font-family: 'Orbitron', monospace;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--primary-color, #00e5ff);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.1);
+}
+
+/* --- Scrollbar --- */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 15, 30, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.2);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, 0.4);
+}
+
+/* --- Master Panel Distinction --- */
+
+.level-panel.is-master {
+  border-color: rgba(255, 145, 0, 0.3);
+  box-shadow: 0 0 20px rgba(255, 145, 0, 0.06), inset 0 0 30px rgba(255, 145, 0, 0.02);
+}
+
+.level-panel.is-master summary {
+  background: rgba(255, 145, 0, 0.04);
+  border-bottom-color: rgba(255, 145, 0, 0.12);
+}
+
+.level-panel.is-master .panel-number-badge {
+  background: var(--secondary-color, #ff9100);
+  box-shadow: 0 0 8px rgba(255, 145, 0, 0.4);
+}
+
+.level-panel.is-master .panel-title {
+  color: #ffcc80;
+  text-shadow: 0 0 6px rgba(255, 145, 0, 0.2);
+}
+
+/* --- Drag & Drop --- */
+
+.level-panel.drag-over {
+  border-color: var(--secondary-color, #ff9100) !important;
+  box-shadow: 0 0 30px rgba(255, 145, 0, 0.15) !important;
+}
+
+.level-panel.dragging {
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+/* --- Tooltip / Toast --- */
+
+.toast,
+.notification {
+  background: rgba(8, 15, 30, 0.95) !important;
+  border: 1px solid var(--tactical-border, rgba(0, 229, 255, 0.25));
+  color: var(--text-primary, #c0e8ff);
+  font-family: 'Orbitron', monospace;
+  border-radius: 2px;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+}
+
+/* --- Panel collapsed state --- */
+
+.level-panel details:not([open]) summary {
+  border-bottom: none;
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 767px) {
+  .level-panel {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 10px) 0,
+      100% 10px,
+      100% 100%,
+      10px 100%,
+      0 calc(100% - 10px)
+    );
+  }
+
+  .modal-content,
+  .settings-content,
+  .settings-panel {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 12px) 0,
+      100% 12px,
+      100% 100%,
+      12px 100%,
+      0 calc(100% - 12px)
+    );
+  }
+}

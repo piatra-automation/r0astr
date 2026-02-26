@@ -31,15 +31,24 @@ export async function importSkinFromZip(file, options = {}) {
     const files = {};
     const filePromises = [];
 
+    // Binary asset extensions that must be read as binary, not UTF-8 text
+    const BINARY_EXTENSIONS = new Set([
+      'woff2', 'woff', 'ttf', 'otf', 'eot',
+      'png', 'jpg', 'jpeg', 'gif', 'webp', 'ico', 'svg'
+    ]);
+
     zip.forEach((relativePath, zipEntry) => {
       // Skip directories and hidden files
       if (zipEntry.dir || relativePath.startsWith('.') || relativePath.includes('__MACOSX')) {
         return;
       }
 
-      // Extract file content as text
+      // Use binary-safe encoding for font/image assets, text for everything else
+      const ext = relativePath.split('.').pop().toLowerCase();
+      const readAs = BINARY_EXTENSIONS.has(ext) ? 'binarystring' : 'string';
+
       filePromises.push(
-        zipEntry.async('string').then(content => {
+        zipEntry.async(readAs).then(content => {
           files[relativePath] = content;
         })
       );

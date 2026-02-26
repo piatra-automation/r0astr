@@ -1,0 +1,33 @@
+<details{{expanded}}>
+  <summary>
+    <span class="panel-number-badge" draggable="true" title="Drag to reorder">{{panelNumber}}</span>
+    <div class="panel-actions-left">
+      <button class="btn-playback" data-card="{{panelId}}" title="Play/Pause">
+        <span class="material-icons">play_arrow</span>
+      </button>
+    </div>
+    <span class="panel-title" data-panel-id="{{panelId}}" contenteditable="false" spellcheck="false">{{title}}</span>
+    <div class="panel-actions">
+      <button class="btn-duplicate" data-panel="{{panelId}}" title="Duplicate (Cmd+D)" style="{{duplicateButtonStyle}}">
+        <span class="material-icons">content_copy</span>
+      </button>
+      <button class="btn-delete" data-panel="{{panelId}}" title="Delete" style="{{deleteButtonStyle}}">
+        <span class="material-icons">delete</span>
+      </button>
+    </div>
+  </summary>
+  <!-- Editor container - collapses with details -->
+  <div class="panel-editor-container">
+    <div class="code-editor-wrapper">
+      <div class="code-editor" id="editor-{{panelId}}" data-card="{{panelId}}"></div>
+    </div>
+    <div class="error-message" data-card="{{panelId}}" style="display: none;"></div>
+  </div>
+</details>
+<!-- Controls container - outside details, visibility controlled by settings -->
+<div class="panel-controls-container">
+  <div class="leaf-viz" style="display: none;">
+    <div id="viz-container-{{panelId}}" class="viz-container"></div>
+  </div>
+  <!-- Slider leaves will be added dynamically by sliderManager -->
+</div>

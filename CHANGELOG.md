@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.14.2] - 2026-02-26
+
+### Added
+- **Tactical console skin** — sci-fi military console aesthetic with cyan wireframe borders, CRT scan lines, beveled clip-path panels, and bundled Orbitron font
+- **Skin font asset support** — custom skins can now bundle WOFF2/TTF font files that load correctly from IndexedDB via blob URL rewriting in skinManager
+- **Binary asset handling in skin importer** — font and image files in skin ZIPs are now read as binary strings instead of UTF-8 text, preventing data corruption on import
+
+### Fixed
+- **Custom skin menu bar visibility** — skins must now explicitly position and show `.top-menu-bar` (base CSS defaults to hidden); tactical skin sets `opacity: 1` and `pointer-events: auto`
+- **Skin validator filename mismatch** — `REQUIRED_TEMPLATES` expected camelCase `sliderCollapsed.html` regardless of manifest `templates` mapping
+
 ## [0.14.1] - 2026-02-25
 
 ### Fixed

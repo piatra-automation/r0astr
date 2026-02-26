@@ -81,8 +81,44 @@ class SkinManager {
           oldLink.remove();
         }
 
+        // Revoke any previously created asset blob URLs
+        if (this._assetBlobUrls) {
+          this._assetBlobUrls.forEach(url => URL.revokeObjectURL(url));
+        }
+        this._assetBlobUrls = [];
+
+        // Replace relative url() references in CSS with blob URLs for stored assets
+        let cssContent = files['theme.css'];
+        const urlPattern = /url\(\s*['"]?\.\/([^'")]+)['"]?\s*\)/g;
+        let match;
+        while ((match = urlPattern.exec(files['theme.css'])) !== null) {
+          const assetPath = match[1];
+          const assetContent = files[assetPath];
+          if (assetContent) {
+            // Determine MIME type from extension
+            const ext = assetPath.split('.').pop().toLowerCase();
+            const mimeTypes = {
+              woff2: 'font/woff2', woff: 'font/woff',
+              ttf: 'font/ttf', otf: 'font/otf',
+              png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+              svg: 'image/svg+xml', gif: 'image/gif', webp: 'image/webp'
+            };
+            const mime = mimeTypes[ext] || 'application/octet-stream';
+
+            // Convert string content to blob (binary files stored as latin1 strings)
+            const bytes = new Uint8Array(assetContent.length);
+            for (let i = 0; i < assetContent.length; i++) {
+              bytes[i] = assetContent.charCodeAt(i);
+            }
+            const assetBlob = new Blob([bytes], { type: mime });
+            const assetUrl = URL.createObjectURL(assetBlob);
+            this._assetBlobUrls.push(assetUrl);
+            cssContent = cssContent.split(match[0]).join(`url('${assetUrl}')`);
+          }
+        }
+
         // Create blob URL from CSS content
-        const cssBlob = new Blob([files['theme.css']], { type: 'text/css' });
+        const cssBlob = new Blob([cssContent], { type: 'text/css' });
         const cssUrl = URL.createObjectURL(cssBlob);
 
         await new Promise((resolve, reject) => {

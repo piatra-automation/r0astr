@@ -1,0 +1,25 @@
+{
+  "name": "Tactical",
+  "version": "1.0.0",
+  "author": "Piatra",
+  "description": "Sci-fi tactical console with cyan wireframe borders, CRT scan lines, and military readout aesthetic",
+  "layoutType": "tree",
+  "cssVariables": {
+    "--primary-color": "#00e5ff",
+    "--primary-glow": "rgba(0, 229, 255, 0.3)",
+    "--secondary-color": "#ff9100",
+    "--secondary-glow": "rgba(255, 145, 0, 0.3)",
+    "--tactical-bg": "rgba(0, 20, 40, 0.85)",
+    "--tactical-border": "rgba(0, 229, 255, 0.25)",
+    "--tactical-border-bright": "rgba(0, 229, 255, 0.5)",
+    "--text-primary": "#c0e8ff",
+    "--text-secondary": "rgba(0, 229, 255, 0.6)"
+  },
+  "css": {},
+  "templates": {
+    "panel": "panel.html",
+    "slider": "slider.html",
+    "sliderCollapsed": "sliderCollapsed.html"
+  },
+  "hoverTargets": []
+}
