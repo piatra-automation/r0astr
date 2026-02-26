@@ -108,18 +108,27 @@ body::after {
   z-index: calc(var(--z-panel) + 1);
 }
 
-/* Icon-only buttons with Material Icons */
+/* Icon-only buttons in top menu bar */
 .top-menu-bar .top-bar-btn {
   width: 32px;
   height: 32px;
   padding: 0;
   font-size: 0;
+  overflow: hidden;
+  color: var(--primary-color, #00e5ff);
+  background: transparent;
+  border: 1px solid var(--tactical-border, rgba(0, 229, 255, 0.25));
+  border-radius: 2px;
+  transition: all 0.2s ease;
 }
 
 .top-menu-bar .top-bar-btn::before {
-  font-family: var(--font-family-icons);
+  font-family: 'Material Icons';
   font-size: 18px;
-  line-height: 1;
+  line-height: 32px;
+  font-style: normal;
+  font-weight: normal;
+  -webkit-font-smoothing: antialiased;
 }
 
 .top-menu-bar #save-btn::before { content: 'save'; }
@@ -127,53 +136,128 @@ body::after {
 .top-menu-bar #remote-btn::before { content: 'cloud'; }
 .top-menu-bar #config-btn::before { content: 'settings'; }
 
-.top-bar-btn {
-  font-family: 'Orbitron', 'Courier New', monospace !important;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  font-size: 11px;
-  color: var(--primary-color, #00e5ff) !important;
-  background: transparent !important;
-  border: 1px solid var(--tactical-border, rgba(0, 229, 255, 0.25)) !important;
-  transition: all 0.2s ease;
-}
-
-.top-bar-btn:hover {
-  background: rgba(0, 229, 255, 0.1) !important;
-  border-color: var(--primary-color, #00e5ff) !important;
+.top-menu-bar .top-bar-btn:hover {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: var(--primary-color, #00e5ff);
   box-shadow: 0 0 12px rgba(0, 229, 255, 0.2), inset 0 0 12px rgba(0, 229, 255, 0.05);
-  text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
 }
 
-.top-bar-btn:active {
-  background: rgba(255, 145, 0, 0.15) !important;
-  border-color: var(--secondary-color, #ff9100) !important;
+.top-menu-bar .top-bar-btn:active {
+  background: rgba(255, 145, 0, 0.15);
+  border-color: var(--secondary-color, #ff9100);
   color: var(--secondary-color, #ff9100) !important;
 }
 
-/* --- Metronome --- */
+/* --- Metronome Wheel --- */
 
-.metronome-section {
-  background: rgba(5, 10, 20, 0.8) !important;
-  border-bottom: 1px solid var(--tactical-border, rgba(0, 229, 255, 0.15));
+.metronome-section,
+.metronome-section.visible {
+  /* Override base: reposition as a fixed wheel in top-right */
+  position: fixed !important;
+  top: calc(var(--projection-margin-top) + var(--banner-bar-height) + 12px) !important;
+  right: calc(var(--projection-margin-right) + 16px) !important;
+  left: auto !important;
+  width: 100px !important;
+  height: 100px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  z-index: calc(var(--z-panel) + 2);
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
-.step-box {
-  background: rgba(0, 229, 255, 0.04);
+/* Wheel ring border */
+.metronome-section::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90px;
+  height: 90px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.05), inset 0 0 15px rgba(0, 229, 255, 0.03);
+}
+
+/* Inner ring */
+.metronome-section::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  transform: translate(-50%, -50%);
   border: 1px solid rgba(0, 229, 255, 0.1);
-  border-radius: 1px;
+  border-radius: 50%;
+}
+
+/* Arrange step sequencer as circular container */
+.metronome-section .step-sequencer {
+  position: relative !important;
+  width: 100px;
+  height: 100px;
+  display: block !important;
+  gap: 0 !important;
+}
+
+/* Base step-box: absolute positioned, rotated into circle */
+.step-box {
+  position: absolute !important;
+  width: 8px !important;
+  height: 8px !important;
+  flex: none !important;
+  border-radius: 50% !important;
+  background: rgba(0, 229, 255, 0.12);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  margin: 0 !important;
+  left: 50%;
+  top: 50%;
   transition: all 0.1s ease;
 }
 
+/* Downbeat steps — slightly larger */
 .step-box:nth-child(4n+1) {
-  background: rgba(0, 229, 255, 0.07);
-  border-color: rgba(0, 229, 255, 0.15);
+  width: 10px !important;
+  height: 10px !important;
+  background: rgba(0, 229, 255, 0.2);
+  border-color: rgba(0, 229, 255, 0.35);
 }
 
+/* Position each step around the circle (radius ~40px) */
+.step-box[data-step="0"]  { transform: translate(-50%, -50%) rotate(0deg)    translateY(-40px); }
+.step-box[data-step="1"]  { transform: translate(-50%, -50%) rotate(22.5deg) translateY(-40px); }
+.step-box[data-step="2"]  { transform: translate(-50%, -50%) rotate(45deg)   translateY(-40px); }
+.step-box[data-step="3"]  { transform: translate(-50%, -50%) rotate(67.5deg) translateY(-40px); }
+.step-box[data-step="4"]  { transform: translate(-50%, -50%) rotate(90deg)   translateY(-40px); }
+.step-box[data-step="5"]  { transform: translate(-50%, -50%) rotate(112.5deg) translateY(-40px); }
+.step-box[data-step="6"]  { transform: translate(-50%, -50%) rotate(135deg)  translateY(-40px); }
+.step-box[data-step="7"]  { transform: translate(-50%, -50%) rotate(157.5deg) translateY(-40px); }
+.step-box[data-step="8"]  { transform: translate(-50%, -50%) rotate(180deg)  translateY(-40px); }
+.step-box[data-step="9"]  { transform: translate(-50%, -50%) rotate(202.5deg) translateY(-40px); }
+.step-box[data-step="10"] { transform: translate(-50%, -50%) rotate(225deg)  translateY(-40px); }
+.step-box[data-step="11"] { transform: translate(-50%, -50%) rotate(247.5deg) translateY(-40px); }
+.step-box[data-step="12"] { transform: translate(-50%, -50%) rotate(270deg)  translateY(-40px); }
+.step-box[data-step="13"] { transform: translate(-50%, -50%) rotate(292.5deg) translateY(-40px); }
+.step-box[data-step="14"] { transform: translate(-50%, -50%) rotate(315deg)  translateY(-40px); }
+.step-box[data-step="15"] { transform: translate(-50%, -50%) rotate(337.5deg) translateY(-40px); }
+
+/* Active step — bright cyan glow */
 .step-box.active {
   background: var(--primary-color, #00e5ff) !important;
   border-color: var(--primary-color, #00e5ff) !important;
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.6), 0 0 20px rgba(0, 229, 255, 0.2);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.7), 0 0 16px rgba(0, 229, 255, 0.3);
+  width: 10px !important;
+  height: 10px !important;
+}
+
+/* Beat step (downbeat hit) — brief flash */
+.step-box.beat {
+  background: #fff !important;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+  transform-origin: center center;
 }
 
 /* --- Panels --- */
