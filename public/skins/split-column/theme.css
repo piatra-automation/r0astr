@@ -1,0 +1,275 @@
+/* Split Column Layout Skin
+ * Two-column layout: headers + controls on left, editors on right.
+ * Inherits base.css styling; only defines layout-specific rules.
+ */
+
+/* === Layout wrapper === */
+.layout-wrapper {
+  position: absolute;
+  inset: 0;
+  top: var(--menu-bar-height, 48px);
+  display: flex;
+  overflow: hidden;
+}
+
+.layout-split-column {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 2px;
+}
+
+/* === Regions === */
+.layout-region {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 8px;
+  gap: 4px;
+}
+
+.layout-region-left {
+  width: 35%;
+  min-width: 280px;
+  max-width: 500px;
+  border-right: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.layout-region-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.region-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.4));
+  padding: 4px 8px 8px;
+  user-select: none;
+}
+
+/* === Layout parts === */
+.layout-part {
+  transition: opacity 0.15s ease;
+}
+
+.layout-part.layout-collapsed {
+  display: none;
+}
+
+/* --- Header part (left column) --- */
+.layout-part-header {
+  /* Mirrors the summary row style from the default skin */
+}
+
+.layout-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--panel-bg, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  cursor: pointer;
+  min-height: 36px;
+}
+
+.layout-panel-header:hover {
+  background: var(--panel-hover-bg, rgba(255, 255, 255, 0.08));
+}
+
+.layout-panel-header .panel-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary, #e0e0e0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.layout-panel-header .panel-number-badge {
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: var(--badge-bg, rgba(255, 255, 255, 0.1));
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+}
+
+.layout-panel-header .panel-actions-left,
+.layout-panel-header .panel-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.layout-panel-header button {
+  background: none;
+  border: none;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.5));
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.layout-panel-header button:hover {
+  color: var(--text-primary, #fff);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.layout-panel-header button .material-icons {
+  font-size: 18px;
+}
+
+/* Playing state */
+.layout-part-header[data-panel-id] .layout-panel-header {
+  /* Default state — no special indicator */
+}
+
+/* Use parent data attributes for state styling */
+.layout-part-header .btn-playback.playing .material-icons {
+  color: var(--primary-color, #51cf66);
+}
+
+.layout-part-header .btn-playback.stale .material-icons {
+  color: var(--warning-color, #ffd43b);
+}
+
+/* --- Controls part (left column, below header) --- */
+.layout-part-controls {
+  padding-left: 30px; /* Indent under header badge */
+}
+
+.layout-part-controls .panel-controls-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.layout-part-controls .leaf-slider {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 11px;
+}
+
+.layout-part-controls .leaf-slider label {
+  min-width: 50px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.5));
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+.layout-part-controls .leaf-slider input[type="range"] {
+  flex: 1;
+  height: 3px;
+}
+
+.layout-part-controls .leaf-slider .slider-value {
+  min-width: 40px;
+  text-align: right;
+  font-size: 10px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.4));
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Editor part (right column) --- */
+.layout-part-editor {
+  flex: 1;
+  min-height: 120px;
+}
+
+.layout-part-editor .panel-editor-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  background: var(--panel-bg, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  overflow: hidden;
+}
+
+.layout-part-editor .layout-editor-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  font-size: 11px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.4));
+  user-select: none;
+}
+
+.layout-part-editor .layout-editor-header .panel-number-badge {
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.5;
+}
+
+.layout-part-editor .layout-editor-header .panel-title-ref {
+  opacity: 0.5;
+}
+
+.layout-part-editor .code-editor-wrapper {
+  flex: 1;
+  overflow: auto;
+}
+
+.layout-part-editor .code-editor {
+  height: 100%;
+}
+
+.layout-part-editor .error-message {
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--error-color, #ff6b6b);
+  background: rgba(255, 0, 0, 0.05);
+  border-top: 1px solid rgba(255, 0, 0, 0.1);
+}
+
+/* === Viz container === */
+.layout-part-controls .leaf-viz {
+  margin: 4px 0;
+}
+
+.layout-part-controls .viz-container {
+  min-height: 40px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* === Scrollbar styling === */
+.layout-region::-webkit-scrollbar {
+  width: 4px;
+}
+
+.layout-region::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+.layout-region::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* === Drag reorder indicators === */
+.layout-part-header.dragging {
+  opacity: 0.4;
+}
+
+.layout-part-header.drag-over-above {
+  border-top: 2px solid var(--primary-color, #51cf66);
+}
+
+.layout-part-header.drag-over-below {
+  border-bottom: 2px solid var(--primary-color, #51cf66);
+}

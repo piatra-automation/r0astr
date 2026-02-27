@@ -1,0 +1,30 @@
+{
+  "name": "Split Column",
+  "version": "1.0.0",
+  "author": "r0astr",
+  "description": "Two-column layout: headers and controls on the left, editors on the right",
+  "layoutType": "tree",
+  "cssVariables": {},
+  "css": {},
+  "layout": {
+    "regions": {
+      "left":  { "selector": "#region-left" },
+      "right": { "selector": "#region-right" }
+    },
+    "panelParts": {
+      "header":   { "region": "left" },
+      "editor":   { "region": "right" },
+      "controls": { "region": "left" }
+    }
+  },
+  "templates": {
+    "panel": "panel.html",
+    "panel-header": "panel-header.html",
+    "panel-editor": "panel-editor.html",
+    "panel-controls": "panel-controls.html",
+    "page": "page-layout.html",
+    "slider": "slider.html",
+    "sliderCollapsed": "slider-collapsed.html"
+  },
+  "hoverTargets": []
+}

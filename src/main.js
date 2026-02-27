@@ -3,7 +3,9 @@ import { getAudioContext, webaudioOutput, initAudioOnFirstClick, registerSynthSo
 import { transpiler } from '@strudel/transpiler';
 import { sliderWithID, sliderValues as cmSliderValues, highlightExtension, updateMiniLocations, highlightMiniLocations } from '@strudel/codemirror';
 import { createPanel, renderPanel, deletePanel, duplicatePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, expandPanel, collapsePanel, togglePanel, isPanelExpanded, reRenderAllPanels, MASTER_PANEL_ID } from './managers/panelManager.js';
-import { initializePanelReorder } from './ui/panelReorder.js';
+import { initializePanelReorder, initializeLayoutReorder } from './ui/panelReorder.js';
+import { registerPanelParts, getPart, resolvePanelId } from './managers/panelDOMRegistry.js';
+import { applyLayout, teardownLayout, isLayoutMode, getRegion } from './managers/layoutManager.js';
 import { loadSettings, getSettings, updateSetting } from './managers/settingsManager.js';
 import { skinManager } from './managers/skinManager.js';
 import { moveEditorToScreen, removeEditorFromScreen, removeAllEditorsExcept, isEditorInScreen } from './managers/screenManager.js';
@@ -608,11 +610,7 @@ function renderMasterSliders(widgets) {
 
 // Render master sliders for tree layout
 function renderMasterSlidersTree(widgets) {
-  const masterPanel = document.querySelector(`[data-panel-id="${MASTER_PANEL_ID}"]`) ||
-                      document.getElementById(MASTER_PANEL_ID);
-  if (!masterPanel) return;
-
-  const controlsContainer = masterPanel.querySelector('.panel-controls-container');
+  const controlsContainer = getPart(MASTER_PANEL_ID, 'controls');
   if (!controlsContainer) return;
 
   // Remove existing master slider leaves (keep viz leaf)
@@ -725,11 +723,7 @@ function renderTempoControl() {
 }
 
 function renderTempoControlTree(currentCpm, displayValue, displayUnit, showCpm) {
-  const masterPanel = document.querySelector(`[data-panel-id="${MASTER_PANEL_ID}"]`) ||
-                      document.getElementById(MASTER_PANEL_ID);
-  if (!masterPanel) return;
-
-  const controlsContainer = masterPanel.querySelector('.panel-controls-container');
+  const controlsContainer = getPart(MASTER_PANEL_ID, 'controls');
   if (!controlsContainer) return;
 
   // Check if tempo control already exists
@@ -1215,6 +1209,13 @@ async function initializeCards() {
     masterModeBtn.addEventListener('click', toggleMasterMode);
   }
 
+  // Register master panel parts in DOM registry (master panel is static HTML, not rendered by renderPanel)
+  const masterPanelElement = document.querySelector(`[data-panel-id="${MASTER_PANEL_ID}"]`) ||
+                             document.getElementById(MASTER_PANEL_ID);
+  if (masterPanelElement) {
+    registerPanelParts(MASTER_PANEL_ID, masterPanelElement);
+  }
+
   // Initialize master panel CodeMirror
   // Tree layout uses editor-panel-0, legacy uses master-code
   const masterCodeContainer = document.getElementById('editor-panel-0') ||
@@ -1258,11 +1259,10 @@ async function initializeCards() {
     console.log('[Init] Master panel CodeMirror initialized with', masterCode ? 'restored' : 'default', 'code');
 
     // Apply restored compact state to DOM (tree layout uses details open/closed)
-    const panel = document.querySelector(`[data-panel-id="${MASTER_PANEL_ID}"]`) ||
-                  document.getElementById(MASTER_PANEL_ID);
+    const panel = getPart(MASTER_PANEL_ID, 'root') || masterPanelElement;
     if (panel) {
       // For tree layout, expanded state is controlled by details element
-      const details = panel.querySelector('details');
+      const details = getPart(MASTER_PANEL_ID, 'details') || panel.querySelector('details');
       if (details) {
         // In tree layout, "compact" means collapsed
         if (appState.masterPanelCompact) {
@@ -1327,11 +1327,9 @@ async function initializeCards() {
           bringPanelToFront(panelId);
 
           // Expand details in tree layout
-          if (panelElement) {
-            const details = panelElement.querySelector('details');
-            if (details) {
-              details.open = true;
-            }
+          const details = getPart(panelId, 'details');
+          if (details) {
+            details.open = true;
           }
 
           setTimeout(() => {
@@ -1366,12 +1364,7 @@ async function initializeCards() {
   document.addEventListener('click', (e) => {
     const pauseBtn = e.target.closest('.pause-btn, .btn-stop');
     if (pauseBtn) {
-      // Try legacy data-card, then find from tree parent
-      let panelId = pauseBtn.dataset.card;
-      if (!panelId) {
-        const levelPanel = pauseBtn.closest('.level-panel');
-        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
-      }
+      const panelId = pauseBtn.dataset.card || resolvePanelId(pauseBtn);
       if (panelId) {
         pausePanel(panelId);
       }
@@ -1383,12 +1376,7 @@ async function initializeCards() {
   document.addEventListener('click', (e) => {
     const activateBtn = e.target.closest('.activate-btn, .btn-play');
     if (activateBtn) {
-      // Try legacy data-card, then find from tree parent
-      let panelId = activateBtn.dataset.card;
-      if (!panelId) {
-        const levelPanel = activateBtn.closest('.level-panel');
-        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
-      }
+      const panelId = activateBtn.dataset.card || resolvePanelId(activateBtn);
       if (panelId) {
         activatePanel(panelId);
       }
@@ -1399,11 +1387,7 @@ async function initializeCards() {
   document.addEventListener('click', (e) => {
     const playbackBtn = e.target.closest('.btn-playback');
     if (playbackBtn) {
-      let panelId = playbackBtn.dataset.card;
-      if (!panelId) {
-        const levelPanel = playbackBtn.closest('.level-panel');
-        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
-      }
+      const panelId = playbackBtn.dataset.card || resolvePanelId(playbackBtn);
       if (panelId) {
         const panel = cardStates[panelId];
         if (panel) {
@@ -1425,12 +1409,7 @@ async function initializeCards() {
   document.addEventListener('click', (e) => {
     const deleteBtn = e.target.closest('.btn-delete');
     if (deleteBtn && !deleteBtn.classList.contains('delete-btn')) {
-      // Try legacy data-card/data-panel, then find from tree parent
-      let panelId = deleteBtn.dataset.panel || deleteBtn.dataset.card;
-      if (!panelId) {
-        const levelPanel = deleteBtn.closest('.level-panel');
-        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
-      }
+      const panelId = deleteBtn.dataset.panel || deleteBtn.dataset.card || resolvePanelId(deleteBtn);
       if (panelId && panelId !== MASTER_PANEL_ID) {
         // Clean up panel resources before deletion
         cleanupPanel(panelId);
@@ -1443,12 +1422,7 @@ async function initializeCards() {
   document.addEventListener('click', (e) => {
     const duplicateBtn = e.target.closest('.btn-duplicate');
     if (duplicateBtn) {
-      // Try data-panel, then find from tree parent
-      let panelId = duplicateBtn.dataset.panel;
-      if (!panelId) {
-        const levelPanel = duplicateBtn.closest('.level-panel');
-        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
-      }
+      const panelId = duplicateBtn.dataset.panel || resolvePanelId(duplicateBtn);
       if (panelId && panelId !== MASTER_PANEL_ID) {
         duplicatePanelAndFocus(panelId);
       }
@@ -1462,15 +1436,14 @@ async function initializeCards() {
     if (e.target.tagName !== 'DETAILS') return;
 
     const details = e.target;
-    const levelPanel = details.closest('.level-panel');
-    if (!levelPanel) return;
+    const panelId = resolvePanelId(details);
+    if (!panelId) return;
 
-    const panelId = levelPanel.dataset?.panelId || levelPanel.id;
     const settings = getSettings();
     const panel = cardStates[panelId];
 
     // Update controls container visibility when panel is toggled
-    const controlsContainer = levelPanel.querySelector('.panel-controls-container');
+    const controlsContainer = getPart(panelId, 'controls');
     if (controlsContainer) {
       const showControls = panel?.playing || details.open || settings.showControlsWhenCollapsed;
       controlsContainer.style.display = showControls ? '' : 'none';
@@ -1497,7 +1470,7 @@ async function initializeCards() {
       allPanels.forEach(otherPanel => {
         const otherPanelId = otherPanel.dataset?.panelId || otherPanel.id;
         if (otherPanelId !== panelId) {
-          const otherDetails = otherPanel.querySelector('details');
+          const otherDetails = getPart(otherPanelId, 'details') || otherPanel.querySelector('details');
           if (otherDetails && otherDetails.open) {
             otherDetails.open = false;
             collapsedCount++;
@@ -1515,16 +1488,34 @@ async function initializeCards() {
   document.addEventListener('click', (e) => {
     const titleElement = e.target.closest('.panel-title');
     if (titleElement) {
-      // Try legacy data-panel-id, then find from tree parent
-      let panelId = titleElement.dataset.panelId;
-      if (!panelId) {
-        const levelPanel = titleElement.closest('.level-panel');
-        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
-      }
+      const panelId = titleElement.dataset.panelId || resolvePanelId(titleElement);
       if (!panelId) return;
 
       // Single click always just brings to focus (doesn't enable editing)
       bringPanelToFront(panelId);
+    }
+  });
+
+  // Layout mode: clicking on a panel header toggles collapse and focuses editor
+  document.addEventListener('click', (e) => {
+    if (!isLayoutMode()) return;
+    const header = e.target.closest('.layout-panel-header');
+    if (!header) return;
+    // Don't toggle if clicking on a button inside the header
+    if (e.target.closest('button')) return;
+    const panelId = resolvePanelId(header);
+    if (panelId) {
+      const wasExpanded = isPanelExpanded(panelId);
+      togglePanel(panelId);
+      bringPanelToFront(panelId);
+
+      // If expanding, focus the editor after a short delay
+      if (wasExpanded === false) {
+        const view = editorViews.get(panelId);
+        if (view) {
+          setTimeout(() => view.focus(), 10);
+        }
+      }
     }
   });
 
@@ -1549,12 +1540,7 @@ async function initializeCards() {
   document.addEventListener('blur', (e) => {
     const titleElement = e.target.closest('.panel-title');
     if (titleElement) {
-      // Try legacy data-panel-id, then find from tree parent
-      let panelId = titleElement.dataset.panelId;
-      if (!panelId) {
-        const levelPanel = titleElement.closest('.level-panel');
-        panelId = levelPanel?.dataset?.panelId || levelPanel?.id;
-      }
+      const panelId = titleElement.dataset.panelId || resolvePanelId(titleElement);
       const newTitle = titleElement.textContent.trim();
       const panel = getPanel(panelId);
 
@@ -1916,7 +1902,7 @@ function pausePanel(panelId) {
   }
 
   // Clear visualization canvases
-  const container = document.getElementById(`viz-container-${panelId}`);
+  const container = getPart(panelId, 'viz') || document.getElementById(`viz-container-${panelId}`);
   console.log('[VIZ PAUSE] Container element:', container);
   if (container) {
     // Clear all canvas elements in the container
@@ -2170,7 +2156,7 @@ async function activatePanel(panelId) {
       // console.log('[VIZ DEBUG] Detected underscore viz methods:', detectedVizMethods, 'hasVisualization:', hasVisualization);
 
       // Get container element
-      const container = document.getElementById(`viz-container-${panelId}`);
+      const container = getPart(panelId, 'viz') || document.getElementById(`viz-container-${panelId}`);
       // console.log('[VIZ DEBUG] Container element found:', container);
 
       if (hasVisualization && container) {
@@ -3016,11 +3002,9 @@ function createNewPanelAndFocus() {
       bringPanelToFront(panelId);
 
       // Expand details in tree layout
-      if (panelElement) {
-        const details = panelElement.querySelector('details');
-        if (details) {
-          details.open = true;
-        }
+      const details = getPart(panelId, 'details');
+      if (details) {
+        details.open = true;
       }
 
       setTimeout(() => {
@@ -3098,11 +3082,9 @@ function duplicatePanelAndFocus(sourcePanelId) {
       bringPanelToFront(newPanelId);
 
       // Expand details in tree layout
-      if (panelElement) {
-        const details = panelElement.querySelector('details');
-        if (details) {
-          details.open = true;
-        }
+      const dupDetails = getPart(newPanelId, 'details');
+      if (dupDetails) {
+        dupDetails.open = true;
       }
 
       setTimeout(() => {
@@ -3374,17 +3356,19 @@ function initializeKeyboardShortcuts() {
           const panel = cardStates[focusedPanelP];
           if (panel) {
             // Try contextual button first (.btn-playback), then legacy buttons
-            pressedButton = document.querySelector(`[data-panel-id="${focusedPanelP}"] .btn-playback`) ||
+            const panelRoot = getPart(focusedPanelP, 'root');
+            pressedButton = (panelRoot && panelRoot.querySelector('.btn-playback')) ||
+                            document.querySelector(`[data-panel-id="${focusedPanelP}"] .btn-playback`) ||
                             document.querySelector(`#${focusedPanelP} .btn-playback`);
 
             if (!pressedButton) {
               // Fallback to legacy buttons
               if (panel.playing) {
-                pressedButton = document.querySelector(`#${focusedPanelP} .pause-btn`) ||
+                pressedButton = (panelRoot && (panelRoot.querySelector('.pause-btn') || panelRoot.querySelector('.btn-stop'))) ||
                                 document.querySelector(`#${focusedPanelP} .btn-stop`) ||
                                 document.querySelector(`[data-panel-id="${focusedPanelP}"] .btn-stop`);
               } else {
-                pressedButton = document.querySelector(`#${focusedPanelP} .activate-btn`) ||
+                pressedButton = (panelRoot && (panelRoot.querySelector('.activate-btn') || panelRoot.querySelector('.btn-play'))) ||
                                 document.querySelector(`#${focusedPanelP} .btn-play`) ||
                                 document.querySelector(`[data-panel-id="${focusedPanelP}"] .btn-play`);
               }
@@ -3614,6 +3598,28 @@ async function init() {
     }
   }
 
+  // Apply page layout if skin defines one (before rendering panels)
+  const skinLayout = skinManager.getLayout();
+  if (skinLayout) {
+    const pageHTML = skinManager.hasTemplate('page')
+      ? skinManager.render('page', {})
+      : skinManager.getFallbackTemplate('page', {});
+    applyLayout(skinLayout, pageHTML);
+
+    // In layout mode, move master panel (panel-0) into the left/first region
+    // so it's visible even though the panel tree is hidden
+    const masterEl = document.getElementById(MASTER_PANEL_ID);
+    const firstRegionName = Object.keys(skinLayout.regions || {})[0];
+    const firstRegion = firstRegionName ? getRegion(firstRegionName) : null;
+    if (masterEl && firstRegion) {
+      masterEl.style.display = '';
+      firstRegion.insertBefore(masterEl, firstRegion.firstChild);
+      console.log(`[Layout] Master panel moved to region '${firstRegionName}'`);
+    }
+
+    console.log('✓ Layout mode activated');
+  }
+
   // Wire up module dependencies (dependency injection)
   setMasterSlidersRef(() => currentMasterSliders);
   setUpdateAllButtonRef(updateAllButton);
@@ -3656,7 +3662,9 @@ initElectronHandlers({
     const panel = panelArray[panelNumber]; // panelNumber is 1-based from F keys
     if (panel) {
       // Simulate clicking the playback button
-      const btn = document.querySelector(`[data-panel-id="${panel.id}"] .btn-playback`);
+      const root = getPart(panel.id, 'root');
+      const btn = (root && root.querySelector('.btn-playback')) ||
+                  document.querySelector(`[data-panel-id="${panel.id}"] .btn-playback`);
       if (btn) btn.click();
     }
   },
@@ -3666,7 +3674,9 @@ initElectronHandlers({
     const focusedPanel = findFocusedPanel();
     if (focusedPanel && focusedPanel !== MASTER_PANEL_ID) {
       // Trigger click on delete button if exists, or dispatch keyboard event
-      const deleteBtn = document.querySelector(`[data-panel-id="${focusedPanel}"] .btn-delete`);
+      const delRoot = getPart(focusedPanel, 'root');
+      const deleteBtn = (delRoot && delRoot.querySelector('.btn-delete')) ||
+                        document.querySelector(`[data-panel-id="${focusedPanel}"] .btn-delete`);
       if (deleteBtn) {
         deleteBtn.click();
       }
@@ -3675,7 +3685,9 @@ initElectronHandlers({
   onTogglePlayback: () => {
     const focusedPanel = findFocusedPanel();
     if (focusedPanel) {
-      const btn = document.querySelector(`[data-panel-id="${focusedPanel}"] .btn-playback`) ||
+      const pbRoot = getPart(focusedPanel, 'root');
+      const btn = (pbRoot && pbRoot.querySelector('.btn-playback')) ||
+                  document.querySelector(`[data-panel-id="${focusedPanel}"] .btn-playback`) ||
                   document.querySelector(`#${focusedPanel} .btn-playback`);
       if (btn) btn.click();
     }
@@ -3685,9 +3697,13 @@ initElectronHandlers({
   onOpenSettings: openSettingsModal
 });
 
-// Initialize drag-to-reorder for panel tree
+// Initialize drag-to-reorder for panel tree (classic mode)
 if (document.querySelector('.panel-tree')) {
   initializePanelReorder();
+}
+// Initialize drag-to-reorder for layout mode (if active on init)
+if (isLayoutMode()) {
+  initializeLayoutReorder();
 }
 
 // NOTE: updateAllEditorFontSizes is now imported from ./panels/panelEditor.js
@@ -3703,8 +3719,42 @@ if (document.querySelector('.panel-tree')) {
   window.addEventListener('skin-changed', async (event) => {
     console.log('[SkinHotReload] Re-rendering panels with new skin...');
 
+    // Apply or teardown page layout based on skin config
+    const layout = skinManager.getLayout();
+    if (layout) {
+      // Skin has layout mode — render page template and apply regions
+      const pageHTML = skinManager.hasTemplate('page')
+        ? skinManager.render('page', {})
+        : skinManager.getFallbackTemplate('page', {});
+      applyLayout(layout, pageHTML);
+
+      // Move master panel into first region
+      const masterEl = document.getElementById(MASTER_PANEL_ID);
+      const firstRegionName = Object.keys(layout.regions || {})[0];
+      const firstRegion = firstRegionName ? getRegion(firstRegionName) : null;
+      if (masterEl && firstRegion) {
+        masterEl.style.display = '';
+        firstRegion.insertBefore(masterEl, firstRegion.firstChild);
+      }
+
+      console.log('[SkinHotReload] Layout mode activated');
+    } else {
+      // Switching back to classic: move master panel back to panel-tree if needed
+      const masterEl = document.getElementById(MASTER_PANEL_ID);
+      const panelTree = document.getElementById('panel-tree');
+      if (masterEl && panelTree && !panelTree.contains(masterEl)) {
+        panelTree.insertBefore(masterEl, panelTree.firstChild);
+      }
+      teardownLayout();
+    }
+
     // Re-render all panels with new templates (preserves internal state, including master)
     await reRenderAllPanels(createEditorView, editorViews, smRenderSliders, getPanelSliders, handleEditorChange, handleMasterChange);
+
+    // Initialize drag reorder for the active mode
+    if (isLayoutMode()) {
+      initializeLayoutReorder();
+    }
 
     console.log('✓ All panels re-rendered with new skin');
   });

@@ -12,6 +12,7 @@ import { highlightMiniLocations } from '@strudel/codemirror';
 import { evaluate as coreEvaluate } from '@strudel/core';
 import { cardStates, editorViews, strudelCore } from '../state.js';
 import { updatePanel } from '../managers/panelManager.js';
+import { getPart } from '../managers/panelDOMRegistry.js';
 
 /**
  * Story 7.3: Validation timers (debounced)
@@ -138,7 +139,7 @@ export async function validateCode(panelId) {
  * @param {number|string} lineNumber - Line number
  */
 export function displayError(panelId, errorMessage, lineNumber) {
-  const errorContainer = document.querySelector(`.error-message[data-card="${panelId}"]`);
+  const errorContainer = getPart(panelId, 'error') || document.querySelector(`.error-message[data-card="${panelId}"]`);
   if (!errorContainer) return;
 
   const formattedError = `Error: ${errorMessage} (line ${lineNumber})`;
@@ -151,7 +152,7 @@ export function displayError(panelId, errorMessage, lineNumber) {
  * @param {string} panelId - Panel ID
  */
 export function clearErrorMessage(panelId) {
-  const errorContainer = document.querySelector(`.error-message[data-card="${panelId}"]`);
+  const errorContainer = getPart(panelId, 'error') || document.querySelector(`.error-message[data-card="${panelId}"]`);
   if (!errorContainer) return;
 
   errorContainer.textContent = '';

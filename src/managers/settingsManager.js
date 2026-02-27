@@ -61,6 +61,7 @@ export const DEFAULT_SETTINGS = {
   },
   snippetLocation: '',            // URL/path to snippet JSON
   remoteWSLayout: 'side-panel',   // 'side-panel', 'modal', 'hidden'
+  skin: 'default',                // Active skin name (e.g., 'default', 'glass', 'split-column')
   skinPack: '',                   // Path to WinAmp-style skin folder (future)
   beatLocking: 'immediate'        // Pattern evaluation timing: 'immediate', 'beat', 'cycle'
 };
@@ -193,6 +194,7 @@ function validateSettings(settings) {
 
   // Validate string fields
   valid.snippetLocation = String(valid.snippetLocation || '');
+  valid.skin = String(valid.skin || 'default');
   valid.skinPack = String(valid.skinPack || '');
 
   return valid;

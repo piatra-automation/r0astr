@@ -4,6 +4,8 @@
  * Story 4.5: Appearance Settings Controls
  */
 
+import { getPart, getRegisteredPanelIds } from './panelDOMRegistry.js';
+
 /**
  * Apply color scheme by setting body class
  * @param {string} scheme - 'dark' or 'light'
@@ -84,13 +86,14 @@ export function updatePanelOpacities() {
   const panels = document.querySelectorAll('.level-panel');
 
   panels.forEach(panel => {
+    const panelId = panel.dataset?.panelId || panel.id;
     const isFocused = panel.classList.contains('focused') || panel.classList.contains('active');
     const targetOpacity = isFocused ? activePanelOpacity : backgroundPanelOpacity;
     panel.style.opacity = targetOpacity;
 
     // Collapse/expand via details element (tree layout only)
     if (collapseOnBlur) {
-      const details = panel.querySelector('details');
+      const details = getPart(panelId, 'details') || panel.querySelector('details');
       if (details) {
         // Collapse unfocused panels, expand focused ones
         details.open = isFocused;
@@ -99,7 +102,7 @@ export function updatePanelOpacities() {
   });
 
   // Master panel - ALWAYS use active opacity
-  const masterPanel = document.getElementById('panel-0');
+  const masterPanel = getPart('panel-0', 'root') || document.getElementById('panel-0');
   if (masterPanel) {
     masterPanel.style.opacity = activePanelOpacity;
   }

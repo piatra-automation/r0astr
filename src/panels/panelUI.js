@@ -10,6 +10,7 @@
 import { cardStates } from '../state.js';
 import { getSettings } from '../managers/settingsManager.js';
 import { MASTER_PANEL_ID } from '../managers/panelManager.js';
+import { getPart } from '../managers/panelDOMRegistry.js';
 
 // Getter function for currentMasterSliders - set by main.js
 // Uses getter pattern because main.js reassigns the array
@@ -33,7 +34,9 @@ export function setMasterSlidersRef(getter) {
 export async function updateActivateButton(panelId) {
   const panel = cardStates[panelId];
   // Support both legacy (.activate-btn) and tree (.btn-play) layouts
-  const button = document.querySelector(`#${panelId} .activate-btn`) ||
+  const root = getPart(panelId, 'root');
+  const button = (root && (root.querySelector('.activate-btn') || root.querySelector('.btn-play'))) ||
+    document.querySelector(`#${panelId} .activate-btn`) ||
     document.querySelector(`.activate-btn[data-card="${panelId}"]`) ||
     document.querySelector(`[data-panel-id="${panelId}"] .btn-play`) ||
     document.querySelector(`#${panelId} .btn-play`);
@@ -77,7 +80,9 @@ export async function updateActivateButton(panelId) {
 export function updatePauseButton(panelId) {
   const panel = cardStates[panelId];
   // Support both legacy (.pause-btn) and tree (.btn-stop) layouts
-  const button = document.querySelector(`#${panelId} .pause-btn`) ||
+  const root = getPart(panelId, 'root');
+  const button = (root && (root.querySelector('.pause-btn') || root.querySelector('.btn-stop'))) ||
+    document.querySelector(`#${panelId} .pause-btn`) ||
     document.querySelector(`.pause-btn[data-card="${panelId}"]`) ||
     document.querySelector(`[data-panel-id="${panelId}"] .btn-stop`) ||
     document.querySelector(`#${panelId} .btn-stop`);
@@ -96,7 +101,9 @@ export function updatePauseButton(panelId) {
  */
 export function updatePlaybackButton(panelId) {
   const panel = cardStates[panelId];
-  const button = document.querySelector(`[data-panel-id="${panelId}"] .btn-playback`) ||
+  const root = getPart(panelId, 'root');
+  const button = (root && root.querySelector('.btn-playback')) ||
+    document.querySelector(`[data-panel-id="${panelId}"] .btn-playback`) ||
     document.querySelector(`#${panelId} .btn-playback`);
 
   if (!panel || !button) return;
@@ -149,15 +156,11 @@ export function updatePanelButtons(panelId) {
  * Tempo control should ALWAYS show if enabled in settings
  */
 export function updateMasterControlsVisibility() {
-  const masterPanel = document.querySelector(`[data-panel-id="${MASTER_PANEL_ID}"]`) ||
-                      document.getElementById(MASTER_PANEL_ID);
-  if (!masterPanel) return;
-
-  const controlsContainer = masterPanel.querySelector('.panel-controls-container');
+  const controlsContainer = getPart(MASTER_PANEL_ID, 'controls');
   if (!controlsContainer) return;
 
   const settings = getSettings();
-  const details = masterPanel.querySelector('details');
+  const details = getPart(MASTER_PANEL_ID, 'details');
   const isExpanded = details?.open;
 
   // Check if ANY panel is playing
@@ -192,7 +195,8 @@ export function updateMasterControlsVisibility() {
 export function updateVisualIndicators(panelId) {
   const panel = cardStates[panelId];
   // Support both legacy (#panelId) and tree ([data-panel-id]) layouts
-  const panelElement = document.getElementById(panelId) ||
+  const panelElement = getPart(panelId, 'root') ||
+    document.getElementById(panelId) ||
     document.querySelector(`[data-panel-id="${panelId}"]`);
 
   if (!panel || !panelElement) return;
@@ -220,8 +224,8 @@ export function updateVisualIndicators(panelId) {
 
     // Manage controls container visibility based on settings
     const settings = getSettings();
-    const controlsContainer = panelElement.querySelector('.panel-controls-container');
-    const details = panelElement.querySelector('details');
+    const controlsContainer = getPart(panelId, 'controls') || panelElement.querySelector('.panel-controls-container');
+    const details = getPart(panelId, 'details') || panelElement.querySelector('details');
 
     if (controlsContainer) {
       // Controls visible when:

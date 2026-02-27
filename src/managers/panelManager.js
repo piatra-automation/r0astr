@@ -7,6 +7,8 @@ import { getSettings } from './settingsManager.js';
 import { updatePanelOpacities } from './themeManager.js';
 import { eventBus } from '../utils/eventBus.js';
 import { skinManager } from './skinManager.js';
+import { registerPanelParts, registerPart, unregisterPanel as unregisterPanelDOM, unregisterAll as unregisterAllDOM, getPart } from './panelDOMRegistry.js';
+import { isLayoutMode, getRegionForPart, createPartContainer, placePartInRegion, removePanelFromRegions, clearAllRegions, setLayoutCollapsed, isLayoutCollapsed } from './layoutManager.js';
 
 // Master panel identifier constant (now panel-0 in tree structure)
 export const MASTER_PANEL_ID = 'panel-0';
@@ -162,6 +164,14 @@ export function setPanelPlaying(panelId, playing) {
  * Tree structure: panel-0 is master, panels 1+ are instruments
  */
 export function renumberPanels() {
+  if (isLayoutMode()) {
+    renumberPanelsLayout();
+  } else {
+    renumberPanelsClassic();
+  }
+}
+
+function renumberPanelsClassic() {
   // Get all panel elements in DOM order (tree structure)
   const panelTree = document.querySelector('.panel-tree');
   if (!panelTree) return;
@@ -189,8 +199,38 @@ export function renumberPanels() {
   });
 
   console.log(`Renumbered ${panelElements.length} panels in tree`);
+  savePanelStateNow();
+}
 
-  // Save state to persist new order
+function renumberPanelsLayout() {
+  // In layout mode, derive order from the header region DOM order
+  const headerRegion = getRegionForPart('header');
+  if (!headerRegion) return;
+
+  const headerParts = Array.from(headerRegion.querySelectorAll('.layout-part-header'));
+
+  headerParts.forEach((part, index) => {
+    const panelId = part.dataset.panelId;
+    const panel = panels.get(panelId);
+
+    // Update badge in header part
+    const badge = part.querySelector('.panel-number-badge');
+    if (badge) {
+      badge.textContent = index;
+    }
+
+    // Update panel state
+    if (panel) {
+      panel.number = index;
+    }
+
+    // Also update badges in other regions (editor has a mini header)
+    document.querySelectorAll(`[data-panel-id="${panelId}"] .panel-number-badge`).forEach(b => {
+      b.textContent = index;
+    });
+  });
+
+  console.log(`Renumbered ${headerParts.length} panels in layout mode`);
   savePanelStateNow();
 }
 
@@ -237,7 +277,9 @@ export function updatePanelTitle(panelId, newTitle) {
   panel.title = sanitizedTitle;
 
   // Update DOM element
-  const titleElement = document.querySelector(`.panel-title[data-panel-id="${panelId}"]`);
+  const header = getPart(panelId, 'header');
+  const titleElement = (header && header.querySelector('.panel-title')) ||
+                       document.querySelector(`.panel-title[data-panel-id="${panelId}"]`);
   if (titleElement) {
     titleElement.textContent = sanitizedTitle;
   }
@@ -398,6 +440,14 @@ export function deletePanel(panelId, scheduler = null, cardStates = null, skipCo
 
   // Remove DOM element (only in browser environment)
   if (typeof document !== 'undefined') {
+    // Unregister panel parts from DOM registry
+    unregisterPanelDOM(panelId);
+
+    // Layout mode: remove parts from all regions
+    if (isLayoutMode()) {
+      removePanelFromRegions(panelId);
+    }
+
     // Try tree structure first (.level-panel), then legacy (.card)
     const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`) ||
                          document.getElementById(panelId);
@@ -446,6 +496,19 @@ export function renderPanel(panelId, options = {}) {
     throw new Error(`Panel ${panelId} not found`);
   }
 
+  // Layout mode: render parts into separate regions
+  if (isLayoutMode()) {
+    return renderPanelLayout(panelId, panel, options);
+  }
+
+  // Classic mode: render monolithic panel
+  return renderPanelClassic(panelId, panel, options);
+}
+
+/**
+ * Classic (monolithic) panel render — existing behavior
+ */
+function renderPanelClassic(panelId, panel, options) {
   // Create tree node (li.level-panel)
   const panelElement = document.createElement('li');
   panelElement.className = 'level-panel';
@@ -480,7 +543,98 @@ export function renderPanel(panelId, options = {}) {
     }
   }
 
+  // Register panel parts in DOM registry
+  registerPanelParts(panelId, panelElement);
+
   return panelElement;
+}
+
+/**
+ * Layout mode panel render — parts placed into separate page regions.
+ * Creates a virtual root element (not inserted into panel-tree)
+ * and renders each part template into its designated region.
+ */
+function renderPanelLayout(panelId, panel, options) {
+  const deleteButtonStyle = panelId === MASTER_PANEL_ID ? 'display: none;' : '';
+  const duplicateButtonStyle = panelId === MASTER_PANEL_ID ? 'display: none;' : '';
+
+  const templateData = {
+    panelId,
+    panelNumber: panel.number,
+    title: panel.title,
+    expanded: options.expanded ? ' open' : '',
+    deleteButtonStyle,
+    duplicateButtonStyle
+  };
+
+  // Create a virtual root for registry (not in the panel-tree DOM)
+  const panelElement = document.createElement('div');
+  panelElement.className = 'level-panel layout-panel-root';
+  panelElement.id = panelId;
+  panelElement.dataset.panelId = panelId;
+  panelElement.dataset.panelNumber = panel.number;
+  panelElement.style.display = 'none'; // Virtual — not visible itself
+
+  // Insert virtual root into body for registry containment checks
+  document.body.appendChild(panelElement);
+
+  // Register root
+  registerPart(panelId, 'root', panelElement);
+
+  // Render each part template and place into regions
+  const partNames = ['header', 'editor', 'controls'];
+
+  for (const partName of partNames) {
+    const templateKey = `panel-${partName}`;
+    const html = skinManager.hasTemplate(templateKey)
+      ? skinManager.render(templateKey, templateData)
+      : skinManager.getFallbackTemplate(templateKey, templateData);
+
+    const partContainer = createPartContainer(panelId, partName, html);
+
+    // Place into region — fall back to appending to virtual root if no region
+    if (!placePartInRegion(panelId, partName, partContainer)) {
+      panelElement.appendChild(partContainer);
+    }
+
+    // Register the actual content element (first child or the container itself)
+    const partRoot = resolvePartElement(partContainer, partName);
+    if (partRoot) {
+      registerPart(panelId, partName, partRoot);
+    }
+  }
+
+  // Register specific sub-parts that consumers look up directly
+  const editorEl = document.getElementById(`editor-${panelId}`);
+  if (editorEl) registerPart(panelId, 'editor', editorEl);
+
+  const vizEl = document.getElementById(`viz-container-${panelId}`);
+  if (vizEl) registerPart(panelId, 'viz', vizEl);
+
+  const errorEl = document.querySelector(`.error-message[data-card="${panelId}"]`);
+  if (errorEl) registerPart(panelId, 'error', errorEl);
+
+  const controlsEl = document.querySelector(`.layout-part-controls[data-panel-id="${panelId}"] .panel-controls-container`);
+  if (controlsEl) registerPart(panelId, 'controls', controlsEl);
+
+  console.log(`[PanelManager] Layout-mode panel rendered: ${panelId}`);
+  return panelElement;
+}
+
+/**
+ * Resolve the meaningful element within a part container
+ */
+function resolvePartElement(partContainer, partName) {
+  switch (partName) {
+    case 'header':
+      return partContainer.querySelector('summary') || partContainer;
+    case 'editor':
+      return partContainer.querySelector('.panel-editor-container') || partContainer;
+    case 'controls':
+      return partContainer.querySelector('.panel-controls-container') || partContainer;
+    default:
+      return partContainer;
+  }
 }
 
 /**
@@ -496,10 +650,23 @@ export function renderPanel(panelId, options = {}) {
 export async function reRenderAllPanels(createEditorView, editorViews, renderSliders = null, getPanelSliders = null, onChange = null, onMasterChange = null) {
   console.log(`[PanelManager] Re-rendering ${panels.size} panels with new skin...`);
 
+  // Unregister all panel parts from DOM registry before rebuild
+  unregisterAllDOM();
+
+  // Clear layout regions if in layout mode
+  if (isLayoutMode()) {
+    clearAllRegions();
+  }
+
   // Clear DOM except master panel (keep internal state)
   const panelTree = document.querySelector('.panel-tree');
-  const existingPanels = panelTree.querySelectorAll('.level-panel:not([data-panel-id="panel-0"])');
-  existingPanels.forEach(panel => panel.remove());
+  if (panelTree) {
+    const existingPanels = panelTree.querySelectorAll('.level-panel:not([data-panel-id="panel-0"])');
+    existingPanels.forEach(panel => panel.remove());
+  }
+
+  // Also remove any virtual layout-panel-root elements
+  document.querySelectorAll('.layout-panel-root').forEach(el => el.remove());
 
   // Get master panel code before destroying editor views
   const masterView = editorViews.get(MASTER_PANEL_ID);
@@ -746,7 +913,8 @@ export function animatePanelPosition(panelId, collapse) {
 export function setActivePanel(panelId) {
   // Remove active and focused classes from previous panel
   if (activePanelId) {
-    const prevElement = document.querySelector(`[data-panel-id="${activePanelId}"]`) ||
+    const prevElement = getPart(activePanelId, 'root') ||
+                        document.querySelector(`[data-panel-id="${activePanelId}"]`) ||
                         document.getElementById(activePanelId);
     if (prevElement) {
       prevElement.classList.remove('active', 'focused');
@@ -754,7 +922,8 @@ export function setActivePanel(panelId) {
   }
 
   // Add active and focused classes to new panel
-  const newElement = document.querySelector(`[data-panel-id="${panelId}"]`) ||
+  const newElement = getPart(panelId, 'root') ||
+                     document.querySelector(`[data-panel-id="${panelId}"]`) ||
                      document.getElementById(panelId);
   if (newElement) {
     newElement.classList.add('active', 'focused');
@@ -771,11 +940,11 @@ export function setActivePanel(panelId) {
  * @param {string} panelId - Panel ID to expand
  */
 export function expandPanel(panelId) {
-  const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`);
-  if (!panelElement) return;
-
-  const details = panelElement.querySelector('details');
-  if (details) {
+  if (isLayoutMode()) {
+    setLayoutCollapsed(panelId, false);
+  } else {
+    const details = getPart(panelId, 'details');
+    if (!details) return;
     details.open = true;
   }
 
@@ -791,11 +960,11 @@ export function expandPanel(panelId) {
  * @param {string} panelId - Panel ID to collapse
  */
 export function collapsePanel(panelId) {
-  const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`);
-  if (!panelElement) return;
-
-  const details = panelElement.querySelector('details');
-  if (details) {
+  if (isLayoutMode()) {
+    setLayoutCollapsed(panelId, true);
+  } else {
+    const details = getPart(panelId, 'details');
+    if (!details) return;
     details.open = false;
   }
 
@@ -812,10 +981,15 @@ export function collapsePanel(panelId) {
  * @returns {boolean} New expanded state
  */
 export function togglePanel(panelId) {
-  const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`);
-  if (!panelElement) return false;
+  if (isLayoutMode()) {
+    const collapsed = isLayoutCollapsed(panelId);
+    setLayoutCollapsed(panelId, !collapsed);
+    const panel = panels.get(panelId);
+    if (panel) panel.expanded = collapsed; // was collapsed, now expanded
+    return collapsed;
+  }
 
-  const details = panelElement.querySelector('details');
+  const details = getPart(panelId, 'details');
   if (!details) return false;
 
   details.open = !details.open;
@@ -835,10 +1009,10 @@ export function togglePanel(panelId) {
  * @returns {boolean} True if expanded
  */
 export function isPanelExpanded(panelId) {
-  const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`);
-  if (!panelElement) return false;
-
-  const details = panelElement.querySelector('details');
+  if (isLayoutMode()) {
+    return !isLayoutCollapsed(panelId);
+  }
+  const details = getPart(panelId, 'details');
   return details?.open || false;
 }
 
@@ -1038,7 +1212,11 @@ export function startAutoSaveTimer(interval) {
  * @returns {HTMLElement|null} Editor container element
  */
 export function getPanelEditorContainer(panelId) {
-  // Try tree structure first (id="editor-{panelId}")
+  // Try DOM registry first
+  const registered = getPart(panelId, 'editor');
+  if (registered) return registered;
+
+  // Fallback: Try tree structure (id="editor-{panelId}")
   const treeEditor = document.getElementById(`editor-${panelId}`);
   if (treeEditor) return treeEditor;
 

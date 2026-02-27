@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.15.0] - 2026-02-27
+
+### Added
+- **Layout Template System** — skins can now define page-level layouts that distribute panel parts (header, editor, controls) across separate DOM regions instead of a single monolithic element
+- **Panel DOM Registry** — Map-based lookup (`panelDOMRegistry.js`) decouples panel part resolution from DOM tree position, replacing ~20 `querySelector`/`closest` traversal patterns across 7 files
+- **Layout Manager** — `layoutManager.js` manages page regions, part placement, and layout-mode collapse (CSS classes instead of native `<details>`)
+- **Split-column skin** — proof-of-concept two-column layout with headers + controls on left, editors on right
+- **Part-level templates** — `panel-header.html`, `panel-editor.html`, `panel-controls.html` allow skins to customize individual panel parts
+- **Layout-mode drag reorder** — drag panel headers within the header region; editor and controls regions reorder to match
+- **Skin setting persistence** — `skin` field added to `DEFAULT_SETTINGS` schema with proper validation
+
+### Changed
+- `renumberPanels()` now branches for classic vs layout mode (reads order from header region in layout mode)
+- `findFocusedPanel()` checks `[data-panel-id]` ancestors for layout-mode focus detection
+- Layout-mode header click handler now focuses the editor after expanding
+
 ## [0.14.3] - 2026-02-27
 
 ### Added

@@ -6,6 +6,8 @@
 
 import { renumberPanels, MASTER_PANEL_ID } from '../managers/panelManager.js';
 import { eventBus } from '../utils/eventBus.js';
+import { resolvePanelId } from '../managers/panelDOMRegistry.js';
+import { isLayoutMode, getRegionForPart } from '../managers/layoutManager.js';
 
 // Track drag state
 let draggedPanelId = null;
@@ -33,9 +35,36 @@ export function initializePanelReorder() {
 }
 
 /**
+ * Initialize drag-to-reorder for layout mode header region.
+ * Call after layout is applied and panels rendered.
+ */
+export function initializeLayoutReorder() {
+  const headerRegion = getRegionForPart('header');
+  if (!headerRegion) {
+    console.warn('[Reorder] No header region found for layout reorder');
+    return;
+  }
+
+  // Remove previous listeners if re-initializing
+  headerRegion.removeEventListener('dragstart', handleLayoutDragStart);
+  headerRegion.removeEventListener('dragend', handleDragEnd);
+  headerRegion.removeEventListener('dragover', handleLayoutDragOver);
+  headerRegion.removeEventListener('dragleave', handleLayoutDragLeave);
+  headerRegion.removeEventListener('drop', handleLayoutDrop);
+
+  headerRegion.addEventListener('dragstart', handleLayoutDragStart);
+  headerRegion.addEventListener('dragend', handleDragEnd);
+  headerRegion.addEventListener('dragover', handleLayoutDragOver);
+  headerRegion.addEventListener('dragleave', handleLayoutDragLeave);
+  headerRegion.addEventListener('drop', handleLayoutDrop);
+
+  console.log('[Reorder] Layout reorder initialized on header region');
+}
+
+/**
  * Initialize drag handlers for a single panel drag handle
  * Call this when a new panel is created
- * @param {HTMLElement} panelElement - The .level-panel element
+ * @param {HTMLElement} panelElement - The .level-panel element or layout part header
  */
 export function initializePanelBadgeDrag(panelElement) {
   // Try new drag handle first, fall back to badge for other skins
@@ -216,6 +245,167 @@ function handleDrop(e) {
   cleanupDragStates();
 }
 
+// ─── Layout mode drag handlers ───
+
+/**
+ * Handle drag start in layout mode (on header parts)
+ */
+function handleLayoutDragStart(e) {
+  const handle = e.target.closest('.panel-drag-handle') ||
+                 e.target.closest('.panel-number-badge');
+  if (!handle) return;
+
+  const headerPart = handle.closest('.layout-part-header');
+  if (!headerPart) return;
+
+  const panelId = headerPart.dataset.panelId;
+  if (panelId === MASTER_PANEL_ID) {
+    e.preventDefault();
+    return;
+  }
+
+  draggedPanelId = panelId;
+  draggedElement = headerPart;
+
+  headerPart.classList.add('dragging');
+  handle.classList.add('dragging');
+
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', panelId);
+  e.dataTransfer.setDragImage(handle, handle.offsetWidth / 2, handle.offsetHeight / 2);
+
+  console.log('[Reorder:Layout] Drag start:', panelId);
+}
+
+/**
+ * Handle drag over in layout mode
+ */
+function handleLayoutDragOver(e) {
+  if (!draggedPanelId) return;
+
+  const targetPart = e.target.closest('.layout-part-header');
+  if (!targetPart || targetPart === draggedElement) return;
+
+  const targetPanelId = targetPart.dataset.panelId;
+  if (targetPanelId === MASTER_PANEL_ID) return;
+
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+
+  const rect = targetPart.getBoundingClientRect();
+  const midY = rect.top + rect.height / 2;
+  const isAbove = e.clientY < midY;
+
+  // Clear previous indicators
+  document.querySelectorAll('.layout-part-header').forEach(p => {
+    p.classList.remove('drag-over-above', 'drag-over-below');
+  });
+
+  targetPart.classList.add(isAbove ? 'drag-over-above' : 'drag-over-below');
+}
+
+/**
+ * Handle drag leave in layout mode
+ */
+function handleLayoutDragLeave(e) {
+  const targetPart = e.target.closest('.layout-part-header');
+  if (targetPart) {
+    const relatedTarget = e.relatedTarget;
+    if (!targetPart.contains(relatedTarget)) {
+      targetPart.classList.remove('drag-over-above', 'drag-over-below');
+    }
+  }
+}
+
+/**
+ * Handle drop in layout mode.
+ * Reorders header parts within the header region, then reorders
+ * corresponding editor/controls parts in their regions to match.
+ */
+function handleLayoutDrop(e) {
+  e.preventDefault();
+
+  if (!draggedPanelId || !draggedElement) {
+    cleanupDragStates();
+    return;
+  }
+
+  const targetPart = e.target.closest('.layout-part-header');
+  if (!targetPart || targetPart === draggedElement) {
+    cleanupDragStates();
+    return;
+  }
+
+  const targetPanelId = targetPart.dataset.panelId;
+  if (targetPanelId === MASTER_PANEL_ID) {
+    cleanupDragStates();
+    return;
+  }
+
+  // Calculate drop position
+  const rect = targetPart.getBoundingClientRect();
+  const midY = rect.top + rect.height / 2;
+  const insertBefore = e.clientY < midY;
+
+  // Reorder header in its region
+  const headerRegion = targetPart.parentElement;
+  if (insertBefore) {
+    headerRegion.insertBefore(draggedElement, targetPart);
+  } else {
+    const nextSibling = targetPart.nextElementSibling;
+    if (nextSibling) {
+      headerRegion.insertBefore(draggedElement, nextSibling);
+    } else {
+      headerRegion.appendChild(draggedElement);
+    }
+  }
+
+  // Now reorder other part regions to match the header order
+  reorderPartRegionsToMatchHeaders(headerRegion);
+
+  console.log('[Reorder:Layout] Dropped', draggedPanelId, insertBefore ? 'before' : 'after', targetPanelId);
+
+  // Renumber panels
+  renumberPanels();
+
+  eventBus.emit('panel:reordered', {
+    panelId: draggedPanelId,
+    newPosition: 0 // will be set by renumber
+  });
+
+  cleanupDragStates();
+}
+
+/**
+ * After reordering headers, reorder editor/controls parts to match.
+ * Reads the panelId order from header region, then for each other region
+ * sorts its parts to match that order.
+ */
+function reorderPartRegionsToMatchHeaders(headerRegion) {
+  // Get panel order from header region
+  const headerParts = Array.from(headerRegion.querySelectorAll('.layout-part-header'));
+  const panelOrder = headerParts.map(h => h.dataset.panelId);
+
+  // For each other region, reorder its parts
+  const editorRegion = getRegionForPart('editor');
+  const controlsRegion = getRegionForPart('controls');
+
+  [editorRegion, controlsRegion].forEach(region => {
+    if (!region || region === headerRegion) return;
+
+    const parts = Array.from(region.querySelectorAll('.layout-part'));
+    // Sort by panelOrder index
+    parts.sort((a, b) => {
+      const idxA = panelOrder.indexOf(a.dataset.panelId);
+      const idxB = panelOrder.indexOf(b.dataset.panelId);
+      return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
+    });
+
+    // Re-append in sorted order
+    parts.forEach(p => region.appendChild(p));
+  });
+}
+
 /**
  * Clean up all drag-related states and classes
  */
@@ -230,8 +420,8 @@ function cleanupDragStates() {
     }
   }
 
-  // Remove all drag-over indicators
-  document.querySelectorAll('.level-panel').forEach(p => {
+  // Remove all drag-over indicators (classic + layout mode)
+  document.querySelectorAll('.level-panel, .layout-part-header').forEach(p => {
     p.classList.remove('drag-over-above', 'drag-over-below', 'dragging');
   });
 

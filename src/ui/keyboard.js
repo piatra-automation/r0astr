@@ -41,6 +41,11 @@ export function findFocusedPanel() {
     if (panelContainer) {
       return panelContainer.id;
     }
+    // Layout mode: check for data-panel-id on ancestor (parts in regions)
+    const layoutPart = activeElement.closest('[data-panel-id]');
+    if (layoutPart) {
+      return layoutPart.dataset.panelId;
+    }
   }
 
   // Last resort: check if activeElement is a CodeMirror editor

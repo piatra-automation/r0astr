@@ -49,6 +49,7 @@ class SkinManager {
     this.currentSkin = null;
     this.templates = new Map();
     this.cssLoaded = null;
+    this.layout = null; // Layout config from skin.json (null = classic monolithic mode)
   }
 
   /**
@@ -167,12 +168,16 @@ class SkinManager {
       // Inject hover targets
       this.injectHoverTargets(manifest.hoverTargets || []);
 
+      // Store layout config (null if not present = classic mode)
+      this.layout = manifest.layout || null;
+
       this.currentSkin = manifest;
 
       console.log(`✓ Custom skin '${skinName}' loaded:`, {
         templates: Array.from(this.templates.keys()),
         cssVariables: Object.keys(manifest.cssVariables || {}).length,
         hoverTargets: (manifest.hoverTargets || []).length,
+        layout: this.layout ? 'yes' : 'no',
         source: 'IndexedDB'
       });
 
@@ -266,12 +271,16 @@ class SkinManager {
       // 5. Inject hover targets into DOM
       this.injectHoverTargets(manifest.hoverTargets || []);
 
+      // 6. Store layout config (null if not present = classic mode)
+      this.layout = manifest.layout || null;
+
       this.currentSkin = manifest;
 
       console.log(`✓ Bundled skin '${skinName}' loaded:`, {
         templates: Array.from(this.templates.keys()),
         cssVariables: Object.keys(manifest.cssVariables || {}).length,
         hoverTargets: (manifest.hoverTargets || []).length,
+        layout: this.layout ? 'yes' : 'no',
         source: 'bundled'
       });
 
@@ -333,6 +342,14 @@ class SkinManager {
    */
   getCurrentSkin() {
     return this.currentSkin;
+  }
+
+  /**
+   * Get layout config from current skin
+   * @returns {Object|null} Layout config or null (classic mode)
+   */
+  getLayout() {
+    return this.layout;
   }
 
   /**
@@ -400,7 +417,7 @@ class SkinManager {
     const allSkins = [];
 
     // Get bundled skins (hardcoded for now)
-    const bundledSkins = ['default', 'glass'];
+    const bundledSkins = ['default', 'glass', 'split-column'];
     for (const name of bundledSkins) {
       allSkins.push({
         name,
@@ -450,6 +467,46 @@ class SkinManager {
       `,
       sliderCollapsed: `
         <input type="range" min="${data.min}" max="${data.max}" value="${data.value}">
+      `,
+      // Part templates for layout mode
+      'panel-header': `
+        <summary>
+          <span class="panel-number-badge" draggable="true">${data.panelNumber || '?'}</span>
+          <div class="panel-actions-left">
+            <button class="btn-playback" data-card="${data.panelId}" title="Play/Pause">
+              <span class="material-icons">play_arrow</span>
+            </button>
+          </div>
+          <span class="panel-title" data-panel-id="${data.panelId}" contenteditable="false" spellcheck="false">${data.title || 'Untitled'}</span>
+          <div class="panel-actions">
+            <button class="btn-duplicate" data-panel="${data.panelId}" title="Duplicate" style="${data.duplicateButtonStyle || ''}">
+              <span class="material-icons">content_copy</span>
+            </button>
+            <button class="btn-delete" data-panel="${data.panelId}" title="Delete" style="${data.deleteButtonStyle || ''}">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+        </summary>
+      `,
+      'panel-editor': `
+        <div class="panel-editor-container">
+          <div class="code-editor-wrapper">
+            <div class="code-editor" id="editor-${data.panelId}" data-card="${data.panelId}"></div>
+          </div>
+          <div class="error-message" data-card="${data.panelId}" style="display: none;"></div>
+        </div>
+      `,
+      'panel-controls': `
+        <div class="panel-controls-container">
+          <div class="leaf-viz" style="display: none;">
+            <div id="viz-container-${data.panelId}" class="viz-container"></div>
+          </div>
+        </div>
+      `,
+      'page': `
+        <div class="layout-default">
+          <div class="layout-region" id="region-main"></div>
+        </div>
       `
     };
 

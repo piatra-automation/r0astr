@@ -7,6 +7,7 @@
 import { eventBus } from '../utils/eventBus.js';
 import { sliderValues } from '@strudel/codemirror';
 import { skinManager } from './skinManager.js';
+import { getPart } from './panelDOMRegistry.js';
 
 // Track slider metadata for each panel
 const panelSliders = {};
@@ -61,15 +62,16 @@ export function renderSliders(panelId, widgets, patternCode = '') {
  * @param {Array} sliderMetadata - Array to populate with metadata
  */
 function renderTreeSliders(panelId, sliderWidgets, patternCode, sliderMetadata) {
-  // Find panel-controls-container (sibling of details, outside collapse)
-  const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`) ||
-                       document.getElementById(panelId);
-  if (!panelElement) {
-    console.warn(`Panel element not found for ${panelId}`);
-    return;
-  }
-
-  const controlsContainer = panelElement.querySelector('.panel-controls-container');
+  // Find panel-controls-container via registry first, then DOM fallback
+  const controlsContainer = getPart(panelId, 'controls') || (() => {
+    const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`) ||
+                         document.getElementById(panelId);
+    if (!panelElement) {
+      console.warn(`Panel element not found for ${panelId}`);
+      return null;
+    }
+    return panelElement.querySelector('.panel-controls-container');
+  })();
   if (!controlsContainer) {
     console.warn(`Panel controls container not found for ${panelId}`);
     return;
@@ -292,12 +294,18 @@ export function updateSliderValue(panelId, sliderId, newValue) {
  */
 export function clearSliders(panelId) {
   if (isTreeLayout()) {
-    // Tree layout: remove slider leaf nodes
-    const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`) ||
-                         document.getElementById(panelId);
-    if (panelElement) {
-      const sliderLeaves = panelElement.querySelectorAll('.leaf-slider');
+    // Tree layout: remove slider leaf nodes via registry
+    const controlsContainer = getPart(panelId, 'controls');
+    if (controlsContainer) {
+      const sliderLeaves = controlsContainer.querySelectorAll('.leaf-slider');
       sliderLeaves.forEach(leaf => leaf.remove());
+    } else {
+      const panelElement = document.querySelector(`[data-panel-id="${panelId}"]`) ||
+                           document.getElementById(panelId);
+      if (panelElement) {
+        const sliderLeaves = panelElement.querySelectorAll('.leaf-slider');
+        sliderLeaves.forEach(leaf => leaf.remove());
+      }
     }
   } else {
     // Legacy layout: clear containers
