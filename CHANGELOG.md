@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.15.1] - 2026-02-27
+
+### Fixed
+- **Split-column skin white page** — added dark background and green gradient matching default skin
+- **Split-column skin missing menu bar** — settings/config buttons now always visible and accessible
+
 ## [0.15.0] - 2026-02-27
 
 ### Added
