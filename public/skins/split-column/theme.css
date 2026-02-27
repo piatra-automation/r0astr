@@ -3,6 +3,75 @@
  * Inherits base.css styling; only defines layout-specific rules.
  */
 
+/* === Background — dark base matching default skin === */
+html {
+  background-color: oklch(0.04 0 0);
+}
+
+body {
+  background:
+    linear-gradient(
+      135deg,
+      oklch(0.06 0.04 150) 0%,
+      oklch(0.04 0 0) 40%,
+      oklch(0.04 0 0) 60%,
+      oklch(0.06 0.03 150) 100%
+    );
+  background-attachment: fixed;
+}
+
+body::before {
+  background: transparent;
+}
+
+/* === Top Menu Bar — always visible === */
+.top-menu-bar {
+  position: fixed;
+  top: var(--projection-margin-top);
+  right: calc(var(--projection-margin-right) + 16px);
+  left: auto;
+  height: var(--banner-bar-height);
+  width: auto;
+  padding: 0;
+  background: var(--surface-card-50);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 0;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+  z-index: calc(var(--z-panel) + 1);
+}
+
+.top-menu-bar .top-bar-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  box-shadow: none;
+  opacity: 0.7;
+  transition: color 150ms, opacity 150ms, background-color 150ms;
+}
+
+.top-menu-bar .top-bar-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* === Banner bar === */
+.banner-bar {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* === Layout wrapper === */
 .layout-wrapper {
   position: absolute;
