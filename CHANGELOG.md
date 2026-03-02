@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.16.0] - 2026-03-03
+
+### Added
+- **Draggable column resizers** — drag borders between columns in split-column skin to resize panels/editors/controls regions; widths persist to localStorage; double-click resets to default
+- **Resizable regions skin API** — skins opt in via `resizableRegions: true` in `skin.json` layout config; documented in creating-skins guide
+- **Collapse-on-blur in layout mode** — "Collapse unfocused panels" setting now works in split-column skin; collapsed editors show header bar instead of vanishing
+
+### Fixed
+- Right column resizer correctly targets the controls column (flex-aware direction detection)
+- Master panel editor header placed inside `.panel-editor-container` matching instrument panel DOM structure
+- Editor content-height sizing: editors stack to content height with scrollable center region instead of equal-flex distribution
+- CodeMirror content visible after skin hot-swap (requestMeasure on all editors after layout settles)
+- Stale layout-editor-header cleanup on repeated skin swaps
+
 ## [0.15.1] - 2026-02-27
 
 ### Fixed
