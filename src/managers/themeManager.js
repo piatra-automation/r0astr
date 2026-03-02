@@ -5,6 +5,7 @@
  */
 
 import { getPart, getRegisteredPanelIds } from './panelDOMRegistry.js';
+import { isLayoutMode, setLayoutCollapsed } from './layoutManager.js';
 
 /**
  * Apply color scheme by setting body class
@@ -81,6 +82,23 @@ export function updatePanelOpacities() {
   //     background: backgroundPanelOpacity,
   //       collapseOnBlur
   // });
+
+  if (isLayoutMode()) {
+    // Layout mode: collapse/expand via layout-collapsed class
+    if (collapseOnBlur) {
+      const allParts = document.querySelectorAll('.layout-part[data-panel-id]');
+      const panelIds = new Set();
+      allParts.forEach(el => panelIds.add(el.dataset.panelId));
+
+      panelIds.forEach(panelId => {
+        // Master panel (panel-0) stays expanded
+        if (panelId === 'panel-0') return;
+        const isFocused = document.querySelector(`.layout-part[data-panel-id="${panelId}"].focused`) !== null;
+        setLayoutCollapsed(panelId, !isFocused);
+      });
+    }
+    return;
+  }
 
   // Tree layout: use native <details> for expand/collapse (CSS handles animation)
   const panels = document.querySelectorAll('.level-panel');

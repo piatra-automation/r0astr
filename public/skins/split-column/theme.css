@@ -247,6 +247,17 @@ body.resizing-columns * {
   display: none;
 }
 
+/* In the center column, collapsed editors show only their header bar
+   instead of vanishing entirely — the header identifies the panel. */
+.layout-part-editor.layout-collapsed {
+  display: block;
+}
+
+.layout-part-editor.layout-collapsed .code-editor-wrapper,
+.layout-part-editor.layout-collapsed .error-message {
+  display: none;
+}
+
 /* --- Header part (left column) --- */
 .layout-part-header {
   /* Mirrors the summary row style from the default skin */
@@ -427,25 +438,14 @@ body.resizing-columns * {
 
 /* --- Editor part (center column) --- */
 .layout-part-editor {
-  flex: 1;
-  min-height: 120px;
+  flex: none;
   overflow: hidden;
-}
-
-/* Override base panels.css overflow:visible — in layout mode each editor
-   is a flex child and must not bleed into adjacent editors. */
-.layout-part-editor .cm-scroller {
-  overflow: auto;
 }
 
 .layout-part-editor .panel-editor-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
   border-radius: 6px;
   background: var(--panel-bg, rgba(255, 255, 255, 0.03));
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-  overflow: hidden;
 }
 
 .layout-part-editor .layout-editor-header {
@@ -470,12 +470,10 @@ body.resizing-columns * {
 }
 
 .layout-part-editor .code-editor-wrapper {
-  flex: 1;
-  overflow: auto;
 }
 
 .layout-part-editor .code-editor {
-  height: 100%;
+  height: auto;
 }
 
 .layout-part-editor .error-message {
