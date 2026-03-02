@@ -167,7 +167,26 @@ export function placePartInRegion(panelId, partName, partElement) {
   const region = getRegionForPart(partName);
   if (!region) return false;
 
-  region.appendChild(partElement);
+  // Extract panel number for ordered insertion
+  const panelNum = parseInt(panelId.replace(/\D/g, ''), 10) || 0;
+
+  // Find the right insertion point by comparing panel numbers
+  // so that panels appear in order (master panel-0 first)
+  const existingParts = region.querySelectorAll(`.layout-part-${partName}[data-panel-id]`);
+  let insertBefore = null;
+  for (const existing of existingParts) {
+    const existingNum = parseInt(existing.dataset.panelId.replace(/\D/g, ''), 10) || 0;
+    if (existingNum > panelNum) {
+      insertBefore = existing;
+      break;
+    }
+  }
+
+  if (insertBefore) {
+    region.insertBefore(partElement, insertBefore);
+  } else {
+    region.appendChild(partElement);
+  }
   return true;
 }
 

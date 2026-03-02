@@ -1,5 +1,6 @@
 /* Split Column Layout Skin
- * Two-column layout: headers + controls on left, editors on right.
+ * Three-column layout: headers left, editors center, controls right.
+ * Global toolbar at top for master panel buttons.
  * Inherits base.css styling; only defines layout-specific rules.
  */
 
@@ -66,10 +67,92 @@ body::before {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.top-menu-bar .top-bar-btn::before {
+  font-family: var(--font-family-icons);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.top-menu-bar #save-btn::before { content: 'save'; }
+.top-menu-bar #load-btn::before { content: 'folder_open'; }
+.top-menu-bar #remote-btn::before { content: 'cloud'; }
+.top-menu-bar #config-btn::before { content: 'settings'; }
+
 /* === Banner bar === */
 .banner-bar {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* === Global Toolbar === */
+.layout-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--surface-card-50, rgba(255, 255, 255, 0.03));
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  min-height: 40px;
+  flex-shrink: 0;
+}
+
+.layout-toolbar:empty {
+  display: none;
+}
+
+.toolbar-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.4));
+  margin-right: 4px;
+  user-select: none;
+}
+
+.toolbar-buttons {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.toolbar-buttons button {
+  background: var(--panel-bg, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  transition: color 150ms, background-color 150ms;
+}
+
+.toolbar-buttons button:hover {
+  color: var(--text-primary, #fff);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.toolbar-buttons button .material-icons {
+  font-size: 16px;
+}
+
+.toolbar-buttons button .count-badge {
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--primary-color, #51cf66);
+  color: #000;
+}
+
+.toolbar-buttons button .count-badge.hidden {
+  display: none;
 }
 
 /* === Layout wrapper === */
@@ -78,13 +161,15 @@ body::before {
   inset: 0;
   top: var(--menu-bar-height, 48px);
   display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
-.layout-split-column {
+.layout-three-column {
   display: flex;
   width: 100%;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   gap: 2px;
 }
 
@@ -98,15 +183,24 @@ body::before {
 }
 
 .layout-region-left {
-  width: 35%;
-  min-width: 280px;
-  max-width: 500px;
+  width: 200px;
+  min-width: 160px;
+  max-width: 300px;
   border-right: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  flex-shrink: 0;
+}
+
+.layout-region-center {
+  flex: 1;
+  min-width: 0;
 }
 
 .layout-region-right {
-  flex: 1;
-  min-width: 0;
+  width: 280px;
+  min-width: 200px;
+  max-width: 400px;
+  border-left: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  flex-shrink: 0;
 }
 
 .region-label {
@@ -146,6 +240,22 @@ body::before {
 
 .layout-panel-header:hover {
   background: var(--panel-hover-bg, rgba(255, 255, 255, 0.08));
+}
+
+/* Focused panel indication */
+.layout-part-header.focused .layout-panel-header {
+  border-color: var(--primary-color, #51cf66);
+  border-left: 3px solid var(--primary-color, #51cf66);
+  background: rgba(81, 207, 102, 0.08);
+}
+
+.layout-part-editor.focused .panel-editor-container {
+  border-color: var(--primary-color, #51cf66);
+}
+
+.layout-part-controls.focused {
+  border-left: 2px solid var(--primary-color, #51cf66);
+  padding-left: 6px;
 }
 
 .layout-panel-header .panel-title {
@@ -211,15 +321,31 @@ body::before {
   color: var(--warning-color, #ffd43b);
 }
 
-/* --- Controls part (left column, below header) --- */
+/* --- Controls part (right column) --- */
 .layout-part-controls {
-  padding-left: 30px; /* Indent under header badge */
+  padding-left: 0;
 }
 
 .layout-part-controls .panel-controls-container {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+/* Controls panel label (shows which panel the controls belong to) */
+.layout-part-controls .controls-panel-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.35));
+  padding: 4px 0 2px;
+  border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  margin-top: 4px;
+}
+
+.layout-part-controls:first-child .controls-panel-label {
+  border-top: none;
+  margin-top: 0;
 }
 
 .layout-part-controls .leaf-slider {
@@ -251,7 +377,7 @@ body::before {
   font-variant-numeric: tabular-nums;
 }
 
-/* --- Editor part (right column) --- */
+/* --- Editor part (center column) --- */
 .layout-part-editor {
   flex: 1;
   min-height: 120px;

@@ -2,10 +2,10 @@ import { repl, evalScope, ref } from '@strudel/core';
 import { getAudioContext, webaudioOutput, initAudioOnFirstClick, registerSynthSounds } from '@strudel/webaudio';
 import { transpiler } from '@strudel/transpiler';
 import { sliderWithID, sliderValues as cmSliderValues, highlightExtension, updateMiniLocations, highlightMiniLocations } from '@strudel/codemirror';
-import { createPanel, renderPanel, deletePanel, duplicatePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, expandPanel, collapsePanel, togglePanel, isPanelExpanded, reRenderAllPanels, MASTER_PANEL_ID } from './managers/panelManager.js';
+import { createPanel, renderPanel, deletePanel, duplicatePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, expandPanel, collapsePanel, togglePanel, isPanelExpanded, reRenderAllPanels, updateLayoutFocusHighlight, MASTER_PANEL_ID } from './managers/panelManager.js';
 import { initializePanelReorder, initializeLayoutReorder } from './ui/panelReorder.js';
-import { registerPanelParts, getPart, resolvePanelId } from './managers/panelDOMRegistry.js';
-import { applyLayout, teardownLayout, isLayoutMode, getRegion } from './managers/layoutManager.js';
+import { registerPanelParts, registerPart, getPart, resolvePanelId } from './managers/panelDOMRegistry.js';
+import { applyLayout, teardownLayout, isLayoutMode, getLayout, getRegion, createPartContainer, placePartInRegion } from './managers/layoutManager.js';
 import { loadSettings, getSettings, updateSetting } from './managers/settingsManager.js';
 import { skinManager } from './managers/skinManager.js';
 import { moveEditorToScreen, removeEditorFromScreen, removeAllEditorsExcept, isEditorInScreen } from './managers/screenManager.js';
@@ -1496,26 +1496,67 @@ async function initializeCards() {
     }
   });
 
-  // Layout mode: clicking on a panel header toggles collapse and focuses editor
+  // Layout mode: clicking on a panel header — behavior driven by skin config
+  // "select" (default for split-column): always expand+focus, never collapse from header
+  // "toggle" (default): click toggles expand/collapse
   document.addEventListener('click', (e) => {
     if (!isLayoutMode()) return;
     const header = e.target.closest('.layout-panel-header');
     if (!header) return;
-    // Don't toggle if clicking on a button inside the header
+    // Don't act if clicking on a button inside the header
     if (e.target.closest('button')) return;
     const panelId = resolvePanelId(header);
-    if (panelId) {
-      const wasExpanded = isPanelExpanded(panelId);
-      togglePanel(panelId);
-      bringPanelToFront(panelId);
+    if (!panelId) return;
 
-      // If expanding, focus the editor after a short delay
-      if (wasExpanded === false) {
+    const layout = getLayout();
+    const behavior = layout?.headerClickBehavior || 'toggle';
+    const wasExpanded = isPanelExpanded(panelId);
+
+    if (behavior === 'select') {
+      // Select mode: always expand and focus; clicking already-active panel is a no-op
+      if (!wasExpanded) {
+        expandPanel(panelId);
+      }
+      bringPanelToFront(panelId);
+      const view = editorViews.get(panelId);
+      if (view) {
+        setTimeout(() => view.focus(), 10);
+      }
+    } else {
+      // Toggle mode: expand or collapse
+      if (wasExpanded) {
+        collapsePanel(panelId);
+
+        // Respect showControlsWhenCollapsed setting
+        const settings = getSettings();
+        const panel = cardStates[panelId];
+        const controlsPart = document.querySelector(`.layout-part-controls[data-panel-id="${panelId}"]`);
+        if (controlsPart) {
+          const showControls = panel?.playing || settings.showControlsWhenCollapsed;
+          controlsPart.classList.toggle('layout-collapsed', !showControls);
+        }
+
+        // Remove focus highlight (panel is collapsed)
+        updateLayoutFocusHighlight(panelId);
+      } else {
+        expandPanel(panelId);
+        bringPanelToFront(panelId);
         const view = editorViews.get(panelId);
         if (view) {
           setTimeout(() => view.focus(), 10);
         }
       }
+    }
+  });
+
+  // Layout mode: clicking directly in an editor updates active panel + highlight
+  document.addEventListener('focusin', (e) => {
+    if (!isLayoutMode()) return;
+    const cmEditor = e.target.closest('.cm-editor');
+    if (!cmEditor) return;
+    const panelId = resolvePanelId(cmEditor);
+    if (panelId) {
+      bringPanelToFront(panelId);
     }
   });
 
@@ -3568,6 +3609,175 @@ function initializeKeyboardShortcuts() {
   console.log(`  ${mod}+.: Stop All`);
 }
 
+/**
+ * Decompose the master panel (panel-0) for layout mode.
+ * Extracts global buttons (Update All, Play All, Stop All) into the toolbar region,
+ * and distributes master panel header/editor/controls into their respective columns.
+ * If the skin has no toolbar region, falls back to moving the entire <li> into the first region.
+ *
+ * @param {Object} layout - The layout config from skin.json
+ */
+function decomposeMasterPanel(layout) {
+  const masterEl = document.getElementById(MASTER_PANEL_ID);
+  if (!masterEl) return;
+
+  const toolbarRegion = getRegion('toolbar');
+
+  if (toolbarRegion) {
+    // Extract global buttons into toolbar
+    const btnUpdateAll = masterEl.querySelector('.btn-update-all');
+    const btnPlayAll = masterEl.querySelector('.btn-play-all');
+    const btnStopAll = masterEl.querySelector('.btn-stop-all');
+
+    if (btnUpdateAll || btnPlayAll || btnStopAll) {
+      const toolbarContainer = document.createElement('div');
+      toolbarContainer.className = 'toolbar-buttons';
+      toolbarContainer.id = 'master-toolbar-buttons';
+
+      const label = document.createElement('span');
+      label.className = 'toolbar-label';
+      label.textContent = 'Global';
+      toolbarRegion.appendChild(label);
+
+      if (btnUpdateAll) toolbarContainer.appendChild(btnUpdateAll);
+      if (btnPlayAll) toolbarContainer.appendChild(btnPlayAll);
+      if (btnStopAll) toolbarContainer.appendChild(btnStopAll);
+
+      toolbarRegion.appendChild(toolbarContainer);
+      console.log('[Layout] Master global buttons moved to toolbar');
+    }
+
+    // Distribute master panel parts into layout regions (move actual DOM elements)
+    const summary = masterEl.querySelector('summary');
+    const editorContainer = masterEl.querySelector('.panel-editor-container');
+    const controlsContainer = masterEl.querySelector('.panel-controls-container');
+
+    // Header part → left column
+    if (summary) {
+      const headerPart = createPartContainer(MASTER_PANEL_ID, 'header', '');
+      headerPart.innerHTML = ''; // Clear placeholder HTML
+      // Build a layout-panel-header from the summary content
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'layout-panel-header';
+      const badge = summary.querySelector('.panel-number-badge');
+      const title = summary.querySelector('.panel-title');
+      if (badge) headerDiv.appendChild(badge.cloneNode(true));
+      if (title) headerDiv.appendChild(title.cloneNode(true));
+      headerPart.appendChild(headerDiv);
+      placePartInRegion(MASTER_PANEL_ID, 'header', headerPart);
+    }
+
+    // Editor part → center column (move the actual editor container to preserve CodeMirror)
+    if (editorContainer) {
+      const editorPart = createPartContainer(MASTER_PANEL_ID, 'editor', '');
+      editorPart.innerHTML = '';
+      // Wrap in the same structure as the panel-editor template
+      const editorHeader = document.createElement('div');
+      editorHeader.className = 'layout-editor-header';
+      editorHeader.innerHTML = '<span class="panel-number-badge">0</span><span class="panel-title-ref">GLOBALS</span>';
+      editorPart.appendChild(editorHeader);
+      // Move the actual editor container (preserves CodeMirror instance)
+      editorPart.appendChild(editorContainer);
+      placePartInRegion(MASTER_PANEL_ID, 'editor', editorPart);
+    }
+
+    // Controls part → right column (move the actual controls container)
+    if (controlsContainer) {
+      const controlsPart = createPartContainer(MASTER_PANEL_ID, 'controls', '');
+      controlsPart.innerHTML = '';
+      controlsPart.appendChild(controlsContainer);
+      placePartInRegion(MASTER_PANEL_ID, 'controls', controlsPart);
+    }
+
+    // Hide the master <li> shell (its contents have been distributed)
+    masterEl.style.display = 'none';
+
+    // Re-register moved parts in the DOM registry so getPart() finds them
+    // (registerPanelParts searches within the master <li>, but parts are now outside it)
+    if (editorContainer) {
+      const editorEl = editorContainer.querySelector('.code-editor') || document.getElementById(`editor-${MASTER_PANEL_ID}`);
+      if (editorEl) registerPart(MASTER_PANEL_ID, 'editor', editorEl);
+    }
+    if (controlsContainer) {
+      registerPart(MASTER_PANEL_ID, 'controls', controlsContainer);
+    }
+
+    console.log('[Layout] Master panel decomposed into toolbar + layout regions');
+  } else {
+    // No toolbar region — fall back to moving entire <li> into first region
+    const firstRegionName = Object.keys(layout.regions || {})[0];
+    const firstRegion = firstRegionName ? getRegion(firstRegionName) : null;
+    if (firstRegion) {
+      masterEl.style.display = '';
+      firstRegion.insertBefore(masterEl, firstRegion.firstChild);
+      console.log(`[Layout] Master panel moved to region '${firstRegionName}'`);
+    }
+  }
+}
+
+/**
+ * Restore the master panel to its original state in the panel tree.
+ * Re-attaches global buttons and distributed parts back into the master <li>.
+ */
+function restoreMasterPanel() {
+  const masterEl = document.getElementById(MASTER_PANEL_ID);
+  if (!masterEl) return;
+
+  // Move global buttons back into master panel summary
+  const toolbarBtns = document.getElementById('master-toolbar-buttons');
+  if (toolbarBtns) {
+    const summary = masterEl.querySelector('summary');
+    const panelActions = summary?.querySelector('.panel-actions');
+    if (panelActions) {
+      while (toolbarBtns.firstChild) {
+        panelActions.appendChild(toolbarBtns.firstChild);
+      }
+    }
+    // Clean up toolbar container and label
+    const toolbarLabel = toolbarBtns.previousElementSibling;
+    if (toolbarLabel?.classList.contains('toolbar-label')) {
+      toolbarLabel.remove();
+    }
+    toolbarBtns.remove();
+    console.log('[Layout] Master global buttons restored to panel');
+  }
+
+  // Move editor container back into the master <li> details element
+  // (it was moved to the center column layout part)
+  const editorPart = document.querySelector(`.layout-part-editor[data-panel-id="${MASTER_PANEL_ID}"]`);
+  if (editorPart) {
+    const editorContainer = editorPart.querySelector('.panel-editor-container');
+    const details = masterEl.querySelector('details');
+    if (editorContainer && details) {
+      details.appendChild(editorContainer);
+    }
+    editorPart.remove();
+  }
+
+  // Move controls container back into the master <li>
+  const controlsPart = document.querySelector(`.layout-part-controls[data-panel-id="${MASTER_PANEL_ID}"]`);
+  if (controlsPart) {
+    const controlsContainer = controlsPart.querySelector('.panel-controls-container');
+    if (controlsContainer) {
+      masterEl.appendChild(controlsContainer);
+    }
+    controlsPart.remove();
+  }
+
+  // Remove the header layout part (it was a clone, not a move)
+  const headerPart = document.querySelector(`.layout-part-header[data-panel-id="${MASTER_PANEL_ID}"]`);
+  if (headerPart) {
+    headerPart.remove();
+  }
+
+  // Ensure master <li> is visible and in panel tree
+  const panelTree = document.getElementById('panel-tree');
+  if (panelTree && !panelTree.contains(masterEl)) {
+    panelTree.insertBefore(masterEl, panelTree.firstChild);
+  }
+  masterEl.style.display = '';
+}
+
 // Initialize when DOM is ready
 async function init() {
   // Enable audio caching immediately (before any samples load)
@@ -3606,16 +3816,8 @@ async function init() {
       : skinManager.getFallbackTemplate('page', {});
     applyLayout(skinLayout, pageHTML);
 
-    // In layout mode, move master panel (panel-0) into the left/first region
-    // so it's visible even though the panel tree is hidden
-    const masterEl = document.getElementById(MASTER_PANEL_ID);
-    const firstRegionName = Object.keys(skinLayout.regions || {})[0];
-    const firstRegion = firstRegionName ? getRegion(firstRegionName) : null;
-    if (masterEl && firstRegion) {
-      masterEl.style.display = '';
-      firstRegion.insertBefore(masterEl, firstRegion.firstChild);
-      console.log(`[Layout] Master panel moved to region '${firstRegionName}'`);
-    }
+    // Decompose master panel: buttons to toolbar, parts to layout regions
+    decomposeMasterPanel(skinLayout);
 
     console.log('✓ Layout mode activated');
   }
@@ -3719,6 +3921,10 @@ if (isLayoutMode()) {
   window.addEventListener('skin-changed', async (event) => {
     console.log('[SkinHotReload] Re-rendering panels with new skin...');
 
+    // Restore master panel parts to <li> before any teardown/re-render
+    // (so clearAllRegions doesn't destroy moved DOM elements)
+    restoreMasterPanel();
+
     // Apply or teardown page layout based on skin config
     const layout = skinManager.getLayout();
     if (layout) {
@@ -3727,29 +3933,18 @@ if (isLayoutMode()) {
         ? skinManager.render('page', {})
         : skinManager.getFallbackTemplate('page', {});
       applyLayout(layout, pageHTML);
-
-      // Move master panel into first region
-      const masterEl = document.getElementById(MASTER_PANEL_ID);
-      const firstRegionName = Object.keys(layout.regions || {})[0];
-      const firstRegion = firstRegionName ? getRegion(firstRegionName) : null;
-      if (masterEl && firstRegion) {
-        masterEl.style.display = '';
-        firstRegion.insertBefore(masterEl, firstRegion.firstChild);
-      }
-
       console.log('[SkinHotReload] Layout mode activated');
     } else {
-      // Switching back to classic: move master panel back to panel-tree if needed
-      const masterEl = document.getElementById(MASTER_PANEL_ID);
-      const panelTree = document.getElementById('panel-tree');
-      if (masterEl && panelTree && !panelTree.contains(masterEl)) {
-        panelTree.insertBefore(masterEl, panelTree.firstChild);
-      }
       teardownLayout();
     }
 
     // Re-render all panels with new templates (preserves internal state, including master)
     await reRenderAllPanels(createEditorView, editorViews, smRenderSliders, getPanelSliders, handleEditorChange, handleMasterChange);
+
+    // Decompose master panel AFTER re-render so moved parts survive clearAllRegions
+    if (layout) {
+      decomposeMasterPanel(layout);
+    }
 
     // Initialize drag reorder for the active mode
     if (isLayoutMode()) {

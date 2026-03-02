@@ -34,6 +34,18 @@ Modern frosted glass design with translucent panels and backdrop blur.
 - Bottom metronome trigger (glass strip)
 - Pulsing glow animations on playing panels
 
+### Split Column (3-Column Layout)
+
+A three-column layout that separates panel headers, code editors, and controls into distinct columns with a global toolbar.
+
+- Panel headers as a side-menu in the left column
+- Code editors stacked in the center column
+- Sliders and controls aggregated in the right column
+- Global buttons (Update All, Play All, Stop All) in a fixed toolbar
+- Click-to-select header behavior (no toggle)
+
+This skin uses the [Layout System](creating-skins.md#layout-system) to decompose panels into parts distributed across page regions.
+
 ## Switching Skins
 
 1. Click **CONFIG** in the top menu (hover the top banner area to reveal it)

@@ -62,6 +62,7 @@ public/skins/
 - **cssVariables** - CSS custom properties to override
 - **templates** - Template file mappings
 - **hoverTargets** (optional) - Array of hover interaction configs
+- **layout** (optional) - Layout region system for multi-column layouts (see [Layout System](#layout-system) below)
 
 ### 3. Create Templates
 
@@ -247,6 +248,244 @@ Position and style hover targets in your theme CSS:
   backdrop-filter: blur(8px);
 }
 ```
+
+## Layout System
+
+The layout system allows skins to decompose panels into separate parts and distribute them across independent page regions. Instead of each panel being a single monolithic `<details>` element, a layout skin can place panel headers, editors, and controls into different columns or areas.
+
+Skins **without** a `layout` key use the classic monolithic render path — each panel is a self-contained `<li>` in the panel tree. No changes needed for simple skins.
+
+### Enabling Layout Mode
+
+Add a `layout` key to your `skin.json`:
+
+```json
+{
+  "name": "My Multi-Column Skin",
+  "layout": {
+    "regions": {
+      "toolbar": { "selector": "#region-toolbar" },
+      "left":    { "selector": "#region-left" },
+      "center":  { "selector": "#region-center" },
+      "right":   { "selector": "#region-right" }
+    },
+    "panelParts": {
+      "header":   { "region": "left" },
+      "editor":   { "region": "center" },
+      "controls": { "region": "right" }
+    },
+    "headerClickBehavior": "select"
+  },
+  "templates": {
+    "page": "page-layout.html",
+    "panel-header": "panel-header.html",
+    "panel-editor": "panel-editor.html",
+    "panel-controls": "panel-controls.html"
+  }
+}
+```
+
+### Layout Configuration Fields
+
+#### `regions`
+
+Defines named regions that map to DOM containers in your page template. Each region has a `selector` used to find the element after the page template is rendered.
+
+```json
+"regions": {
+  "toolbar": { "selector": "#region-toolbar" },
+  "left":    { "selector": "#region-left" },
+  "center":  { "selector": "#region-center" },
+  "right":   { "selector": "#region-right" }
+}
+```
+
+You can define any number of regions with any names. The selectors must match elements in your `page-layout.html` template.
+
+#### `panelParts`
+
+Maps each panel part type to a target region. When a panel is rendered in layout mode, each part is placed into its assigned region instead of being nested inside a single `<li>`.
+
+```json
+"panelParts": {
+  "header":   { "region": "left" },
+  "editor":   { "region": "center" },
+  "controls": { "region": "right" }
+}
+```
+
+**Available part types:**
+
+| Part | Description | Typical Region |
+|------|-------------|---------------|
+| `header` | Panel title, badges, play/delete buttons | Side menu / left column |
+| `editor` | CodeMirror code editor with error display | Main content area |
+| `controls` | Sliders, visualizations | Side panel / right column |
+
+Parts are inserted in **panel-number order** within each region (panel 0 first, then panel 1, etc.), so the master panel always appears at the top of each column.
+
+#### `headerClickBehavior`
+
+Controls what happens when a user clicks on a panel header in layout mode.
+
+```json
+"headerClickBehavior": "select"
+```
+
+| Value | Behavior | Best For |
+|-------|----------|----------|
+| `"toggle"` | Clicking toggles expand/collapse (default) | Layouts where headers are inline with content |
+| `"select"` | Clicking always expands and focuses the panel. Panels are never collapsed by clicking their header. | Layouts where headers act as side-menu items (e.g., 3-column split) |
+
+When `"select"` is set:
+
+- Clicking a collapsed panel's header expands it and focuses the editor
+- Clicking an already-active panel's header re-focuses the editor (no collapse)
+- The active panel's header, editor, and controls all receive a `.focused` CSS class
+
+When `"toggle"` is set (or omitted):
+
+- Clicking an expanded panel's header collapses it and removes the focus highlight
+- The `showControlsWhenCollapsed` user setting is respected — controls stay visible for playing panels when the editor is collapsed
+
+### Page Template
+
+Layout skins must provide a `page-layout.html` template that defines the overall page structure. This template is rendered once and inserted into the main content area; individual panel parts are then placed into the region containers.
+
+```html
+<!-- page-layout.html -->
+<div class="layout-toolbar" id="region-toolbar"></div>
+<div class="layout-three-column">
+  <div class="layout-region layout-region-left" id="region-left">
+    <div class="region-label">Panels</div>
+  </div>
+  <div class="layout-region layout-region-center" id="region-center">
+    <div class="region-label">Editors</div>
+  </div>
+  <div class="layout-region layout-region-right" id="region-right">
+    <div class="region-label">Controls</div>
+  </div>
+</div>
+```
+
+### Part Templates
+
+Each part type has its own template. These replace the monolithic `panel.html` when layout mode is active.
+
+**panel-header.html** — Rendered into the header region:
+
+```html
+<div class="layout-panel-header">
+  <span class="panel-number-badge" draggable="true">{{panelNumber}}</span>
+  <div class="panel-actions-left">
+    <button class="btn-playback" data-card="{{panelId}}">
+      <span class="material-icons">play_arrow</span>
+    </button>
+  </div>
+  <span class="panel-title" data-panel-id="{{panelId}}">{{title}}</span>
+  <div class="panel-actions">
+    <button class="btn-duplicate" data-panel="{{panelId}}" style="{{duplicateButtonStyle}}">
+      <span class="material-icons">content_copy</span>
+    </button>
+    <button class="btn-delete" data-panel="{{panelId}}" style="{{deleteButtonStyle}}">
+      <span class="material-icons">delete</span>
+    </button>
+  </div>
+</div>
+```
+
+**panel-editor.html** — Rendered into the editor region:
+
+```html
+<div class="panel-editor-container">
+  <div class="layout-editor-header">
+    <span class="panel-number-badge">{{panelNumber}}</span>
+    <span class="panel-title-ref">{{title}}</span>
+  </div>
+  <div class="code-editor-wrapper">
+    <div class="code-editor" id="editor-{{panelId}}" data-card="{{panelId}}"></div>
+  </div>
+  <div class="error-message" data-card="{{panelId}}" style="display: none;"></div>
+</div>
+```
+
+**panel-controls.html** — Rendered into the controls region:
+
+```html
+<div class="panel-controls-container">
+  <div class="leaf-viz" style="display: none;">
+    <div id="viz-container-{{panelId}}" class="viz-container"></div>
+  </div>
+</div>
+```
+
+### Toolbar Region
+
+If your layout defines a region named `toolbar`, the master panel's global action buttons (Update All, Play All, Stop All) are automatically extracted from the master panel and placed into the toolbar as a fixed bar. This keeps global controls always accessible regardless of scroll position.
+
+The toolbar auto-hides when empty (no buttons extracted):
+
+```css
+.layout-toolbar:empty {
+  display: none;
+}
+```
+
+### Focus Highlight in Layout Mode
+
+When a panel is active and expanded, all of its layout parts receive the CSS class `.focused`. Use this to highlight the active panel across columns:
+
+```css
+/* Highlight active panel header */
+.layout-part-header.focused .layout-panel-header {
+  border-color: var(--primary-color, #51cf66);
+  border-left: 3px solid var(--primary-color, #51cf66);
+  background: rgba(81, 207, 102, 0.08);
+}
+
+/* Highlight active panel editor */
+.layout-part-editor.focused .panel-editor-container {
+  border-color: var(--primary-color, #51cf66);
+}
+
+/* Highlight active panel controls */
+.layout-part-controls.focused {
+  border-left: 2px solid var(--primary-color, #51cf66);
+}
+```
+
+The `.focused` class is only applied when the panel is **both active and expanded**. Collapsing a panel removes the highlight. Clicking in a CodeMirror editor or clicking a panel header (in `"select"` mode) updates the highlight.
+
+### Layout Part Data Attributes
+
+Each part container element carries data attributes for identification:
+
+| Attribute | Value | Example |
+|-----------|-------|---------|
+| `data-panel-id` | Panel identifier | `"panel-0"`, `"panel-1696000000"` |
+| `data-part-name` | Part type | `"header"`, `"editor"`, `"controls"` |
+
+These can be used for CSS targeting:
+
+```css
+/* Style master panel header differently */
+.layout-part-header[data-panel-id="panel-0"] .layout-panel-header {
+  background: rgba(255, 215, 0, 0.05);
+}
+```
+
+### Example: Split Column Skin
+
+The built-in Split Column skin demonstrates a full 3-column layout:
+
+| Region | Content | Width |
+|--------|---------|-------|
+| `toolbar` | Global buttons (Update All, Play All, Stop All) | Full width, fixed bar |
+| `left` | Panel headers (side menu) | 200px fixed |
+| `center` | Code editors | Flexible (fills remaining space) |
+| `right` | Slider controls and visualizations | 280px fixed |
+
+With `"headerClickBehavior": "select"`, clicking a panel header in the left column always selects and focuses that panel — it acts as a navigation menu rather than a toggle.
 
 ## Required CSS Classes
 

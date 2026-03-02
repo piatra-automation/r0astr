@@ -919,7 +919,15 @@ export function setActivePanel(panelId) {
     if (prevElement) {
       prevElement.classList.remove('active', 'focused');
     }
+    // In layout mode, also remove from visible layout parts
+    if (isLayoutMode()) {
+      document.querySelectorAll(`.layout-part[data-panel-id="${activePanelId}"]`).forEach(el => {
+        el.classList.remove('focused');
+      });
+    }
   }
+
+  activePanelId = panelId;
 
   // Add active and focused classes to new panel
   const newElement = getPart(panelId, 'root') ||
@@ -929,10 +937,30 @@ export function setActivePanel(panelId) {
     newElement.classList.add('active', 'focused');
   }
 
-  activePanelId = panelId;
+  // In layout mode, only highlight layout parts if panel is expanded
+  if (isLayoutMode()) {
+    updateLayoutFocusHighlight(panelId);
+  }
 
   // Update panel opacities based on focus state
   updatePanelOpacities();
+}
+
+/**
+ * Update focus highlight on layout parts for a panel.
+ * Highlight only applies when the panel is both active and expanded.
+ * @param {string} panelId - Panel ID (or null to just refresh current active)
+ */
+export function updateLayoutFocusHighlight(panelId) {
+  const targetId = panelId || activePanelId;
+  if (!targetId) return;
+
+  const expanded = isPanelExpanded(targetId);
+  const isActive = targetId === activePanelId;
+
+  document.querySelectorAll(`.layout-part[data-panel-id="${targetId}"]`).forEach(el => {
+    el.classList.toggle('focused', isActive && expanded);
+  });
 }
 
 /**

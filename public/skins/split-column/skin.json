@@ -1,21 +1,24 @@
 {
   "name": "Split Column",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": "r0astr",
-  "description": "Two-column layout: headers and controls on the left, editors on the right",
+  "description": "Three-column layout: headers left, editors center, controls right, with global toolbar",
   "layoutType": "tree",
   "cssVariables": {},
   "css": {},
   "layout": {
     "regions": {
-      "left":  { "selector": "#region-left" },
-      "right": { "selector": "#region-right" }
+      "toolbar": { "selector": "#region-toolbar" },
+      "left":    { "selector": "#region-left" },
+      "center":  { "selector": "#region-center" },
+      "right":   { "selector": "#region-right" }
     },
     "panelParts": {
       "header":   { "region": "left" },
-      "editor":   { "region": "right" },
-      "controls": { "region": "left" }
-    }
+      "editor":   { "region": "center" },
+      "controls": { "region": "right" }
+    },
+    "headerClickBehavior": "select"
   },
   "templates": {
     "panel": "panel.html",

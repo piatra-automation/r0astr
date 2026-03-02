@@ -385,12 +385,26 @@ function deduceSliderLabel(patternCode, sliderIndex) {
   // Split pattern into lines to search for comments
   const lines = patternCode.split('\n');
 
-  // Find all slider() calls with function names
-  const sliderRegex = /\.(\w+)\s*\(\s*slider\s*\([^)]+\)\s*\)/g;
-  const matches = [...patternCode.matchAll(sliderRegex)];
+  // Find ALL slider() calls in order (both .fn(slider(...)) and variable assignment)
+  const allSliderCalls = [];
 
-  if (matches[sliderIndex]) {
-    const [fullMatch, functionName] = matches[sliderIndex];
+  // Form 1: .functionName(slider(...))
+  const fnRegex = /\.(\w+)\s*\(\s*slider\s*\(/g;
+  for (const m of patternCode.matchAll(fnRegex)) {
+    allSliderCalls.push({ index: m.index, type: 'fn', name: m[1] });
+  }
+
+  // Form 2: let/const/var VARNAME = slider(...)
+  const varRegex = /(?:let|const|var)\s+(\w+)\s*=\s*slider\s*\(/g;
+  for (const m of patternCode.matchAll(varRegex)) {
+    allSliderCalls.push({ index: m.index, type: 'var', name: m[1] });
+  }
+
+  // Sort by position in code so indices match transpiler order
+  allSliderCalls.sort((a, b) => a.index - b.index);
+
+  if (allSliderCalls[sliderIndex]) {
+    const call = allSliderCalls[sliderIndex];
 
     // Find which line this match is on
     let currentPos = 0;
@@ -400,7 +414,7 @@ function deduceSliderLabel(patternCode, sliderIndex) {
       const line = lines[i];
       const lineEnd = currentPos + line.length;
 
-      if (matches[sliderIndex].index >= currentPos && matches[sliderIndex].index < lineEnd) {
+      if (call.index >= currentPos && call.index < lineEnd) {
         matchLine = line;
         break;
       }
@@ -416,8 +430,12 @@ function deduceSliderLabel(patternCode, sliderIndex) {
       }
     }
 
-    // Priority 2: Function name (capitalize first letter)
-    return functionName.charAt(0).toUpperCase() + functionName.slice(1);
+    // Priority 2: Function name or variable name
+    if (call.type === 'fn') {
+      return call.name.charAt(0).toUpperCase() + call.name.slice(1);
+    }
+    // Variable name — preserve user's casing
+    return call.name;
   }
 
   return `Slider ${sliderIndex + 1}`;
