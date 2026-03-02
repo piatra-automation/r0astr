@@ -291,23 +291,33 @@ export function initColumnResizers() {
     const leftId = resizer.dataset.resizeLeft;
     const rightId = resizer.dataset.resizeRight;
     const leftEl = layoutWrapper.querySelector(`#${leftId}`);
-    if (!leftEl) return;
+    const rightEl = layoutWrapper.querySelector(`#${rightId}`);
+    if (!leftEl || !rightEl) return;
+
+    // If the left element is a flex filler (flex-grow > 0), resize the right
+    // element with inverted delta instead — the flex column can't take a pixel width.
+    const leftFlex = parseFloat(getComputedStyle(leftEl).flexGrow) || 0;
+    const resizeRight = leftFlex > 0;
+    const targetEl = resizeRight ? rightEl : leftEl;
+    const targetId = resizeRight ? rightId : leftId;
 
     const onMouseDown = (e) => {
       e.preventDefault();
       const startX = e.clientX;
-      const startWidth = leftEl.getBoundingClientRect().width;
-      const computed = getComputedStyle(leftEl);
+      const startWidth = targetEl.getBoundingClientRect().width;
+      const computed = getComputedStyle(targetEl);
       const minW = parseFloat(computed.minWidth) || 0;
       const maxW = parseFloat(computed.maxWidth) || Infinity;
+      // When resizing the right element, dragging right shrinks it
+      const direction = resizeRight ? -1 : 1;
 
       resizer.classList.add('resizing');
       document.body.classList.add('resizing-columns');
 
       const onMouseMove = (e) => {
-        const delta = e.clientX - startX;
+        const delta = (e.clientX - startX) * direction;
         const newWidth = Math.min(maxW, Math.max(minW, startWidth + delta));
-        leftEl.style.width = newWidth + 'px';
+        targetEl.style.width = newWidth + 'px';
       };
 
       const onMouseUp = () => {
@@ -317,8 +327,8 @@ export function initColumnResizers() {
         document.removeEventListener('mouseup', onMouseUp);
 
         // Persist the width
-        const finalWidth = Math.round(leftEl.getBoundingClientRect().width);
-        updateSetting(`layoutColumnWidths.${leftId}`, finalWidth);
+        const finalWidth = Math.round(targetEl.getBoundingClientRect().width);
+        updateSetting(`layoutColumnWidths.${targetId}`, finalWidth);
       };
 
       document.addEventListener('mousemove', onMouseMove);
@@ -326,8 +336,8 @@ export function initColumnResizers() {
     };
 
     const onDblClick = () => {
-      leftEl.style.width = '';
-      updateSetting(`layoutColumnWidths.${leftId}`, null);
+      targetEl.style.width = '';
+      updateSetting(`layoutColumnWidths.${targetId}`, null);
     };
 
     resizer.addEventListener('mousedown', onMouseDown);
