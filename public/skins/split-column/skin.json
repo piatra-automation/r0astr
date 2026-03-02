@@ -18,7 +18,8 @@
       "editor":   { "region": "center" },
       "controls": { "region": "right" }
     },
-    "headerClickBehavior": "select"
+    "headerClickBehavior": "select",
+    "resizableRegions": true
   },
   "templates": {
     "panel": "panel.html",

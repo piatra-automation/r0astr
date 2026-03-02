@@ -5,7 +5,7 @@ import { sliderWithID, sliderValues as cmSliderValues, highlightExtension, updat
 import { createPanel, renderPanel, deletePanel, duplicatePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, expandPanel, collapsePanel, togglePanel, isPanelExpanded, reRenderAllPanels, updateLayoutFocusHighlight, MASTER_PANEL_ID } from './managers/panelManager.js';
 import { initializePanelReorder, initializeLayoutReorder } from './ui/panelReorder.js';
 import { registerPanelParts, registerPart, getPart, resolvePanelId } from './managers/panelDOMRegistry.js';
-import { applyLayout, teardownLayout, isLayoutMode, getLayout, getRegion, createPartContainer, placePartInRegion } from './managers/layoutManager.js';
+import { applyLayout, teardownLayout, isLayoutMode, getLayout, getRegion, createPartContainer, placePartInRegion, initColumnResizers } from './managers/layoutManager.js';
 import { loadSettings, getSettings, updateSetting } from './managers/settingsManager.js';
 import { skinManager } from './managers/skinManager.js';
 import { moveEditorToScreen, removeEditorFromScreen, removeAllEditorsExcept, isEditorInScreen } from './managers/screenManager.js';
@@ -3822,6 +3822,7 @@ async function init() {
       ? skinManager.render('page', {})
       : skinManager.getFallbackTemplate('page', {});
     applyLayout(skinLayout, pageHTML);
+    initColumnResizers();
 
     // Decompose master panel: buttons to toolbar, parts to layout regions
     decomposeMasterPanel(skinLayout);
@@ -3940,6 +3941,7 @@ if (isLayoutMode()) {
         ? skinManager.render('page', {})
         : skinManager.getFallbackTemplate('page', {});
       applyLayout(layout, pageHTML);
+      initColumnResizers();
       console.log('[SkinHotReload] Layout mode activated');
     } else {
       teardownLayout();

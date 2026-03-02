@@ -183,10 +183,10 @@ body::before {
 }
 
 .layout-region-left {
-  width: 200px;
+  width: var(--layout-left-width, 200px);
   min-width: 160px;
   max-width: 300px;
-  border-right: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-right: none;
   flex-shrink: 0;
 }
 
@@ -196,11 +196,37 @@ body::before {
 }
 
 .layout-region-right {
-  width: 280px;
+  width: var(--layout-right-width, 280px);
   min-width: 200px;
   max-width: 400px;
-  border-left: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-left: none;
   flex-shrink: 0;
+}
+
+/* === Column resizer handles === */
+.layout-resizer {
+  width: 5px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  background: var(--border-color, rgba(255, 255, 255, 0.1));
+  transition: background-color 150ms;
+}
+
+.layout-resizer:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.layout-resizer.resizing {
+  background: var(--primary-color, #51cf66);
+}
+
+body.resizing-columns {
+  cursor: col-resize !important;
+  user-select: none;
+}
+
+body.resizing-columns * {
+  cursor: col-resize !important;
 }
 
 .region-label {

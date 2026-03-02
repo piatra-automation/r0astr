@@ -348,6 +348,49 @@ When `"toggle"` is set (or omitted):
 - Clicking an expanded panel's header collapses it and removes the focus highlight
 - The `showControlsWhenCollapsed` user setting is respected — controls stay visible for playing panels when the editor is collapsed
 
+### Resizable Regions
+
+Set `"resizableRegions": true` in your layout config to let users drag column borders to resize them. Widths persist to localStorage automatically.
+
+```json
+"layout": {
+  "regions": { ... },
+  "panelParts": { ... },
+  "resizableRegions": true
+}
+```
+
+In your `page-layout.html`, place `<div class="layout-resizer">` elements between adjacent regions. Use `data-resize-left` and `data-resize-right` attributes to identify which regions each handle sits between:
+
+```html
+<div class="layout-region layout-region-left" id="region-left">...</div>
+<div class="layout-resizer" data-resize-left="region-left" data-resize-right="region-center"></div>
+<div class="layout-region layout-region-center" id="region-center">...</div>
+<div class="layout-resizer" data-resize-left="region-center" data-resize-right="region-right"></div>
+<div class="layout-region layout-region-right" id="region-right">...</div>
+```
+
+The drag handle resizes the **left** region; center columns using `flex: 1` adjust automatically. Use CSS `min-width` / `max-width` on regions to constrain drag bounds. Double-clicking a resizer resets the column to its default width.
+
+Your theme CSS should use CSS custom properties for default widths so saved values can override them:
+
+```css
+.layout-region-left {
+  width: var(--layout-left-width, 200px);
+  min-width: 160px;
+  max-width: 300px;
+}
+```
+
+Style the resizer handle and active drag state:
+
+```css
+.layout-resizer { width: 5px; cursor: col-resize; background: rgba(255,255,255,0.1); }
+.layout-resizer:hover { background: rgba(255,255,255,0.25); }
+.layout-resizer.resizing { background: var(--primary-color); }
+body.resizing-columns { cursor: col-resize !important; user-select: none; }
+```
+
 ### Page Template
 
 Layout skins must provide a `page-layout.html` template that defines the overall page structure. This template is rendered once and inserted into the main content area; individual panel parts are then placed into the region containers.

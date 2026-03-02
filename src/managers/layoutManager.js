@@ -10,6 +10,7 @@
  */
 
 import { skinManager } from './skinManager.js';
+import { getSettings, updateSetting } from './settingsManager.js';
 
 // Current layout configuration (null = monolithic / classic mode)
 let currentLayout = null;
@@ -118,6 +119,7 @@ export function applyLayout(layout, pageTemplateHTML) {
  * Tear down the current layout, restoring classic mode
  */
 export function teardownLayout() {
+  teardownColumnResizers();
   currentLayout = null;
   regions.clear();
 
@@ -251,4 +253,100 @@ export function isLayoutCollapsed(panelId) {
     }
   }
   return false;
+}
+
+// --- Column Resizer Logic ---
+
+// Active listeners for cleanup
+let resizerCleanups = [];
+
+/**
+ * Initialize draggable column resizers.
+ * Reads `resizableRegions` from the current layout config.
+ * Restores persisted widths and attaches drag handlers.
+ */
+export function initColumnResizers() {
+  teardownColumnResizers();
+
+  if (!currentLayout || currentLayout.resizableRegions !== true) return;
+
+  const layoutWrapper = document.getElementById('layout-wrapper');
+  if (!layoutWrapper) return;
+
+  const resizers = layoutWrapper.querySelectorAll('.layout-resizer');
+  if (!resizers.length) return;
+
+  const settings = getSettings();
+  const savedWidths = settings.layoutColumnWidths || {};
+
+  // Restore saved widths
+  for (const [regionId, width] of Object.entries(savedWidths)) {
+    const el = layoutWrapper.querySelector(`#${regionId}`);
+    if (el) {
+      el.style.width = width + 'px';
+    }
+  }
+
+  resizers.forEach(resizer => {
+    const leftId = resizer.dataset.resizeLeft;
+    const rightId = resizer.dataset.resizeRight;
+    const leftEl = layoutWrapper.querySelector(`#${leftId}`);
+    if (!leftEl) return;
+
+    const onMouseDown = (e) => {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startWidth = leftEl.getBoundingClientRect().width;
+      const computed = getComputedStyle(leftEl);
+      const minW = parseFloat(computed.minWidth) || 0;
+      const maxW = parseFloat(computed.maxWidth) || Infinity;
+
+      resizer.classList.add('resizing');
+      document.body.classList.add('resizing-columns');
+
+      const onMouseMove = (e) => {
+        const delta = e.clientX - startX;
+        const newWidth = Math.min(maxW, Math.max(minW, startWidth + delta));
+        leftEl.style.width = newWidth + 'px';
+      };
+
+      const onMouseUp = () => {
+        resizer.classList.remove('resizing');
+        document.body.classList.remove('resizing-columns');
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+
+        // Persist the width
+        const finalWidth = Math.round(leftEl.getBoundingClientRect().width);
+        updateSetting(`layoutColumnWidths.${leftId}`, finalWidth);
+      };
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    };
+
+    const onDblClick = () => {
+      leftEl.style.width = '';
+      updateSetting(`layoutColumnWidths.${leftId}`, null);
+    };
+
+    resizer.addEventListener('mousedown', onMouseDown);
+    resizer.addEventListener('dblclick', onDblClick);
+
+    resizerCleanups.push(() => {
+      resizer.removeEventListener('mousedown', onMouseDown);
+      resizer.removeEventListener('dblclick', onDblClick);
+    });
+  });
+
+  console.log(`[LayoutManager] Column resizers initialized (${resizers.length} handles)`);
+}
+
+/**
+ * Clean up column resizer event listeners
+ */
+function teardownColumnResizers() {
+  resizerCleanups.forEach(fn => fn());
+  resizerCleanups = [];
+  document.body.classList.remove('resizing-columns');
 }
