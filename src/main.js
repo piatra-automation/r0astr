@@ -3678,6 +3678,9 @@ function decomposeMasterPanel(layout) {
     if (editorContainer) {
       const editorPart = createPartContainer(MASTER_PANEL_ID, 'editor', '');
       editorPart.innerHTML = '';
+      // Remove stale header from previous decompose cycle (if any)
+      const staleHeader = editorContainer.querySelector('.layout-editor-header');
+      if (staleHeader) staleHeader.remove();
       // Prepend header inside editorContainer (matching regular panel template structure)
       const editorHeader = document.createElement('div');
       editorHeader.className = 'layout-editor-header';
@@ -3959,6 +3962,14 @@ if (isLayoutMode()) {
     if (isLayoutMode()) {
       initializeLayoutReorder();
     }
+
+    // Force CodeMirror re-measurement after DOM moves and layout changes
+    // (editors created before their containers are in final positions may have zero dimensions)
+    requestAnimationFrame(() => {
+      for (const [, view] of editorViews) {
+        view.requestMeasure();
+      }
+    });
 
     console.log('✓ All panels re-rendered with new skin');
   });
