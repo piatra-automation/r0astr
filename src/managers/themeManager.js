@@ -91,8 +91,6 @@ export function updatePanelOpacities() {
       allParts.forEach(el => panelIds.add(el.dataset.panelId));
 
       panelIds.forEach(panelId => {
-        // Master panel (panel-0) stays expanded
-        if (panelId === 'panel-0') return;
         const isFocused = document.querySelector(`.layout-part[data-panel-id="${panelId}"].focused`) !== null;
         setLayoutCollapsed(panelId, !isFocused);
       });
