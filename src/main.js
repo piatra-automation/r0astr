@@ -3678,11 +3678,11 @@ function decomposeMasterPanel(layout) {
     if (editorContainer) {
       const editorPart = createPartContainer(MASTER_PANEL_ID, 'editor', '');
       editorPart.innerHTML = '';
-      // Wrap in the same structure as the panel-editor template
+      // Prepend header inside editorContainer (matching regular panel template structure)
       const editorHeader = document.createElement('div');
       editorHeader.className = 'layout-editor-header';
       editorHeader.innerHTML = '<span class="panel-number-badge">0</span><span class="panel-title-ref">GLOBALS</span>';
-      editorPart.appendChild(editorHeader);
+      editorContainer.prepend(editorHeader);
       // Move the actual editor container (preserves CodeMirror instance)
       editorPart.appendChild(editorContainer);
       placePartInRegion(MASTER_PANEL_ID, 'editor', editorPart);

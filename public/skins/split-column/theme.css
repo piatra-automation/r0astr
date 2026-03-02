@@ -429,6 +429,13 @@ body.resizing-columns * {
 .layout-part-editor {
   flex: 1;
   min-height: 120px;
+  overflow: hidden;
+}
+
+/* Override base panels.css overflow:visible — in layout mode each editor
+   is a flex child and must not bleed into adjacent editors. */
+.layout-part-editor .cm-scroller {
+  overflow: auto;
 }
 
 .layout-part-editor .panel-editor-container {
