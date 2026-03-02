@@ -260,12 +260,19 @@ body::before {
 
 .layout-panel-header .panel-title {
   flex: 1;
+  min-width: 0;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-primary, #e0e0e0);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.layout-panel-header .panel-title:hover {
+  text-decoration: underline dotted;
+  text-decoration-color: rgba(255, 255, 255, 0.3);
+  text-underline-offset: 3px;
 }
 
 .layout-panel-header .panel-number-badge {
@@ -281,10 +288,25 @@ body::before {
   color: var(--text-secondary, rgba(255, 255, 255, 0.6));
 }
 
-.layout-panel-header .panel-actions-left,
+.layout-panel-header .panel-actions-left {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* Right-side actions (duplicate, delete) — show on hover for compact headers */
 .layout-panel-header .panel-actions {
   display: flex;
   gap: 2px;
+  flex-shrink: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms;
+}
+
+.layout-panel-header:hover .panel-actions {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .layout-panel-header button {

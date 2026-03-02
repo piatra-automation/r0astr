@@ -1499,6 +1499,7 @@ async function initializeCards() {
   // Layout mode: clicking on a panel header — behavior driven by skin config
   // "select" (default for split-column): always expand+focus, never collapse from header
   // "toggle" (default): click toggles expand/collapse
+  let headerFocusTimer = null;
   document.addEventListener('click', (e) => {
     if (!isLayoutMode()) return;
     const header = e.target.closest('.layout-panel-header');
@@ -1520,7 +1521,9 @@ async function initializeCards() {
       bringPanelToFront(panelId);
       const view = editorViews.get(panelId);
       if (view) {
-        setTimeout(() => view.focus(), 10);
+        // Delay focus so dblclick on title can cancel it
+        clearTimeout(headerFocusTimer);
+        headerFocusTimer = setTimeout(() => view.focus(), 250);
       }
     } else {
       // Toggle mode: expand or collapse
@@ -1543,7 +1546,8 @@ async function initializeCards() {
         bringPanelToFront(panelId);
         const view = editorViews.get(panelId);
         if (view) {
-          setTimeout(() => view.focus(), 10);
+          clearTimeout(headerFocusTimer);
+          headerFocusTimer = setTimeout(() => view.focus(), 250);
         }
       }
     }
@@ -1564,6 +1568,9 @@ async function initializeCards() {
   document.addEventListener('dblclick', (e) => {
     const titleElement = e.target.closest('.panel-title');
     if (titleElement) {
+      // Cancel any pending editor focus from single-click
+      clearTimeout(headerFocusTimer);
+
       // Enable contenteditable
       titleElement.contentEditable = 'true';
       titleElement.focus();
