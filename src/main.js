@@ -1519,6 +1519,11 @@ async function initializeCards() {
         expandPanel(panelId);
       }
       bringPanelToFront(panelId);
+      // Scroll editor into view in center column
+      const editorPart = document.querySelector(`.layout-part-editor[data-panel-id="${panelId}"]`);
+      if (editorPart) {
+        editorPart.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
       const view = editorViews.get(panelId);
       if (view) {
         // Delay focus so dblclick on title can cancel it
@@ -1544,6 +1549,11 @@ async function initializeCards() {
       } else {
         expandPanel(panelId);
         bringPanelToFront(panelId);
+        // Scroll editor into view in center column
+        const editorPart = document.querySelector(`.layout-part-editor[data-panel-id="${panelId}"]`);
+        if (editorPart) {
+          editorPart.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
         const view = editorViews.get(panelId);
         if (view) {
           clearTimeout(headerFocusTimer);
