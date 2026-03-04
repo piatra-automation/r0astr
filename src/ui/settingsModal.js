@@ -13,8 +13,18 @@ import { getAllSkins, deleteSkin } from '../managers/skinStorage.js';
 import { skinManager } from '../managers/skinManager.js';
 import { applyHighContrast, applyReducedMotion, applyFocusStyle, createFocusTrap, getSystemPreferences } from '../managers/accessibilityManager.js';
 
-// Track if settings have been modified (dirty flag)
-let settingsDirty = false;
+// Per-section dirty state tracking
+const sectionDirtyState = {
+  'general-settings': false,
+  'editor-settings': false,
+  'behaviour-settings': false,
+  'integration-settings': false,
+  'accessibility-settings': false,
+  'advanced-settings': false,
+};
+
+// Snapshot of settings when modal opens (for Reset)
+let settingsSnapshot = null;
 
 /**
  * Populate skin selector with bundled + custom skins
@@ -99,6 +109,101 @@ async function renderCustomSkinsList() {
 }
 
 /**
+ * Switch to a specific settings section via sidebar navigation
+ */
+function switchSection(sectionId) {
+  const modal = document.getElementById('settings-modal');
+  if (!modal) return;
+
+  const sections = modal.querySelectorAll('.settings-content .settings-section');
+  const tabs = modal.querySelectorAll('.sidebar-tab');
+
+  sections.forEach(s => s.classList.remove('active'));
+  tabs.forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
+
+  const targetSection = document.getElementById(sectionId);
+  const targetTab = modal.querySelector(`.sidebar-tab[data-section="${sectionId}"]`);
+
+  if (targetSection) targetSection.classList.add('active');
+  if (targetTab) {
+    targetTab.classList.add('active');
+    targetTab.setAttribute('aria-selected', 'true');
+  }
+
+  // Reset scroll position
+  const content = modal.querySelector('.settings-content');
+  if (content) content.scrollTop = 0;
+
+  // Update Apply button state for current section
+  updateApplyButtonState();
+}
+
+/**
+ * Mark a section as having unsaved changes
+ */
+function markSectionDirty(sectionId) {
+  sectionDirtyState[sectionId] = true;
+  updateDirtyUI();
+}
+
+/**
+ * Clear dirty state for a section
+ */
+function clearSectionDirty(sectionId) {
+  sectionDirtyState[sectionId] = false;
+  updateDirtyUI();
+}
+
+/**
+ * Check if any section has unsaved changes
+ */
+function isAnyDirty() {
+  return Object.values(sectionDirtyState).some(Boolean);
+}
+
+/**
+ * Update all dirty-state UI indicators
+ */
+function updateDirtyUI() {
+  const anyDirty = isAnyDirty();
+
+  // Sidebar unsaved indicator
+  const indicator = document.getElementById('unsaved-indicator');
+  if (indicator) indicator.style.display = anyDirty ? 'flex' : 'none';
+
+  // Unsaved banner at bottom
+  const banner = document.getElementById('settings-unsaved-banner');
+  if (banner) banner.style.display = anyDirty ? 'flex' : 'none';
+
+  updateApplyButtonState();
+}
+
+/**
+ * Update Apply button enabled/disabled based on current section's dirty state
+ */
+function updateApplyButtonState() {
+  const modal = document.getElementById('settings-modal');
+  if (!modal) return;
+
+  const applyBtn = document.getElementById('settings-apply-btn');
+  const activeSection = modal.querySelector('.settings-section.active');
+  if (applyBtn && activeSection) {
+    applyBtn.disabled = !sectionDirtyState[activeSection.id];
+  }
+}
+
+/**
+ * Clear all dirty states
+ */
+function clearAllDirtyStates() {
+  Object.keys(sectionDirtyState).forEach(k => { sectionDirtyState[k] = false; });
+  updateDirtyUI();
+}
+
+/**
  * Open settings modal
  * Loads current settings and displays modal
  */
@@ -109,18 +214,24 @@ export async function openSettingsModal() {
     return;
   }
 
+  // Capture snapshot for Reset
+  settingsSnapshot = { ...getSettings() };
+
   // Load current settings into form
   await loadSettingsIntoForm();
 
   // Show modal
   modal.style.display = 'flex';
 
-  // Reset dirty flag
-  settingsDirty = false;
+  // Reset dirty states
+  clearAllDirtyStates();
 
-  // Focus first input for accessibility
-  const firstInput = modal.querySelector('input, select');
-  firstInput?.focus();
+  // Activate first tab
+  switchSection('general-settings');
+
+  // Focus first sidebar tab for accessibility
+  const firstTab = modal.querySelector('.sidebar-tab');
+  firstTab?.focus();
 }
 
 /**
@@ -497,8 +608,8 @@ function collectSettingsFromForm() {
 }
 
 /**
- * Save settings from form
- * Collects form values, saves to localStorage, and closes modal
+ * Save settings from form (does not close modal)
+ * Collects form values, saves to localStorage, applies side effects
  */
 async function handleSaveSettings() {
   const oldSettings = getSettings();
@@ -511,8 +622,8 @@ async function handleSaveSettings() {
   const success = saveSettings(newSettings);
 
   if (success) {
-    // Reset dirty flag
-    settingsDirty = false;
+    // Update snapshot to reflect saved state
+    settingsSnapshot = { ...newSettings };
 
     // Story 4.4: Restart auto-save timer with new interval
     if (newSettings.behavior?.autoSaveInterval) {
@@ -527,7 +638,7 @@ async function handleSaveSettings() {
       try {
         const { skinManager } = await import('../managers/skinManager.js');
         await skinManager.hotReloadSkin(skinName);
-        console.log('✓ Skin hot-reloaded successfully');
+        console.log('Skin hot-reloaded successfully');
       } catch (error) {
         console.error('Failed to hot-reload skin:', error);
         showSettingsNotification(`Failed to load skin '${skinName}'. Please reload the page.`, 'error');
@@ -537,28 +648,12 @@ async function handleSaveSettings() {
     // Dispatch settings changed event for components to react
     window.dispatchEvent(new CustomEvent('settings-changed', { detail: newSettings }));
 
-    // Close modal
-    closeSettingsModal();
-
-    console.log('✓ Settings saved successfully');
+    console.log('Settings saved successfully');
   } else {
     console.error('Failed to save settings');
   }
-}
 
-/**
- * Handle cancel button click
- * Checks for unsaved changes and closes modal
- */
-function handleCancelSettings() {
-  if (settingsDirty) {
-    // Non-blocking notification instead of blocking confirm()
-    showSettingsNotification('Changes discarded. Click Save to keep changes.', 'warning');
-  }
-
-  // Reset dirty flag and close modal
-  settingsDirty = false;
-  closeSettingsModal();
+  return success;
 }
 
 /**
@@ -567,27 +662,82 @@ function handleCancelSettings() {
  */
 export function initializeSettingsModal() {
   const modal = document.getElementById('settings-modal');
-  const saveBtn = document.getElementById('settings-save-btn');
-  const cancelBtn = document.getElementById('settings-cancel-btn');
 
   if (!modal) {
     console.warn('Settings modal not found in DOM');
     return;
   }
 
-  // Save button - save and close
-  saveBtn?.addEventListener('click', () => {
-    handleSaveSettings();
+  // --- Sidebar tab navigation ---
+  modal.querySelectorAll('.sidebar-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      switchSection(tab.dataset.section);
+    });
   });
 
-  // Cancel button - close without saving
-  cancelBtn?.addEventListener('click', () => {
-    handleCancelSettings();
+  // --- Close button ---
+  const closeBtn = document.getElementById('settings-close-btn');
+  closeBtn?.addEventListener('click', () => {
+    if (isAnyDirty()) {
+      showSettingsNotification('Changes discarded.', 'warning');
+    }
+    clearAllDirtyStates();
+    closeSettingsModal();
   });
 
-  // NON-MODAL: No backdrop click to close
-  // NON-MODAL: No ESC key to close
-  // User must explicitly choose Save or Cancel
+  // --- Per-section Apply button ---
+  const applyBtn = document.getElementById('settings-apply-btn');
+  applyBtn?.addEventListener('click', async () => {
+    const success = await handleSaveSettings();
+    if (success) {
+      const activeSection = modal.querySelector('.settings-section.active');
+      if (activeSection) clearSectionDirty(activeSection.id);
+      clearAllDirtyStates(); // all saved
+      showSettingsNotification('Settings applied.', 'success');
+    }
+  });
+
+  // --- Per-section Reset button ---
+  const resetBtn = document.getElementById('settings-reset-btn');
+  resetBtn?.addEventListener('click', async () => {
+    if (settingsSnapshot) {
+      // Restore from snapshot
+      saveSettings(settingsSnapshot);
+      await loadSettingsIntoForm();
+      clearAllDirtyStates();
+      showSettingsNotification('Settings reset.', 'info');
+    }
+  });
+
+  // --- Save All (banner) ---
+  const saveAllBtn = document.getElementById('settings-save-all-btn');
+  saveAllBtn?.addEventListener('click', async () => {
+    const success = await handleSaveSettings();
+    if (success) {
+      clearAllDirtyStates();
+      showSettingsNotification('All settings saved.', 'success');
+    }
+  });
+
+  // --- Discard (banner) ---
+  const discardBtn = document.getElementById('settings-discard-btn');
+  discardBtn?.addEventListener('click', async () => {
+    if (settingsSnapshot) {
+      saveSettings(settingsSnapshot);
+    }
+    await loadSettingsIntoForm();
+    clearAllDirtyStates();
+    showSettingsNotification('Changes discarded.', 'warning');
+  });
+
+  // --- Reload from disk ---
+  const reloadBtn = document.getElementById('reload-settings-btn');
+  reloadBtn?.addEventListener('click', async () => {
+    await loadSettingsIntoForm();
+    settingsSnapshot = { ...getSettings() };
+    clearAllDirtyStates();
+    showSettingsNotification('Settings reloaded from storage.', 'info');
+  });
 
   // Story 4.5: Wire appearance settings with live preview
   const fontSizeSlider = document.getElementById('font-size-slider');
@@ -879,33 +1029,14 @@ export function initializeSettingsModal() {
     importFile.value = ''; // Reset file input
   });
 
-  // Track changes to form inputs (dirty flag)
-  const trackChanges = () => {
-    settingsDirty = true;
-  };
-
-  // Story 4.4: Add change listeners for behavior controls
-  modal.querySelectorAll('input, select, textarea').forEach(input => {
-    input.addEventListener('change', trackChanges);
-    input.addEventListener('input', trackChanges);
-  });
-
-  // Collapsible settings sections with accessibility support
-  modal.querySelectorAll('.settings-section h3').forEach(header => {
-    header.addEventListener('click', () => {
-      const section = header.closest('.settings-section');
-      const isCollapsed = section.classList.toggle('collapsed');
-      // Update aria-expanded state
-      header.setAttribute('aria-expanded', (!isCollapsed).toString());
-    });
-
-    // Keyboard support for collapsible sections
-    header.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        header.click();
-      }
-    });
+  // Per-section change tracking
+  modal.querySelectorAll('.settings-section input, .settings-section select, .settings-section textarea').forEach(input => {
+    const handler = () => {
+      const section = input.closest('.settings-section');
+      if (section) markSectionDirty(section.id);
+    };
+    input.addEventListener('change', handler);
+    input.addEventListener('input', handler);
   });
 
   // Accessibility settings handlers
@@ -981,7 +1112,11 @@ export function initializeSettingsModal() {
 
   // Handle escape key to close modal
   modal.addEventListener('focustrap:escape', () => {
-    handleCancelSettings();
+    if (isAnyDirty()) {
+      showSettingsNotification('Changes discarded.', 'warning');
+    }
+    clearAllDirtyStates();
+    closeSettingsModal();
   });
 
   console.log('✓ Settings modal initialized with accessibility support');

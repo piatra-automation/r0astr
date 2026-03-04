@@ -25,18 +25,18 @@ body::before {
   background: transparent;
 }
 
-/* === Top Menu Bar — always visible === */
+/* === Top Menu Bar — always visible, inside enlarged banner === */
 .top-menu-bar {
   position: fixed;
-  top: var(--projection-margin-top);
-  right: calc(var(--projection-margin-right) + 16px);
+  top: var(--projection-margin-top, 0px);
+  right: calc(var(--projection-margin-right, 0px) + 16px);
   left: auto;
-  height: var(--banner-bar-height);
+  height: 90px;
   width: auto;
   padding: 0;
-  background: var(--surface-card-50);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-radius: 0;
   flex-direction: row;
   gap: 8px;
@@ -45,7 +45,7 @@ body::before {
   opacity: 1;
   pointer-events: auto;
   transform: none;
-  z-index: calc(var(--z-panel) + 1);
+  z-index: calc(var(--z-panel) + 2);
 }
 
 .top-menu-bar .top-bar-btn {
@@ -78,22 +78,97 @@ body::before {
 .top-menu-bar #remote-btn::before { content: 'cloud'; }
 .top-menu-bar #config-btn::before { content: 'settings'; }
 
-/* === Banner bar === */
+/* === Banner bar — enlarged header with inline metronome === */
 .banner-bar {
   opacity: 1;
   pointer-events: auto;
+  height: 90px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border-default);
 }
 
-/* === Global Toolbar === */
+/* Electron: preserve OS window control padding */
+.electron-app .banner-bar {
+  padding-left: 90px;
+}
+
+/* Scale logo proportionally (180% of 36px ≈ 65px) */
+.banner-bar .site-logo {
+  height: 65px;
+}
+
+.banner-bar .site-logo img {
+  height: 65px;
+}
+
+/* Subtitle — bump up slightly */
+.banner-bar .banner-subtitle {
+  font-size: 12px;
+}
+
+/* Electron drag region matches banner height */
+.electron-drag-region {
+  height: 90px;
+}
+
+/* === Metronome — inline flex child of banner bar === */
+.metronome-section {
+  position: static;
+  flex: 1;
+  height: auto;
+  margin: 0 16px;
+  padding: 0;
+  background: transparent;
+  opacity: 1;
+  pointer-events: auto;
+  z-index: auto;
+  display: flex;
+  align-items: center;
+}
+
+.step-sequencer {
+  background: oklch(0 0 0 / 0.25);
+  border-radius: 3px;
+  height: 20px;
+  gap: 2px;
+  padding: 2px 3px;
+}
+
+.step-box {
+  min-width: 0;
+  width: 4px;
+  flex: 0 1 4px;
+  border-radius: 1px;
+}
+
+/* Downbeat markers — keep taller but match thin width */
+.step-box[data-step="0"],
+.step-box[data-step="4"],
+.step-box[data-step="8"],
+.step-box[data-step="12"] {
+  margin-top: -1px;
+  height: calc(100% + 2px);
+}
+
+/* === Global Toolbar — fixed in banner, right of center (left of config buttons) === */
 .layout-toolbar {
+  position: fixed;
+  top: var(--projection-margin-top, 0px);
+  /* 4 config buttons × (32px + 8px gap) + 16px right margin ≈ 176px */
+  right: calc(var(--projection-margin-right, 0px) + 176px);
+  left: auto;
+  height: 90px;
+  min-height: 0;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  background: var(--surface-card-50, rgba(255, 255, 255, 0.03));
-  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-  min-height: 40px;
-  flex-shrink: 0;
+  padding: 0 12px;
+  background: transparent;
+  border-bottom: none;
+  z-index: calc(var(--z-panel) + 1);
+  -webkit-app-region: no-drag;
 }
 
 .layout-toolbar:empty {
@@ -111,22 +186,23 @@ body::before {
 
 .toolbar-buttons {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
 }
 
 .toolbar-buttons button {
-  background: var(--panel-bg, rgba(255, 255, 255, 0.05));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background: var(--surface-card-50, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--border-default, rgba(255, 255, 255, 0.08));
   color: var(--text-secondary, rgba(255, 255, 255, 0.6));
   cursor: pointer;
-  padding: 4px 10px;
-  border-radius: 4px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md, 4px);
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 13px;
   transition: color 150ms, background-color 150ms;
+  -webkit-app-region: no-drag;
 }
 
 .toolbar-buttons button:hover {
@@ -135,7 +211,7 @@ body::before {
 }
 
 .toolbar-buttons button .material-icons {
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .toolbar-buttons button .count-badge {
@@ -155,11 +231,11 @@ body::before {
   display: none;
 }
 
-/* === Layout wrapper === */
+/* === Layout wrapper — starts below enlarged banner === */
 .layout-wrapper {
   position: absolute;
   inset: 0;
-  top: var(--menu-bar-height, 48px);
+  top: 90px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -520,4 +596,60 @@ body.resizing-columns * {
 
 .layout-part-header.drag-over-below {
   border-bottom: 2px solid var(--primary-color, #51cf66);
+}
+
+/* === Settings Modal === */
+.modal-content.settings-panel {
+  background: var(--surface-card-80);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 8px 32px oklch(0 0 0 / 0.6);
+}
+
+.settings-sidebar {
+  background: var(--surface-card-30);
+}
+
+.sidebar-tab.active {
+  background: oklch(0.55 0.15 150 / 0.15);
+  border-left-color: var(--color-primary);
+}
+
+.settings-section-footer,
+.settings-unsaved-banner {
+  background: var(--surface-card-30);
+}
+
+.settings-section-footer .btn-primary,
+.settings-unsaved-banner .btn-primary {
+  background: var(--color-primary);
+  color: var(--text-primary);
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.settings-section-footer .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.settings-section-footer .btn-ghost,
+.settings-unsaved-banner .btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+/* Section content — always visible */
+.settings-section-content {
+  height: auto;
+  opacity: 1;
+  overflow: visible;
+  padding-left: 0;
 }

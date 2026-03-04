@@ -63,7 +63,8 @@ export const DEFAULT_SETTINGS = {
   remoteWSLayout: 'side-panel',   // 'side-panel', 'modal', 'hidden'
   skin: 'default',                // Active skin name (e.g., 'default', 'glass', 'split-column')
   skinPack: '',                   // Path to WinAmp-style skin folder (future)
-  beatLocking: 'immediate'        // Pattern evaluation timing: 'immediate', 'beat', 'cycle'
+  beatLocking: 'immediate',       // Pattern evaluation timing: 'immediate', 'beat', 'cycle'
+  tempo: 30                        // Global tempo in CPM (cycles per minute), default 30 CPM = 120 BPM
 };
 
 // Current settings in memory

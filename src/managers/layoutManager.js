@@ -158,26 +158,27 @@ export function createPartContainer(panelId, partName, html) {
 /**
  * Place a rendered part into its designated region.
  * In layout mode, parts are appended to region containers.
- * Parts for the same panel are ordered by panel number.
+ * Parts are ordered by display number (panel.number), NOT by panelId.
  *
  * @param {string} panelId - Panel identifier
  * @param {string} partName - Part name
  * @param {HTMLElement} partElement - The part container element
+ * @param {number} [displayNumber] - Panel display number for ordering
  * @returns {boolean} True if placed successfully
  */
-export function placePartInRegion(panelId, partName, partElement) {
+export function placePartInRegion(panelId, partName, partElement, displayNumber) {
   const region = getRegionForPart(partName);
   if (!region) return false;
 
-  // Extract panel number for ordered insertion
-  const panelNum = parseInt(panelId.replace(/\D/g, ''), 10) || 0;
+  const panelNum = displayNumber ?? 0;
+  partElement.dataset.displayNumber = panelNum;
 
-  // Find the right insertion point by comparing panel numbers
-  // so that panels appear in order (master panel-0 first)
+  // Find the right insertion point by comparing display numbers
+  // so that panels appear in their user-defined order
   const existingParts = region.querySelectorAll(`.layout-part-${partName}[data-panel-id]`);
   let insertBefore = null;
   for (const existing of existingParts) {
-    const existingNum = parseInt(existing.dataset.panelId.replace(/\D/g, ''), 10) || 0;
+    const existingNum = parseInt(existing.dataset.displayNumber, 10) || 0;
     if (existingNum > panelNum) {
       insertBefore = existing;
       break;

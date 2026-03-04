@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.17.0] - 2026-03-04
+
+### Added
+- **Settings panel redesign** — sidebar-navigated settings modal with per-section dirty state, Reset/Apply controls, unsaved changes banner, and consistent styling across default, glass, and split-column skins
+- **Split-column header metronome** — metronome visible in the banner bar between the title and toolbar buttons; step segments styled as thin compact bars
+- **Global toolbar in split-column header** — Play All, Stop All, Update All buttons positioned in the banner bar alongside config controls
+- **Enlarged split-column header** — banner bar scaled to 180% height with proportionally larger logo; respects Electron OS window control padding
+
+### Fixed
+- **Panel drag order persistence** — dragging panels in split-column skin now persists correctly across reloads; `placePartInRegion()` uses `panel.number` display order instead of panelId timestamp digits
+- **Layout part display-number sync** — `renumberPanelsLayout()` updates `data-display-number` on all layout parts after drag reorder, ensuring correct ordering on next render
+
 ## [0.16.0] - 2026-03-03
 
 ### Added

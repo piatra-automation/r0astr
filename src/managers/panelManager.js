@@ -224,9 +224,11 @@ function renumberPanelsLayout() {
       panel.number = index;
     }
 
-    // Also update badges in other regions (editor has a mini header)
-    document.querySelectorAll(`[data-panel-id="${panelId}"] .panel-number-badge`).forEach(b => {
-      b.textContent = index;
+    // Also update badges and display-number in other regions
+    document.querySelectorAll(`[data-panel-id="${panelId}"]`).forEach(el => {
+      el.dataset.displayNumber = index;
+      const b = el.querySelector('.panel-number-badge');
+      if (b) b.textContent = index;
     });
   });
 
@@ -593,7 +595,7 @@ function renderPanelLayout(panelId, panel, options) {
     const partContainer = createPartContainer(panelId, partName, html);
 
     // Place into region — fall back to appending to virtual root if no region
-    if (!placePartInRegion(panelId, partName, partContainer)) {
+    if (!placePartInRegion(panelId, partName, partContainer, panel.number)) {
       panelElement.appendChild(partContainer);
     }
 

@@ -445,3 +445,47 @@ body::before {
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8),
               0 0 0 1px rgba(255, 255, 255, 0.1);
 }
+
+/* Settings sidebar — glass morphism */
+.settings-sidebar {
+  background: rgba(15, 12, 41, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-tab.active {
+  background: rgba(0, 212, 255, 0.12);
+  border-left-color: var(--primary-color, #00d4ff);
+}
+
+.sidebar-tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.settings-section-footer,
+.settings-unsaved-banner {
+  background: rgba(15, 12, 41, 0.6);
+}
+
+.settings-section-footer .btn-primary,
+.settings-unsaved-banner .btn-primary {
+  background: var(--primary-color, #00d4ff);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.settings-section-footer .btn-primary:hover,
+.settings-unsaved-banner .btn-primary:hover {
+  opacity: 0.85;
+}
+
+.settings-section-footer .btn-ghost,
+.settings-unsaved-banner .btn-ghost {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.settings-section-footer .btn-ghost:hover,
+.settings-unsaved-banner .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+}

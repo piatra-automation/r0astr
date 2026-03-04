@@ -699,8 +699,8 @@ function renderTempoControl() {
     return;
   }
 
-  // Get current tempo value (default 30 CPM = 120 BPM)
-  const currentCpm = window.TEMPO_CPM_VALUE || 30;
+  // Get current tempo value from settings (default 30 CPM = 120 BPM)
+  const currentCpm = window.TEMPO_CPM_VALUE || settings.tempo || 30;
   const showCpm = settings.advanced.show_cpm;
   const displayValue = showCpm ? currentCpm : currentCpm * 4; // BPM = CPM * 4
   const displayUnit = showCpm ? 'CPM' : 'BPM';
@@ -805,6 +805,9 @@ function attachTempoInputListener(tempoControl, showCpm, displayUnit) {
       strudelCore.scheduler.setCps(cps);
       console.log(`🎵 Tempo: ${cpm.toFixed(1)} CPM (${(cpm * 4).toFixed(0)} BPM, ${cps.toFixed(3)} CPS)`);
     }
+
+    // Persist to settings
+    updateSetting('tempo', cpm);
   });
 }
 
@@ -1616,6 +1619,12 @@ async function initializeCards() {
         if (success) {
           // Update displayed title (in case sanitization changed it)
           titleElement.textContent = panel.title;
+
+          // Update editor header label in center column
+          const editorTitleRef = document.querySelector(`.layout-part-editor[data-panel-id="${panelId}"] .panel-title-ref`);
+          if (editorTitleRef) {
+            editorTitleRef.textContent = panel.title;
+          }
 
           // Story 8.3: Debounced WebSocket broadcast for title changes
           if (titleBroadcastTimers[panelId]) {
@@ -3664,6 +3673,14 @@ function decomposeMasterPanel(layout) {
       console.log('[Layout] Master global buttons moved to toolbar');
     }
 
+    // Move metronome into banner bar (inline between subtitle and buttons)
+    const bannerBar = document.getElementById('banner-bar');
+    const metronomeSection = document.getElementById('metronome-section');
+    if (bannerBar && metronomeSection) {
+      bannerBar.appendChild(metronomeSection);
+      console.log('[Layout] Metronome moved into banner bar');
+    }
+
     // Distribute master panel parts into layout regions (move actual DOM elements)
     const summary = masterEl.querySelector('summary');
     const editorContainer = masterEl.querySelector('.panel-editor-container');
@@ -3681,7 +3698,7 @@ function decomposeMasterPanel(layout) {
       if (badge) headerDiv.appendChild(badge.cloneNode(true));
       if (title) headerDiv.appendChild(title.cloneNode(true));
       headerPart.appendChild(headerDiv);
-      placePartInRegion(MASTER_PANEL_ID, 'header', headerPart);
+      placePartInRegion(MASTER_PANEL_ID, 'header', headerPart, 0);
     }
 
     // Editor part → center column (move the actual editor container to preserve CodeMirror)
@@ -3698,7 +3715,7 @@ function decomposeMasterPanel(layout) {
       editorContainer.prepend(editorHeader);
       // Move the actual editor container (preserves CodeMirror instance)
       editorPart.appendChild(editorContainer);
-      placePartInRegion(MASTER_PANEL_ID, 'editor', editorPart);
+      placePartInRegion(MASTER_PANEL_ID, 'editor', editorPart, 0);
     }
 
     // Controls part → right column (move the actual controls container)
@@ -3706,7 +3723,7 @@ function decomposeMasterPanel(layout) {
       const controlsPart = createPartContainer(MASTER_PANEL_ID, 'controls', '');
       controlsPart.innerHTML = '';
       controlsPart.appendChild(controlsContainer);
-      placePartInRegion(MASTER_PANEL_ID, 'controls', controlsPart);
+      placePartInRegion(MASTER_PANEL_ID, 'controls', controlsPart, 0);
     }
 
     // Hide the master <li> shell (its contents have been distributed)
@@ -3928,6 +3945,11 @@ if (document.querySelector('.panel-tree')) {
 if (isLayoutMode()) {
   initializeLayoutReorder();
 }
+
+// Persist panel order after drag reorder
+eventBus.on('panel:reordered', () => {
+  savePanelStateNow();
+});
 
 // NOTE: updateAllEditorFontSizes is now imported from ./panels/panelEditor.js
 
