@@ -114,11 +114,12 @@ body::before {
 }
 
 /* === Metronome — inline flex child of banner bar === */
+/* Right margin clears the fixed-position toolbar + config buttons overlay */
 .metronome-section {
   position: static;
   flex: 1;
   height: auto;
-  margin: 0 16px;
+  margin: 0 360px 0 16px;
   padding: 0;
   background: transparent;
   opacity: 1;
