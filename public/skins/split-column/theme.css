@@ -334,6 +334,28 @@ body.resizing-columns * {
   display: none;
 }
 
+/* --- Add Panel button at bottom of header region --- */
+.layout-add-panel-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px dashed var(--border-color, rgba(255, 255, 255, 0.12));
+  color: var(--text-secondary, rgba(255, 255, 255, 0.4));
+  cursor: pointer;
+  font-size: 12px;
+  transition: color 150ms, border-color 150ms, background-color 150ms;
+}
+
+.layout-add-panel-btn:hover {
+  color: var(--text-primary, #fff);
+  border-color: var(--primary-color, #51cf66);
+  background: rgba(81, 207, 102, 0.08);
+}
+
 /* --- Header part (left column) --- */
 .layout-part-header {
   /* Mirrors the summary row style from the default skin */

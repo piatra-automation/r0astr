@@ -5,7 +5,7 @@ import { sliderWithID, sliderValues as cmSliderValues, highlightExtension, updat
 import { createPanel, renderPanel, deletePanel, duplicatePanel, getPanel, updatePanelTitle, bringPanelToFront, updatePanel, loadPanelState, savePanelState, savePanelStateWithMasterCode, startAutoSaveTimer, getAllPanels, getPanelEditorContainer, getNextPanelNumber, renumberPanels, expandPanel, collapsePanel, togglePanel, isPanelExpanded, reRenderAllPanels, updateLayoutFocusHighlight, MASTER_PANEL_ID } from './managers/panelManager.js';
 import { initializePanelReorder, initializeLayoutReorder } from './ui/panelReorder.js';
 import { registerPanelParts, registerPart, getPart, resolvePanelId } from './managers/panelDOMRegistry.js';
-import { applyLayout, teardownLayout, isLayoutMode, getLayout, getRegion, createPartContainer, placePartInRegion, initColumnResizers } from './managers/layoutManager.js';
+import { applyLayout, teardownLayout, isLayoutMode, getLayout, getRegion, getRegionForPart, createPartContainer, placePartInRegion, initColumnResizers } from './managers/layoutManager.js';
 import { loadSettings, getSettings, updateSetting } from './managers/settingsManager.js';
 import { skinManager } from './managers/skinManager.js';
 import { moveEditorToScreen, removeEditorFromScreen, removeAllEditorsExcept, isEditorInScreen } from './managers/screenManager.js';
@@ -1061,6 +1061,23 @@ function ensureAddPanelRowAtEnd() {
     panelTree.appendChild(addPanelRow);
     console.log('[Layout] Moved add-panel-row to end of panel tree');
   }
+}
+
+// In layout mode, append a "+ Add Panel" button to the header region
+function ensureLayoutAddPanelButton() {
+  if (!isLayoutMode()) return;
+  const headerRegion = getRegionForPart('header');
+  if (!headerRegion) return;
+  // Avoid duplicates
+  if (headerRegion.querySelector('.layout-add-panel-btn')) return;
+
+  const btn = document.createElement('button');
+  btn.className = 'layout-add-panel-btn';
+  btn.textContent = '+ Add Panel';
+  btn.addEventListener('click', () => {
+    document.getElementById('add-panel-btn')?.click();
+  });
+  headerRegion.appendChild(btn);
 }
 
 // Load starter layout for first-time users (no saved state)
@@ -3880,6 +3897,7 @@ setTimeout(() => {
 }, 100);
 
 await initializeCards();
+ensureLayoutAddPanelButton();
 initializeSettingsModal();
 initializeAccessibility();
 initializeKeyboardShortcuts();
