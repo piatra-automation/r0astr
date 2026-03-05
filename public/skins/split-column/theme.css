@@ -138,8 +138,7 @@ body::before {
 
 .step-box {
   min-width: 0;
-  width: 4px;
-  flex: 0 1 4px;
+  flex: 1;
   border-radius: 1px;
 }
 
