@@ -3660,11 +3660,6 @@ function decomposeMasterPanel(layout) {
       toolbarContainer.className = 'toolbar-buttons';
       toolbarContainer.id = 'master-toolbar-buttons';
 
-      const label = document.createElement('span');
-      label.className = 'toolbar-label';
-      label.textContent = 'Global';
-      toolbarRegion.appendChild(label);
-
       if (btnUpdateAll) toolbarContainer.appendChild(btnUpdateAll);
       if (btnPlayAll) toolbarContainer.appendChild(btnPlayAll);
       if (btnStopAll) toolbarContainer.appendChild(btnStopAll);
