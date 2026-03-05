@@ -1068,15 +1068,17 @@ function ensureLayoutAddPanelButton() {
   if (!isLayoutMode()) return;
   const headerRegion = getRegionForPart('header');
   if (!headerRegion) return;
-  // Avoid duplicates
-  if (headerRegion.querySelector('.layout-add-panel-btn')) return;
 
-  const btn = document.createElement('button');
-  btn.className = 'layout-add-panel-btn';
-  btn.textContent = '+ Add Panel';
-  btn.addEventListener('click', () => {
-    document.getElementById('add-panel-btn')?.click();
-  });
+  let btn = headerRegion.querySelector('.layout-add-panel-btn');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.className = 'layout-add-panel-btn';
+    btn.textContent = '+ Add Panel';
+    btn.addEventListener('click', () => {
+      document.getElementById('add-panel-btn')?.click();
+    });
+  }
+  // Always move to end
   headerRegion.appendChild(btn);
 }
 
@@ -1362,6 +1364,9 @@ async function initializeCards() {
 
       // Initialize visual state (Story 6.3)
       updateVisualIndicators(panelId);
+
+      // Keep add-panel button at bottom of header region
+      ensureLayoutAddPanelButton();
 
       console.log(`Created new panel: ${panelId}`);
 
