@@ -683,6 +683,7 @@ body.resizing-columns * {
 }
 
 .layout-part-editor .code-editor-wrapper {
+  background: transparent;
 }
 
 .layout-part-editor .code-editor {
