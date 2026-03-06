@@ -346,6 +346,11 @@ body.resizing-columns * {
   display: none;
 }
 
+/* Always show controls for collapsed panels in this skin */
+.layout-part-controls.layout-collapsed {
+  display: block;
+}
+
 /* In the center column, collapsed editors show only their header bar
    instead of vanishing entirely — the header identifies the panel. */
 .layout-part-editor.layout-collapsed {
