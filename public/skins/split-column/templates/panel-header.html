@@ -6,12 +6,25 @@
     </button>
   </div>
   <span class="panel-title" data-panel-id="{{panelId}}" contenteditable="false" spellcheck="false">{{title}}</span>
-  <div class="panel-actions">
+  <div class="panel-actions" style="display:none">
     <button class="btn-duplicate" data-panel="{{panelId}}" title="Duplicate (Cmd+D)" style="{{duplicateButtonStyle}}">
       <span class="material-icons">content_copy</span>
     </button>
     <button class="btn-delete" data-panel="{{panelId}}" title="Delete" style="{{deleteButtonStyle}}">
       <span class="material-icons">delete</span>
     </button>
+  </div>
+  <div class="panel-more-menu">
+    <button class="panel-more-trigger" title="More actions">
+      <span class="material-icons">more_horiz</span>
+    </button>
+    <div class="panel-more-flyout">
+      <button class="btn-duplicate" data-panel="{{panelId}}" style="{{duplicateButtonStyle}}">
+        <span class="material-icons">content_copy</span> Duplicate
+      </button>
+      <button class="btn-delete" data-panel="{{panelId}}" style="{{deleteButtonStyle}}">
+        <span class="material-icons">delete</span> Delete
+      </button>
+    </div>
   </div>
 </div>
