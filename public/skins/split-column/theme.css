@@ -95,6 +95,7 @@ body::before {
 
 .banner-bar .site-logo img {
   height: 65px;
+  content: url('/skins/split-column/banner.png');
 }
 
 /* Subtitle — bump up slightly */
