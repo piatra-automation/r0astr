@@ -4,7 +4,10 @@
   "author": "r0astr",
   "description": "Three-column layout: headers left, editors center, controls right, with global toolbar",
   "layoutType": "tree",
-  "cssVariables": {},
+  "cssVariables": {
+    "--color-primary": "#b6f0fe",
+    "--primary-color": "#b6f0fe"
+  },
   "css": {},
   "layout": {
     "regions": {
