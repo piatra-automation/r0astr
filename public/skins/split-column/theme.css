@@ -4,6 +4,15 @@
  * Inherits base.css styling; only defines layout-specific rules.
  */
 
+/* === x3270 monospace font for editors === */
+@font-face {
+  font-family: '3270';
+  src: url('/static/fonts/3270-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* === Background — teal gradient === */
 html {
   background-color: #1d3f4f;
@@ -530,6 +539,11 @@ body.resizing-columns * {
 }
 
 /* --- Editor part (center column) --- */
+.cm-editor .cm-content,
+.cm-editor .cm-gutters {
+  font-family: '3270', monospace;
+}
+
 .layout-part-editor {
   flex: none;
   overflow: hidden;
