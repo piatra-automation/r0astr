@@ -6,11 +6,11 @@
 
 /* === Background — teal gradient === */
 html {
-  background-color: #316a84;
+  background-color: #1d3f4f;
 }
 
 body {
-  background: linear-gradient(to bottom, #316a84, #3091b6);
+  background: linear-gradient(to bottom, #1d3f4f, #204f6b);
   background-attachment: fixed;
 }
 
@@ -79,7 +79,7 @@ body::before {
   padding: 0 20px;
   display: flex;
   align-items: center;
-  background-color: #2a718a;
+  background-color: #184150;
   border-bottom: 1.5px solid #b4f4ff;
 }
 
