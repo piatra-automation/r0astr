@@ -632,9 +632,23 @@ body.resizing-columns * {
 
 /* --- Editor part (center column) --- */
 /* CodeMirror keeps 3270 font */
+.cm-editor {
+  background: transparent;
+}
+
 .cm-editor .cm-content,
 .cm-editor .cm-gutters {
   font-family: '3270', monospace;
+  background: transparent;
+}
+
+.cm-editor .cm-activeLineGutter,
+.cm-editor .cm-activeLine {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.layout-part-editor .panel-editor-container {
+  background: transparent;
 }
 
 .layout-part-editor {
@@ -643,7 +657,7 @@ body.resizing-columns * {
 }
 
 .layout-part-editor .panel-editor-container {
-  background: var(--panel-bg, rgba(255, 255, 255, 0.03));
+  background: transparent;
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
 }
 
