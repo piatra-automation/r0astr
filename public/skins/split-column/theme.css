@@ -4,20 +4,13 @@
  * Inherits base.css styling; only defines layout-specific rules.
  */
 
-/* === Background — dark base matching default skin === */
+/* === Background — teal gradient === */
 html {
-  background-color: oklch(0.04 0 0);
+  background-color: #316a84;
 }
 
 body {
-  background:
-    linear-gradient(
-      135deg,
-      oklch(0.06 0.04 150) 0%,
-      oklch(0.04 0 0) 40%,
-      oklch(0.04 0 0) 60%,
-      oklch(0.06 0.03 150) 100%
-    );
+  background: linear-gradient(to bottom, #316a84, #3091b6);
   background-attachment: fixed;
 }
 
@@ -86,7 +79,8 @@ body::before {
   padding: 0 20px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--border-default);
+  background-color: #2a718a;
+  border-bottom: 1.5px solid #b4f4ff;
 }
 
 /* Electron: preserve OS window control padding */
