@@ -3745,6 +3745,11 @@ function decomposeMasterPanel(layout) {
       const title = summary.querySelector('.panel-title');
       if (title) headerDiv.appendChild(title.cloneNode(true));
       if (badge) headerDiv.appendChild(badge.cloneNode(true));
+      // Ghost play button placeholder to align with instrument panel rows
+      const ghost = document.createElement('div');
+      ghost.className = 'panel-actions-left';
+      ghost.innerHTML = '<span class="btn-playback" style="visibility:hidden"><span class="material-icons">play_arrow</span></span>';
+      headerDiv.appendChild(ghost);
       headerPart.appendChild(headerDiv);
       placePartInRegion(MASTER_PANEL_ID, 'header', headerPart, 0);
     }
