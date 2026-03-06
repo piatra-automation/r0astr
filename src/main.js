@@ -1599,6 +1599,37 @@ async function initializeCards() {
     }
   });
 
+  // Layout mode: clicking on an editor container or controls selects that panel
+  document.addEventListener('click', (e) => {
+    if (!isLayoutMode()) return;
+    // Skip if already handled by header click or button click
+    if (e.target.closest('.layout-panel-header')) return;
+    if (e.target.closest('button')) return;
+
+    const editorPart = e.target.closest('.layout-part-editor');
+    const controlsPart = e.target.closest('.layout-part-controls');
+    const part = editorPart || controlsPart;
+    if (!part) return;
+
+    const panelId = part.dataset.panelId;
+    if (!panelId) return;
+
+    bringPanelToFront(panelId);
+
+    // If collapsed, expand it
+    if (!isPanelExpanded(panelId)) {
+      expandPanel(panelId);
+    }
+
+    // Scroll editor into view and focus
+    if (editorPart || controlsPart) {
+      const edPart = document.querySelector(`.layout-part-editor[data-panel-id="${panelId}"]`);
+      if (edPart) {
+        edPart.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  });
+
   // Double-click on panel title: enable editing (select all text)
   document.addEventListener('dblclick', (e) => {
     const titleElement = e.target.closest('.panel-title');
