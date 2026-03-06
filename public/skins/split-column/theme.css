@@ -498,7 +498,7 @@ body.resizing-columns * {
   display: none;
   position: absolute;
   top: 100%;
-  right: 0;
+  left: 0;
   min-width: 140px;
   background: #184150;
   border: 1px solid rgba(255, 255, 255, 0.15);
