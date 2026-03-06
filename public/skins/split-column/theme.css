@@ -429,6 +429,7 @@ body.resizing-columns * {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: right;
 }
 
 .layout-panel-header .panel-title:hover {

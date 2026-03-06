@@ -3743,8 +3743,8 @@ function decomposeMasterPanel(layout) {
       headerDiv.className = 'layout-panel-header';
       const badge = summary.querySelector('.panel-number-badge');
       const title = summary.querySelector('.panel-title');
-      if (badge) headerDiv.appendChild(badge.cloneNode(true));
       if (title) headerDiv.appendChild(title.cloneNode(true));
+      if (badge) headerDiv.appendChild(badge.cloneNode(true));
       headerPart.appendChild(headerDiv);
       placePartInRegion(MASTER_PANEL_ID, 'header', headerPart, 0);
     }
