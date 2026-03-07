@@ -3025,24 +3025,40 @@ async function initializeStrudel() {
   // Evaluate MASTER panel first (defines globals like SCALE, functions, etc.)
   await evaluateMasterCode();
 
-  // Pre-register patterns for cross-panel references IN ORDER (top to bottom)
-  // This ensures panels can reference patterns from panels above them
+  // Pre-register patterns for cross-panel references using multi-pass evaluation.
+  // Pass 1: register leaf panels (no cross-panel dependencies).
+  // Pass 2+: retry failed panels now that their dependencies may be registered.
+  // This handles chains like ARRANGEMENT → SEC01 → DRUMS.
   const panelsInOrder = getPanelsInOrder();
-  for (const { panelId } of panelsInOrder) {
-    if (panelId && editorViews.has(panelId)) {
+  const MAX_PASSES = 4;
+  let pendingIds = panelsInOrder
+    .filter(p => p.panelId && editorViews.has(p.panelId))
+    .map(p => p.panelId);
+
+  for (let pass = 1; pass <= MAX_PASSES && pendingIds.length > 0; pass++) {
+    const stillPending = [];
+    for (const panelId of pendingIds) {
       try {
         const validation = await validateCode(panelId);
-        await updateActivateButton(panelId);
-        if (!validation.valid) {
-          displayError(panelId, validation.error, validation.line);
-        } else if (validation.pattern) {
-          // Pre-register pattern for cross-panel orchestration
+        if (pass === MAX_PASSES) await updateActivateButton(panelId);
+        if (validation.valid && validation.pattern) {
           registerPanelPattern(panelId, validation.pattern);
+        } else {
+          stillPending.push(panelId);
+          if (pass === MAX_PASSES && !validation.valid) {
+            displayError(panelId, validation.error, validation.line);
+            await updateActivateButton(panelId);
+          }
         }
       } catch (error) {
-        console.warn(`[Startup] Failed to validate panel ${panelId}:`, error);
+        stillPending.push(panelId);
+        if (pass === MAX_PASSES) {
+          console.warn(`[Startup] Failed to validate panel ${panelId}:`, error);
+        }
       }
     }
+    console.log(`[Startup] Pre-register pass ${pass}: ${pendingIds.length - stillPending.length} registered, ${stillPending.length} pending`);
+    pendingIds = stillPending;
   }
 
   // Initialize WebSocket for remote control
