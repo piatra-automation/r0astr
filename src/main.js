@@ -570,10 +570,15 @@ async function evaluateMasterCode(reRenderSliders = true) {
           return `${ws}window.${name} = function ${name}(`;
         });
 
-        // Evaluate WITHOUT transpilation and WITHOUT .p() - just run the code globally
-        // This allows register(), samples(), variable assignments, etc.
-        // Append 'silence' to satisfy Strudel's pattern expectation (register() returns undefined)
-        await strudelCore.evaluate(globalCode + '\nsilence', false, false);
+        // Evaluate directly WITHOUT transpilation (transpiler hangs in master panel context).
+        // Auto-await samples() / register() calls so async fetches complete before
+        // child panels try to reference them during multi-pass pre-registration.
+        let execCode = globalCode;
+        execCode = execCode.replace(/^(\s*)(?!await\s)(samples\s*\()/gm, '$1await $2');
+        execCode = execCode.replace(/^(\s*)(?!await\s)(register\s*\()/gm, '$1await $2');
+
+        const execFn = new Function(`"use strict";return (async ()=>{\n${execCode}\n})()`);
+        await execFn();
         console.log('✓ Master panel code evaluated globally');
       } catch (error) {
         // Show error in console - could enhance to show in UI later
