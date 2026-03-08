@@ -691,8 +691,8 @@ export async function reRenderAllPanels(createEditorView, editorViews, renderSli
     try {
       console.log(`[PanelManager] Rendering ${panelId} (number: ${panelData.number}, title: "${panelData.title}")`);
 
-      // Render panel DOM with new template
-      const panelElement = renderPanel(panelId);
+      // Render panel DOM with new template (expanded so panels are visible after skin swap)
+      const panelElement = renderPanel(panelId, { expanded: true });
       console.log(`[PanelManager] ✓ Panel ${panelId} DOM created`);
 
       // Wait for DOM to settle before looking up editor container

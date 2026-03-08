@@ -4070,6 +4070,11 @@ eventBus.on('panel:reordered', () => {
       initializeLayoutReorder();
     }
 
+    // Restore visual state (playing/stale/error classes) on newly created DOM
+    for (const panelId of Object.keys(cardStates)) {
+      updateVisualIndicators(panelId);
+    }
+
     // Force CodeMirror re-measurement after DOM moves and layout changes
     // (editors created before their containers are in final positions may have zero dimensions)
     requestAnimationFrame(() => {
