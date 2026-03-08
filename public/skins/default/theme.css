@@ -12,6 +12,8 @@
 
 html {
   background-color: oklch(0.04 0 0);
+  --active-panel-opacity: 1;
+  --background-panel-opacity: 0.85;
 }
 
 body {
@@ -77,7 +79,7 @@ body::before {
   color: var(--text-secondary);
   border: none;
   box-shadow: none;
-  opacity: 0.7;
+  opacity: 1;
   transition: color 150ms, opacity 150ms, background-color 150ms;
 }
 
@@ -169,11 +171,11 @@ body::before {
 }
 
 /* =====================
-   Panel Surfaces — Translucent, Green Glow on Hover
+   Panel Surfaces — Semi-opaque with Green Glow on Hover
    ===================== */
 
 .level-panel {
-  background: var(--surface-card-50);
+  background: oklch(0.08 0.01 150 / 0.85);
   border: 1px solid var(--border-default);
   box-shadow: 0 1px 3px oklch(0 0 0 / 0.05), 0 1px 2px oklch(0 0 0 / 0.03);
   transition: box-shadow 150ms, border-color 150ms;
@@ -181,6 +183,24 @@ body::before {
 
 .level-panel:hover {
   box-shadow: 0 0 25px oklch(0.7 0.2 150 / 0.25);
+}
+
+/* =====================
+   Interactive Elements — Full Opacity
+   ===================== */
+
+.level-panel summary,
+.level-panel .btn-playback,
+.level-panel .btn-delete,
+.level-panel .btn-duplicate,
+.level-panel .panel-actions button,
+.level-panel .panel-actions-left,
+.level-panel .panel-number-badge,
+.level-panel .panel-title,
+.level-panel .slider-control,
+.level-panel .panel-controls-container,
+.level-panel input[type="range"] {
+  opacity: 1;
 }
 
 /* =====================
