@@ -4,13 +4,13 @@ Quick answers to common questions.
 
 ## General
 
-### What is r0astr?
+### What is `r0astr`?
 
-r0astr is a multi-instrument live coding interface built on Strudel. It provides a panel-based UI where each panel is an independent instrument, all synchronized to a shared clock.
+`r0astr` is a multi-instrument live coding interface built on Strudel. It provides a panel-based UI where each panel is an independent instrument, all synchronized to a shared clock.
 
-### Is r0astr free?
+### Is `r0astr` free?
 
-Yes, r0astr is open source and free to use under the AGPL-3.0 license.
+Yes, `r0astr` is open source and free to use under the AGPL-3.0 license.
 
 ### What browsers are supported?
 
@@ -21,7 +21,7 @@ Yes, r0astr is open source and free to use under the AGPL-3.0 license.
 
 ### Do I need to install anything?
 
-No! You can [try r0astr in your browser](../index.md) immediately. For offline use and remote control features, download the [desktop app](../downloads.md).
+No! You can [try `r0astr` in your browser](../index.md) immediately. For offline use and remote control features, download the [desktop app](../downloads.md).
 
 ---
 
@@ -60,7 +60,7 @@ This creates a control that you can adjust in real-time.
 
 ### How do I set up remote control?
 
-1. Start r0astr on your computer
+1. Start `r0astr` on your computer
 2. Find your computer's local IP (e.g., `192.168.1.100`)
 3. On your iPad/phone, open `http://192.168.1.100:5173/remote.html`
 4. Both devices must be on the same WiFi network
@@ -70,7 +70,7 @@ See [Remote Control](../remote-control.md) for detailed instructions.
 ### Why won't my remote connect?
 
 - Ensure both devices are on the same WiFi
-- Check that r0astr is running on your computer
+- Check that `r0astr` is running on your computer
 - Try refreshing the remote page
 - Check your firewall settings
 
@@ -98,7 +98,7 @@ Click "More info" then "Run anyway".
 
 ## Development
 
-### How do I run r0astr locally?
+### How do I run `r0astr` locally?
 
 ```bash
 git clone https://github.com/piatra-automation/r0astr.git

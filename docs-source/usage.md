@@ -1,10 +1,10 @@
 # Usage Guide
 
-Learn how to use r0astr effectively for live coding and music composition.
+Learn how to use `r0astr` effectively for live coding and music composition.
 
 ## Interface Overview
 
-The r0astr interface consists of:
+The `r0astr` interface consists of:
 
 - **4 Instrument Cards** - Each card is an independent instrument
 - **Master Panel** - Global controls (if configured)

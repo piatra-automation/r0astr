@@ -1,6 +1,6 @@
-# r0astr Skin System
+# `r0astr` Skin System
 
-The r0astr skin system allows complete customization of the UI layout and visual theme through modular skin packages.
+The `r0astr` skin system allows complete customization of the UI layout and visual theme through modular skin packages.
 
 ## Architecture
 
@@ -628,7 +628,7 @@ Retro WinAmp-inspired design with skinnable sprites.
 - Remember hover targets are injected as direct body children
 
 **Page won't reload:**
-- Clear localStorage: `localStorage.removeItem('r0astr-settings')`
+- Clear localStorage: `localStorage.removeItem('`r0astr`-settings')`
 - Hard refresh: Cmd+Shift+R (Mac) / Ctrl+Shift+R (Windows)
 
 ## Contributing Skins

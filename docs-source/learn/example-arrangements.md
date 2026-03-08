@@ -1,6 +1,6 @@
 # Example Arrangements
 
-Multi-panel compositions that show how r0astr's panels work together. Copy each pattern into the corresponding panel.
+Multi-panel compositions that show how `r0astr`'s panels work together. Copy each pattern into the corresponding panel.
 
 ---
 

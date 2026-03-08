@@ -38,7 +38,7 @@ let TEMPO = slider(30, 15, 45);
 
 ### How Speed Works
 
-r0astr uses **CPS (Cycles Per Second)** internally. You don't need to understand the math - just know that:
+`r0astr` uses **CPS (Cycles Per Second)** internally. You don't need to understand the math - just know that:
 
 - Higher TEMPO = faster patterns
 - Lower TEMPO = slower patterns
@@ -242,7 +242,7 @@ When you click Stop All:
 ## Advanced: How Master Panel Works
 
 !!! abstract "For Advanced Users"
-    This section explains the technical implementation. You don't need to understand this to use r0astr effectively.
+    This section explains the technical implementation. You don't need to understand this to use `r0astr` effectively.
 
 ### Parsing Differences
 
@@ -256,14 +256,14 @@ The master panel works differently from cards:
 
 ### Why Regex?
 
-The Strudel transpiler can block when used in the master panel context. To avoid this, r0astr parses master panel code with regex to extract slider definitions.
+The Strudel transpiler can block when used in the master panel context. To avoid this, `r0astr` parses master panel code with regex to extract slider definitions.
 
 ### TEMPO Special Handling
 
 TEMPO isn't just a variable - it controls the scheduler:
 
 1. Master panel code defines: `let TEMPO = slider(...);`
-2. r0astr detects the TEMPO variable
+2. `r0astr` detects the TEMPO variable
 3. Changes are converted to CPS (cycles per second)
 4. The scheduler's speed is updated: `scheduler.setCps(value)`
 

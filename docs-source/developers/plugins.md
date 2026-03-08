@@ -1,12 +1,12 @@
 # Plugin Development
 
-Build integrations and extensions for r0astr.
+Build integrations and extensions for `r0astr`.
 
 ---
 
 ## Overview
 
-r0astr supports plugins that extend functionality through the WebSocket API. Plugins run as separate processes and communicate with r0astr over the network.
+`r0astr` supports plugins that extend functionality through the WebSocket API. Plugins run as separate processes and communicate with `r0astr` over the network.
 
 ### What Plugins Can Do
 
@@ -23,13 +23,13 @@ r0astr supports plugins that extend functionality through the WebSocket API. Plu
 ### Prerequisites
 
 - Node.js 18+
-- Familiarity with r0astr [API](api.md)
+- Familiarity with `r0astr` [API](api.md)
 - Understanding of WebSocket communication
 
 ### Plugin Structure
 
 ```
-my-r0astr-plugin/
+my-`r0astr`-plugin/
 ├── package.json        # Dependencies and metadata
 ├── src/
 │   └── index.js        # Entry point
@@ -41,9 +41,9 @@ my-r0astr-plugin/
 
 ```json
 {
-  "name": "my-r0astr-plugin",
+  "name": "my-`r0astr`-plugin",
   "version": "1.0.0",
-  "description": "My r0astr plugin",
+  "description": "My `r0astr` plugin",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js"
@@ -73,11 +73,11 @@ class R0astrPlugin {
   }
 
   connect() {
-    console.log(`Connecting to r0astr at ${R0ASTR_URL}...`);
+    console.log(`Connecting to `r0astr` at ${R0ASTR_URL}...`);
     this.ws = new WebSocket(R0ASTR_URL);
 
     this.ws.on('open', () => {
-      console.log('Connected to r0astr!');
+      console.log('Connected to `r0astr`!');
       this.connected = true;
       this.onConnected();
     });
@@ -88,7 +88,7 @@ class R0astrPlugin {
     });
 
     this.ws.on('close', () => {
-      console.log('Disconnected from r0astr');
+      console.log('Disconnected from `r0astr`');
       this.connected = false;
       // Attempt reconnect after 5 seconds
       setTimeout(() => this.connect(), 5000);
@@ -172,7 +172,7 @@ npm start
 
 ## Lifecycle Events
 
-The r0astr server broadcasts events your plugin can listen to:
+The `r0astr` server broadcasts events your plugin can listen to:
 
 ### Panel State Changed
 
@@ -250,7 +250,7 @@ See [API Reference](api.md) for complete documentation.
 
 ### Local Testing
 
-1. Start r0astr:
+1. Start `r0astr`:
    ```bash
    cd r0astr
    npm run dev
@@ -262,7 +262,7 @@ See [API Reference](api.md) for complete documentation.
    npm start
    ```
 
-3. Verify in r0astr UI that commands work
+3. Verify in `r0astr` UI that commands work
 
 ### Debugging Tips
 
@@ -385,7 +385,7 @@ Include in your README:
 - Installation instructions
 - Configuration options
 - Usage examples
-- r0astr version compatibility
+- `r0astr` version compatibility
 
 ### Future: Plugin Marketplace
 
@@ -428,8 +428,8 @@ const R0ASTR_URL = process.env.R0ASTR_URL || 'ws://localhost:5173/ws';
 Provide clear console output:
 
 ```javascript
-console.log('[r0astr-plugin] Connected');
-console.log('[r0astr-plugin] Panel 1 started');
+console.log('[`r0astr`-plugin] Connected');
+console.log('[`r0astr`-plugin] Panel 1 started');
 ```
 
 ---
@@ -438,4 +438,4 @@ console.log('[r0astr-plugin] Panel 1 started');
 
 - [API Reference](api.md) - Full endpoint documentation
 - [Architecture](architecture.md) - System design overview
-- [Contributing](contributing.md) - Contribute to r0astr core
+- [Contributing](contributing.md) - Contribute to `r0astr` core

@@ -1,9 +1,9 @@
 # Downloads
 
 <div class="download-hero">
-  <img src="../assets/images/banner.png" alt="r0astr" class="download-hero__banner">
+  <img src="../assets/images/banner.png" alt="`r0astr`" class="download-hero__banner">
   <p class="download-hero__lead">
-    The desktop app is the full r0astr interface wrapped in Electron.
+    The desktop app is the full `r0astr` interface wrapped in Electron.
     All Strudel packages ship bundled&mdash;core, mini notation, transpiler, Web Audio,
     tonal, soundfonts, draw, xen, osc, serial, csound, and CodeMirror&mdash;so
     startup is instant with no network fetch required. Samples and SoundFonts
@@ -38,15 +38,15 @@
 
     1. Download the `.dmg` file for your Mac (Intel or Apple Silicon)
     2. Open the downloaded `.dmg` file
-    3. Drag **r0astr** to your **Applications** folder
+    3. Drag **`r0astr`** to your **Applications** folder
     4. Eject the disk image
 
     ### First Launch
 
     !!! warning "Security Warning"
-        macOS may show a warning because r0astr is not notarized by Apple.
+        macOS may show a warning because `r0astr` is not notarized by Apple.
 
-    **If you see "r0astr is damaged" or "unidentified developer":**
+    **If you see "`r0astr` is damaged" or "unidentified developer":**
 
     1. **Right-click** (or Control-click) the app
     2. Select **Open** from the menu
@@ -76,7 +76,7 @@
     3. Double-click to run (no installation needed)
 
     !!! warning "SmartScreen Warning"
-        Windows may show a SmartScreen warning because r0astr is not signed.
+        Windows may show a SmartScreen warning because `r0astr` is not signed.
 
     **To bypass:**
 
@@ -91,7 +91,7 @@
 
     ```bash
     # Make it executable
-    chmod +x r0astr-*.AppImage
+    chmod +x `r0astr`-*.AppImage
 
     # Run it
     ./r0astr-*.AppImage
@@ -116,7 +116,7 @@
 
 ## Verifying Installation
 
-After installation, launch r0astr. You should see:
+After installation, launch `r0astr`. You should see:
 
 1. **Main interface** with panels and a master panel
 2. **Default patterns** loaded in each panel
@@ -170,7 +170,7 @@ See the [GitHub Releases](https://github.com/piatra-automation/r0astr/releases) 
 
 ## Lite Version
 
-Don't want to install anything? [Try r0astr Lite](app/index.html) directly in your browser. The lite version works without installation but doesn't include remote control features.
+Don't want to install anything? [Try `r0astr` Lite](app/index.html) directly in your browser. The lite version works without installation but doesn't include remote control features.
 
 ---
 
@@ -258,7 +258,7 @@ var ICONS = {
     // Build primary download section based on detected OS
     let primaryHTML = '';
     const osIcon = ICONS[detectedOS] || '';
-    const appIconImg = '<img src="../assets/images/icon.png" alt="r0astr" class="download-card__app-icon">';
+    const appIconImg = '<img src="../assets/images/icon.png" alt="`r0astr`" class="download-card__app-icon">';
 
     function buildCard(osLabel, fileInfo, altLink) {
       return `

@@ -1,6 +1,6 @@
-# Contributing to r0astr
+# Contributing to `r0astr`
 
-Thank you for your interest in contributing to r0astr!
+Thank you for your interest in contributing to `r0astr`!
 
 ## Ways to Contribute
 

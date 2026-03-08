@@ -1,8 +1,8 @@
-# Learn r0astr
+# Learn `r0astr`
 
 ## Standing on the Shoulders of Giants
 
-r0astr is a multi-panel live coding interface built on top of these projects:
+`r0astr` is a multi-panel live coding interface built on top of these projects:
 
 <div class="grid cards" markdown>
 
@@ -10,7 +10,7 @@ r0astr is a multi-panel live coding interface built on top of these projects:
 
     ---
 
-    Tidal Cycles ported to JavaScript — the engine under r0astr's hood.
+    Tidal Cycles ported to JavaScript — the engine under `r0astr`'s hood.
 
     [꩜ Strudel Learn](https://strudel.cc/learn/){ .md-button target="_blank" }
     [꩜ Pattern Reference](https://strudel.cc/learn/functions/){ .md-button target="_blank" }
@@ -29,7 +29,7 @@ For pattern syntax, mini notation, samples, scales, and effects, go straight to 
 
 ---
 
-The pages below cover what r0astr adds on top of Strudel: panels, synchronization, the master panel, remote control, and multi-instrument workflows.
+The pages below cover what `r0astr` adds on top of Strudel: panels, synchronization, the master panel, remote control, and multi-instrument workflows.
 
 <div class="grid cards" markdown>
 
@@ -61,7 +61,7 @@ The pages below cover what r0astr adds on top of Strudel: panels, synchronizatio
 
     ---
 
-    Control r0astr from a tablet, phone, or any device on your network.
+    Control `r0astr` from a tablet, phone, or any device on your network.
 
     [:octicons-arrow-right-24: Remote Control](../remote-control.md)
 
@@ -85,7 +85,7 @@ The pages below cover what r0astr adds on top of Strudel: panels, synchronizatio
 
 ## Learning Path
 
-1. **Start with Concepts** — Understand how r0astr organizes instruments
+1. **Start with Concepts** — Understand how `r0astr` organizes instruments
 2. **Learn Strudel patterns** — Work through the [Strudel workshop](https://strudel.cc/learn/){ target="_blank" }
 3. **Explore Multi-Instrument** — Combine panels for full arrangements
 4. **Use the Master Panel** — Control global parameters

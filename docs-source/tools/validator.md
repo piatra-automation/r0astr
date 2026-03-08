@@ -1,6 +1,6 @@
 # Pattern Validator
 
-Validate your r0astr patterns and configuration files against our JSON schema.
+Validate your `r0astr` patterns and configuration files against our JSON schema.
 
 <div id="validator-app" class="validator-container">
 
@@ -245,7 +245,7 @@ Validates JavaScript syntax only. Does not check Strudel-specific semantics.
   "author": "string",
   "description": "string",
   "preview": "filename.png",
-  "compatibility": "r0astr version"
+  "compatibility": "`r0astr` version"
 }
 ```
 

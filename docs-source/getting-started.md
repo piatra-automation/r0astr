@@ -1,6 +1,6 @@
 # Getting Started
 
-Get up and running with r0astr in under 5 minutes.
+Get up and running with `r0astr` in under 5 minutes.
 
 ## Choose Your Path
 
@@ -8,7 +8,7 @@ Get up and running with r0astr in under 5 minutes.
 
     The fastest way to start. No installation needed.
 
-    1. **Open the app:** [:octicons-arrow-right-24: Launch r0astr](app/index.html){ target="_blank" }
+    1. **Open the app:** [:octicons-arrow-right-24: Launch `r0astr`](app/index.html){ target="_blank" }
     2. **Click anywhere** on the page to enable audio (browser requirement)
     3. **You're ready!** Continue to [Your First Pattern](#your-first-pattern) below
 

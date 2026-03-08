@@ -1,9 +1,9 @@
 # Showcase
 
-See what people are creating with r0astr.
+See what people are creating with `r0astr`.
 
 !!! info "Submit Your Work"
-    Created something with r0astr? [Add it to the showcase](#submit-your-work)!
+    Created something with `r0astr`? [Add it to the showcase](#submit-your-work)!
 
 ---
 
@@ -11,7 +11,7 @@ See what people are creating with r0astr.
 
 ### Ambient Textures Session
 
-*By the r0astr team*
+*By the `r0astr` team*
 
 A demonstration of layered ambient patterns using all four cards. This session shows how to build atmospheric soundscapes by combining slow pads, filtered noise, sparse melodies, and deep bass.
 
@@ -66,7 +66,7 @@ A demonstration of layered ambient patterns using all four cards. This session s
 
 ### Minimal Techno Jam
 
-*By the r0astr team*
+*By the `r0astr` team*
 
 Driving minimal techno demonstrating the master panel for live filter sweeps. Shows how to create tension and release using synchronized patterns.
 
@@ -112,7 +112,7 @@ Driving minimal techno demonstrating the master panel for live filter sweeps. Sh
 
 ### Breakbeat Session
 
-*By the r0astr team*
+*By the `r0astr` team*
 
 A faster-paced demonstration showing syncopated rhythms and how multiple cards can create complex textures through simple patterns.
 
@@ -198,7 +198,7 @@ Looking for inspiration? Here are some directions to explore:
 
 ## Submit Your Work
 
-Share your r0astr creations with the community!
+Share your `r0astr` creations with the community!
 
 ### What to Include
 
@@ -207,13 +207,13 @@ Share your r0astr creations with the community!
 | Title | Video/audio link |
 | Your name/handle | Screenshot |
 | Description | Patterns used |
-| How you used r0astr | Tips/techniques |
+| How you used `r0astr` | Tips/techniques |
 
 ### How to Submit
 
 **Option 1: GitHub Pull Request**
 
-1. Fork the [r0astr repository](https://github.com/piatra-automation/r0astr)
+1. Fork the [`r0astr` repository](https://github.com/piatra-automation/r0astr)
 2. Add your entry to `docs-source/community/showcase.md`
 3. Include any media files in `docs-source/assets/`
 4. Open a PR with title `[Showcase] Your Creation Title`

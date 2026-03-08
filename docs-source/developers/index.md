@@ -1,6 +1,6 @@
 # Developer Documentation
 
-Resources for developers building integrations with r0astr.
+Resources for developers building integrations with `r0astr`.
 
 <div class="grid cards" markdown>
 
@@ -24,7 +24,7 @@ Resources for developers building integrations with r0astr.
 
     ---
 
-    Build plugins that extend r0astr via WebSocket.
+    Build plugins that extend `r0astr` via WebSocket.
 
     [:octicons-arrow-right-24: Plugins](plugins.md)
 
@@ -32,7 +32,7 @@ Resources for developers building integrations with r0astr.
 
     ---
 
-    Theme r0astr with custom HTML templates and CSS.
+    Theme `r0astr` with custom HTML templates and CSS.
 
     [:octicons-arrow-right-24: Skins Overview](skins.md)
 

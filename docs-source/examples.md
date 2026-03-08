@@ -1,6 +1,6 @@
 # Pattern Examples
 
-A collection of ready-to-use patterns for r0astr. Copy these into your cards and experiment!
+A collection of ready-to-use patterns for `r0astr`. Copy these into your cards and experiment!
 
 ## Drum Patterns
 

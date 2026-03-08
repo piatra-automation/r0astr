@@ -1,6 +1,6 @@
 # Skins
 
-r0astr features a skin system that allows customization of the UI layout and visual theme through modular skin packages.
+`r0astr` features a skin system that allows customization of the UI layout and visual theme through modular skin packages.
 
 ## What Are Skins?
 
@@ -10,13 +10,13 @@ Skins are self-contained packages that define:
 - **CSS Theme** — Visual styling, colors, spacing, animations
 - **Manifest** — Metadata, configuration, and CSS variable overrides
 
-Unlike traditional themes that only change colors, r0astr skins can completely restructure the UI layout while maintaining compatibility with the underlying JavaScript.
+Unlike traditional themes that only change colors, `r0astr` skins can completely restructure the UI layout while maintaining compatibility with the underlying JavaScript.
 
 ## Included Skins
 
 ### Default (Tree Layout)
 
-The standard r0astr interface with collapsible tree-structured panels, inline sliders, and floating visualizers.
+The standard `r0astr` interface with collapsible tree-structured panels, inline sliders, and floating visualizers.
 
 - Vertical tree layout with drag-to-reorder
 - Collapsible details panels
@@ -67,7 +67,7 @@ Skins hot-reload automatically — no page refresh needed. Panel state is preser
 
 ### Storage
 
-- **Browser**: localStorage as part of r0astr-settings
+- **Browser**: localStorage as part of `r0astr`-settings
 - **Electron**: `userData/r0astr-settings.json`
 
 All modes work offline with bundled skins.

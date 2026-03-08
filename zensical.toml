@@ -19,7 +19,6 @@ extra_css = ["assets/stylesheets/custom.css"]
 
 nav = [
   { "Home" = "index.md" },
-  { "Try It" = "app/index.html" },
   { "Getting Started" = "getting-started.md" },
   { "Downloads" = "downloads.md" },
   { "Learn" = [

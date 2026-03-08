@@ -6,7 +6,7 @@ Learn to use multiple cards together for layered compositions.
 
 ## Panel Setup
 
-r0astr gives you independent panels — create as many as you need. Think of each panel as a musician in a band: each plays their own part, but they all follow the same beat.
+`r0astr` gives you independent panels — create as many as you need. Think of each panel as a musician in a band: each plays their own part, but they all follow the same beat.
 
 | Panel | Typical Role |
 |-------|--------------|
@@ -40,7 +40,7 @@ The master panel has a **Stop All** button that stops every panel at once.
 
 ## Synchronization
 
-All panels share a **single audio clock**. This is fundamental to how r0astr works.
+All panels share a **single audio clock**. This is fundamental to how `r0astr` works.
 
 ### How It Works
 

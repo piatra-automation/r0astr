@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to r0astr.
+All notable changes to `r0astr`.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 

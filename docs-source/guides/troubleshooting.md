@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Common issues and solutions for r0astr.
+Common issues and solutions for `r0astr`.
 
 ## Audio Issues
 
@@ -89,7 +89,7 @@ Click "More info" then "Run anyway".
 
 Make it executable:
 ```bash
-chmod +x r0astr-*.AppImage
+chmod +x `r0astr`-*.AppImage
 ./r0astr-*.AppImage
 ```
 

@@ -1,12 +1,12 @@
 # Concepts
 
-Understand the mental model behind r0astr to make the interface intuitive.
+Understand the mental model behind `r0astr` to make the interface intuitive.
 
 
 
 ## The Big Picture
 
-r0astr is a multi-instrument live coding environment. Think of it as having multiple independent instruments on stage, all connected to the same metronome. You write code to control each instrument, and they all play together in perfect sync. You can create as many panels as you need.
+`r0astr` is a multi-instrument live coding environment. Think of it as having multiple independent instruments on stage, all connected to the same metronome. You write code to control each instrument, and they all play together in perfect sync. You can create as many panels as you need.
 
 ```mermaid
 graph TB
@@ -29,7 +29,7 @@ graph TB
 
 ## Cards
 
-Each **panel** is an independent instrument in r0astr.
+Each **panel** is an independent instrument in `r0astr`.
 
 ### What is a Panel?
 
@@ -66,7 +66,7 @@ This is just a suggestion — use panels however you like, and add more as neede
 
 ## Synchronization
 
-All panels share a **single audio clock**. This is the key to how r0astr works.
+All panels share a **single audio clock**. This is the key to how `r0astr` works.
 
 ### Shared Clock
 
@@ -158,7 +158,7 @@ flowchart LR
 
 ### Live Coding
 
-The magic of r0astr is **live coding**:
+The magic of `r0astr` is **live coding**:
 
 - Edit patterns while they play
 - Hear changes almost instantly

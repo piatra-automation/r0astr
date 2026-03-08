@@ -1,24 +1,24 @@
 # Remote Control
 
-Control r0astr from your tablet, phone, or any device on your network.
+Control `r0astr` from your tablet, phone, or any device on your network.
 
 ---
 
 ## Overview
 
-r0astr includes a remote control interface that lets you control panels from a secondary device. Perfect for:
+`r0astr` includes a remote control interface that lets you control panels from a secondary device. Perfect for:
 
 - Using an iPad as a control surface while coding on your laptop
 - Triggering panels from a phone during live performance
-- Controlling r0astr from across the room
+- Controlling `r0astr` from across the room
 
 ---
 
 ## Quick Start
 
-### 1. Start r0astr
+### 1. Start `r0astr`
 
-Run r0astr on your main computer:
+Run `r0astr` on your main computer:
 
 ```bash
 npm run dev
@@ -71,7 +71,7 @@ For example: `http://192.168.1.100:5173/remote.html`
 ## Network Requirements
 
 !!! warning "Same Network Required"
-    The remote device MUST be on the same local network as the computer running r0astr.
+    The remote device MUST be on the same local network as the computer running `r0astr`.
 
 ### Requirements
 
@@ -100,7 +100,7 @@ The remote interface provides:
 ### Global Controls
 
 - **Stop All** - Immediately stops all panels
-- **Connection status** - Shows if connected to r0astr
+- **Connection status** - Shows if connected to `r0astr`
 
 ### Auto-Reconnection
 
@@ -108,7 +108,7 @@ If the connection drops:
 
 1. The interface shows "Disconnected"
 2. Automatically attempts to reconnect
-3. Reconnects when r0astr becomes available again
+3. Reconnects when `r0astr` becomes available again
 
 ---
 
@@ -116,11 +116,11 @@ If the connection drops:
 
 ### "Disconnected" Status
 
-**Cause:** Cannot reach the r0astr server.
+**Cause:** Cannot reach the `r0astr` server.
 
 **Solutions:**
 
-1. Verify r0astr is running on your computer
+1. Verify `r0astr` is running on your computer
 2. Check you're using the correct IP address
 3. Ensure both devices are on the same WiFi
 4. Try refreshing the remote page

@@ -1,6 +1,6 @@
 # Architecture Overview
 
-Technical overview of r0astr's system design.
+Technical overview of `r0astr`'s system design.
 
 ## System Diagram
 
@@ -8,7 +8,7 @@ Technical overview of r0astr's system design.
 ┌─────────────────────────────────────────────────────────┐
 │                      Browser                             │
 │  ┌─────────────────────────────────────────────────┐    │
-│  │                  r0astr UI                       │    │
+│  │                  `r0astr` UI                       │    │
 │  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌───────┐ │    │
 │  │  │ Panel 1 │ │ Panel 2 │ │ Panel 3 │ │Panel N│ │    │
 │  │  └────┬────┘ └────┬────┘ └────┬────┘ └───┬───┘ │    │

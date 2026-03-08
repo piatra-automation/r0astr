@@ -1,6 +1,6 @@
 # API Reference
 
-r0astr exposes a **REST API** and a **WebSocket server** for real-time control and integration. Both run on the same port as the dev server.
+`r0astr` exposes a **REST API** and a **WebSocket server** for real-time control and integration. Both run on the same port as the dev server.
 
 <div class="grid cards" markdown>
 
