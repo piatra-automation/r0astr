@@ -570,15 +570,10 @@ async function evaluateMasterCode(reRenderSliders = true) {
           return `${ws}window.${name} = function ${name}(`;
         });
 
-        // Evaluate directly WITHOUT transpilation (transpiler hangs in master panel context).
-        // Auto-await samples() / register() calls so async fetches complete before
-        // child panels try to reference them during multi-pass pre-registration.
-        let execCode = globalCode;
-        execCode = execCode.replace(/^(\s*)(?!await\s)(samples\s*\()/gm, '$1await $2');
-        execCode = execCode.replace(/^(\s*)(?!await\s)(register\s*\()/gm, '$1await $2');
-
-        const execFn = new Function(`"use strict";return (async ()=>{\n${execCode}\n})()`);
-        await execFn();
+        // Evaluate via REPL (transpiles code, then runs in async IIFE).
+        // The transpiler auto-awaits samples()/register() calls (isBareSamplesCall).
+        // Append 'silence' so the REPL gets a valid pattern return value.
+        await strudelCore.evaluate(globalCode + '\nsilence', false, false);
         console.log('✓ Master panel code evaluated globally');
       } catch (error) {
         // Show error in console - could enhance to show in UI later
@@ -3043,13 +3038,17 @@ async function initializeStrudel() {
   for (let pass = 1; pass <= MAX_PASSES && pendingIds.length > 0; pass++) {
     const stillPending = [];
     for (const panelId of pendingIds) {
+      const panelData = getPanel(panelId);
+      const panelTitle = panelData?.title || panelId;
       try {
         const validation = await validateCode(panelId);
         if (pass === MAX_PASSES) await updateActivateButton(panelId);
         if (validation.valid && validation.pattern) {
-          registerPanelPattern(panelId, validation.pattern);
+          const safeName = registerPanelPattern(panelId, validation.pattern);
+          console.log(`[Startup][pass ${pass}] ✓ ${panelTitle} → window.${safeName}`);
         } else {
           stillPending.push(panelId);
+          console.log(`[Startup][pass ${pass}] ✗ ${panelTitle}: ${validation.valid ? 'no pattern returned' : validation.error}`);
           if (pass === MAX_PASSES && !validation.valid) {
             displayError(panelId, validation.error, validation.line);
             await updateActivateButton(panelId);
@@ -3057,6 +3056,7 @@ async function initializeStrudel() {
         }
       } catch (error) {
         stillPending.push(panelId);
+        console.warn(`[Startup][pass ${pass}] ✗ ${panelTitle}: threw ${error.message}`);
         if (pass === MAX_PASSES) {
           console.warn(`[Startup] Failed to validate panel ${panelId}:`, error);
         }
