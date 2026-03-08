@@ -133,8 +133,8 @@
 
       // Grid layout: button on left, sliders on right (for size-3)
       div.innerHTML = `
-          <button class="panel-button" data-panel="${id}" title="${escapeHtml(title)}">${playIcon}</button>
-          <div class="panel-sliders-remote" id="panel-sliders-${id}"></div>
+          <button class="panel-button" data-panel="${escapeHtml(id)}" title="${escapeHtml(title)}">${playIcon}</button>
+          <div class="panel-sliders-remote" id="panel-sliders-${escapeHtml(id)}"></div>
         `;
 
       // Remove animation class after transition completes
@@ -604,15 +604,15 @@
 
         sliderControl.innerHTML = `
             <label>
-              <span>${varName}</span>
-              <span class="remote-slider-value" data-slider="${sliderId}">${value.toFixed(2)}</span>
+              <span>${escapeHtml(String(varName))}</span>
+              <span class="remote-slider-value" data-slider="${escapeHtml(String(sliderId))}">${escapeHtml(value.toFixed(2))}</span>
             </label>
             <input type="range"
-              min="${min}"
-              max="${max}"
-              step="${(max - min) / 1000}"
-              value="${value}"
-              data-slider-id="${sliderId}">
+              min="${Number(min)}"
+              max="${Number(max)}"
+              step="${Number((max - min) / 1000)}"
+              value="${Number(value)}"
+              data-slider-id="${escapeHtml(String(sliderId))}">
           `;
 
         const input = sliderControl.querySelector('input');
@@ -699,16 +699,16 @@
 
         sliderControl.innerHTML = `
             <label>
-              ${label}:
-              <span class="slider-value" data-panel-slider="${panelId}-${sliderId}">${numericValue.toFixed(2)}</span>
+              ${escapeHtml(String(label))}:
+              <span class="slider-value" data-panel-slider="${escapeHtml(panelId + '-' + sliderId)}">${escapeHtml(numericValue.toFixed(2))}</span>
             </label>
             <input type="range"
-              min="${min}"
-              max="${max}"
-              step="${step}"
-              value="${numericValue}"
-              data-panel-id="${panelId}"
-              data-panel-slider-id="${sliderId}">
+              min="${Number(min)}"
+              max="${Number(max)}"
+              step="${Number(step)}"
+              value="${Number(numericValue)}"
+              data-panel-id="${escapeHtml(String(panelId))}"
+              data-panel-slider-id="${escapeHtml(String(sliderId))}">
           `;
 
         const input = sliderControl.querySelector('input');

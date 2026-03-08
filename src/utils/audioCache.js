@@ -74,8 +74,10 @@ function shouldCacheUrl(url) {
   try {
     const parsedUrl = new URL(url);
 
-    // Check if it's from a known audio domain
-    const isAudioDomain = AUDIO_DOMAINS.some(domain => parsedUrl.hostname.includes(domain));
+    // Check if it's from a known audio domain (exact match or subdomain)
+    const isAudioDomain = AUDIO_DOMAINS.some(domain =>
+      parsedUrl.hostname === domain || parsedUrl.hostname.endsWith('.' + domain)
+    );
 
     // Check if it has an audio extension
     const hasAudioExtension = AUDIO_EXTENSIONS.some(ext =>
@@ -84,8 +86,8 @@ function shouldCacheUrl(url) {
 
     // Also cache .js files from soundfont domains (they contain audio data)
     const isSoundfontJs = parsedUrl.pathname.endsWith('.js') &&
-      (parsedUrl.hostname.includes('felixroos.github.io') ||
-        parsedUrl.hostname.includes('gleitz.github.io'));
+      (parsedUrl.hostname === 'felixroos.github.io' ||
+        parsedUrl.hostname === 'gleitz.github.io');
 
     return isAudioDomain && (hasAudioExtension || isSoundfontJs);
   } catch (e) {

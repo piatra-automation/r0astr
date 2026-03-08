@@ -265,9 +265,10 @@ export function updatePanelTitle(panelId, newTitle) {
   const panel = panels.get(panelId);
   if (!panel) return false;
 
-  // Sanitize title: remove HTML tags, limit length
-  const sanitizedTitle = newTitle
-    .replace(/<[^>]*>/g, '')
+  // Sanitize title: extract text content (strips all HTML), limit length
+  const tempEl = document.createElement('span');
+  tempEl.textContent = newTitle;
+  const sanitizedTitle = tempEl.textContent
     .substring(0, 50)
     .trim();
 

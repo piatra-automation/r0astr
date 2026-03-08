@@ -5,6 +5,7 @@
  */
 
 import { eventBus } from '../utils/eventBus.js';
+import { escapeHtml } from '../utils/escapeHtml.js';
 import { sliderValues } from '@strudel/codemirror';
 import { skinManager } from './skinManager.js';
 import { getPart } from './panelDOMRegistry.js';
@@ -167,15 +168,15 @@ function renderLegacySliders(panelId, sliderWidgets, patternCode, sliderMetadata
 
     sliderControl.innerHTML = `
       <label>
-        <span>${label}</span>
-        <span class="slider-value" data-slider="${sliderId}">${currentValue}</span>
+        <span>${escapeHtml(label)}</span>
+        <span class="slider-value" data-slider="${escapeHtml(sliderId)}">${escapeHtml(String(currentValue))}</span>
       </label>
       <input type="range"
-        min="${min}"
-        max="${max}"
-        step="${step ?? (max - min) / 1000}"
-        value="${currentValue}"
-        data-slider-id="${sliderId}">
+        min="${Number(min)}"
+        max="${Number(max)}"
+        step="${Number(step ?? (max - min) / 1000)}"
+        value="${Number(currentValue)}"
+        data-slider-id="${escapeHtml(sliderId)}">
     `;
 
     const input = sliderControl.querySelector('input');

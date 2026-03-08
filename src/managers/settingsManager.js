@@ -312,6 +312,14 @@ let saveTimeout;
 export function updateSetting(key, value) {
   // Handle nested keys (e.g., 'behavior.autoSaveInterval')
   const keys = key.split('.');
+
+  // Reject prototype-polluting keys
+  const forbidden = ['__proto__', 'constructor', 'prototype'];
+  if (keys.some(k => forbidden.includes(k))) {
+    console.warn(`[Settings] Rejected unsafe key: ${key}`);
+    return;
+  }
+
   const newSettings = { ...currentSettings };
 
   let target = newSettings;

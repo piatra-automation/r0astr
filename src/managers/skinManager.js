@@ -195,9 +195,13 @@ class SkinManager {
    * @returns {Promise<Object>} Skin manifest
    */
   async loadBundledSkin(skinName) {
+    // Sanitize skin name: alphanumeric, hyphens, underscores only (prevent path traversal)
+    const safeName = String(skinName).replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!safeName) throw new Error('Invalid skin name');
+
     // Use Vite's BASE_URL to support subdirectory deployments (e.g., /app/ for lite)
     const base = import.meta.env.BASE_URL || '/';
-    const skinPath = `${base}skins/${skinName}`;
+    const skinPath = `${base}skins/${safeName}`;
 
     try {
       // 1. Load manifest

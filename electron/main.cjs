@@ -41,6 +41,25 @@ function createWebSocketAndHttpServer() {
   return new Promise((resolve) => {
     const expressApp = express();
 
+  // Basic rate limiting (100 requests per 15s per IP)
+  const rateLimitMap = new Map();
+  expressApp.use((req, res, next) => {
+    const ip = req.ip;
+    const now = Date.now();
+    const windowMs = 15000;
+    const maxRequests = 100;
+    let entry = rateLimitMap.get(ip);
+    if (!entry || now - entry.start > windowMs) {
+      entry = { start: now, count: 0 };
+      rateLimitMap.set(ip, entry);
+    }
+    entry.count++;
+    if (entry.count > maxRequests) {
+      return res.status(429).send('Too many requests');
+    }
+    next();
+  });
+
   // Serve static files from dist in production
   if (!isDev) {
     expressApp.use(express.static(path.join(__dirname, '../dist')));
