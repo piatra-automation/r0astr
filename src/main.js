@@ -162,17 +162,14 @@ function sanitizePanelTitle(title) {
  * @returns {Array} Array of {panelId, panel, number} sorted by display order
  */
 function getPanelsInOrder() {
-  const panelTree = document.querySelector('.panel-tree');
-  if (!panelTree) return [];
-
-  const panelElements = Array.from(panelTree.querySelectorAll('.level-panel'));
-  return panelElements
-    .map(el => ({
-      panelId: el.dataset.panelId,
-      panel: getPanel(el.dataset.panelId),
-      number: parseInt(el.dataset.panelNumber, 10) || 0
+  const allPanels = getAllPanels();
+  return Array.from(allPanels.entries())
+    .map(([panelId, panel]) => ({
+      panelId,
+      panel,
+      number: panel.number ?? 0
     }))
-    .filter(p => p.panel && p.panelId !== MASTER_PANEL_ID)
+    .filter(p => p.panelId !== MASTER_PANEL_ID)
     .sort((a, b) => a.number - b.number);
 }
 
