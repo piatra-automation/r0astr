@@ -1819,11 +1819,11 @@ async function initializeCards() {
       // Get panelId from data attribute (tree) or id (legacy)
       const panelId = panel.dataset?.panelId || panel.id;
 
-      // Check if click was on interactive elements (both tree and legacy classes)
+      // Check if click was on interactive elements (buttons, sliders — NOT summary)
       const clickedInteractive = e.target.closest(
         '.pause-btn, .activate-btn, .delete-btn, .control-btn, ' +
         '.btn-play, .btn-stop, .btn-delete, .panel-actions button, ' +
-        'input[type="range"], summary'
+        'input[type="range"]'
       );
 
       if (clickedInteractive) {
@@ -1836,29 +1836,32 @@ async function initializeCards() {
         return;
       }
 
-      // NEW SYSTEM: Toggle editor in/out of screen
-      const editorView = editorViews.get(panelId);
-      const settings = getSettings();
+      // Layout mode: Toggle editor in/out of screen
+      // Tree mode (default skin): native <details> handles expand/collapse
+      if (isLayoutMode()) {
+        const editorView = editorViews.get(panelId);
+        const settings = getSettings();
 
-      if (editorView) {
-        const alreadyInScreen = isEditorInScreen(panelId);
+        if (editorView) {
+          const alreadyInScreen = isEditorInScreen(panelId);
 
-        if (alreadyInScreen) {
-          // Remove from screen (toggle off)
-          removeEditorFromScreen(panelId, getEditorContainer(panelId));
-          console.log(`[Click] Removed panel ${panelId} from screen`);
-        } else {
-          // Add to screen (toggle on)
-          if (settings.collapseOnBlur) {
-            // Remove other editors first, then show this one
-            removeAllEditorsExcept(panelId, editorViews, getEditorContainer).then(() => {
-              moveEditorToScreen(panelId, editorView, settings.default_w);
-            });
+          if (alreadyInScreen) {
+            // Remove from screen (toggle off)
+            removeEditorFromScreen(panelId, getEditorContainer(panelId));
+            console.log(`[Click] Removed panel ${panelId} from screen`);
           } else {
-            // Just add to screen (stacks with others)
-            moveEditorToScreen(panelId, editorView, settings.default_w);
+            // Add to screen (toggle on)
+            if (settings.collapseOnBlur) {
+              // Remove other editors first, then show this one
+              removeAllEditorsExcept(panelId, editorViews, getEditorContainer).then(() => {
+                moveEditorToScreen(panelId, editorView, settings.default_w);
+              });
+            } else {
+              // Just add to screen (stacks with others)
+              moveEditorToScreen(panelId, editorView, settings.default_w);
+            }
+            console.log(`[Click] Added panel ${panelId} to screen`);
           }
-          console.log(`[Click] Added panel ${panelId} to screen`);
         }
       }
 
