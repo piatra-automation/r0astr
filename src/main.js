@@ -1082,7 +1082,8 @@ function ensureLayoutAddPanelButton() {
 // Load starter layout for first-time users (no saved state)
 async function loadStarterLayout() {
   try {
-    const resp = await fetch(new URL('starter-layout.json', import.meta.url));
+    const base = import.meta.env.BASE_URL || '/';
+    const resp = await fetch(`${base}starter-layout.json`);
     if (!resp.ok) {
       console.log('[Init] No starter layout available (HTTP ' + resp.status + ')');
       return;
