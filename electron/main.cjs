@@ -10,6 +10,7 @@
 
 const { app, BrowserWindow, globalShortcut, ipcMain, dialog, Menu, nativeImage } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { createServer } = require('http');
 const { WebSocketServer } = require('ws');
 const express = require('express');
@@ -519,6 +520,60 @@ function setupIpcHandlers() {
   // Broadcast to remotes
   ipcMain.on('broadcast-to-remotes', (event, message) => {
     broadcastToRemote(message);
+  });
+
+  // Read local file (for snippet loading from filesystem)
+  ipcMain.handle('read-local-file', async (event, filePath) => {
+    try {
+      if (typeof filePath !== 'string' || !filePath) {
+        return { success: false, error: 'Invalid file path' };
+      }
+
+      // Security: reject null bytes
+      if (filePath.includes('\0')) {
+        return { success: false, error: 'Invalid file path: contains null bytes' };
+      }
+
+      // Security: reject protocol prefixes
+      if (/^(file|https?):\/\//i.test(filePath)) {
+        return { success: false, error: 'Protocol prefixes not allowed. Provide a filesystem path.' };
+      }
+
+      // Resolve ~ to home directory
+      let resolvedPath = filePath;
+      if (resolvedPath.startsWith('~/') || resolvedPath === '~') {
+        resolvedPath = path.join(require('os').homedir(), resolvedPath.slice(1));
+      }
+
+      resolvedPath = path.resolve(resolvedPath);
+
+      // Security: reject directory traversal (.. in the original input)
+      if (filePath.includes('..')) {
+        return { success: false, error: 'Directory traversal (..) not allowed' };
+      }
+
+      // Security: only allow .json files
+      if (path.extname(resolvedPath).toLowerCase() !== '.json') {
+        return { success: false, error: 'Only .json files are allowed' };
+      }
+
+      // Security: size limit (5MB)
+      const stats = await fs.promises.stat(resolvedPath);
+      if (stats.size > 5 * 1024 * 1024) {
+        return { success: false, error: 'File too large (max 5MB)' };
+      }
+
+      const content = await fs.promises.readFile(resolvedPath, 'utf-8');
+      const data = JSON.parse(content);
+      return { success: true, data };
+    } catch (err) {
+      const message = err.code === 'ENOENT'
+        ? `File not found: ${filePath}`
+        : err instanceof SyntaxError
+          ? 'File is not valid JSON'
+          : err.message;
+      return { success: false, error: message };
+    }
   });
 
   // Get server info

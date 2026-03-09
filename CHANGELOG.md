@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.18.0] - 2026-03-09
+
+### Added
+- **Local snippet file loading (Electron)** — snippet manager can now load JSON snippet files from the local filesystem (e.g., `~/snippets.json`) via a new `read-local-file` IPC channel; browser builds show a descriptive error when a local path is used
+- **File read security hardening** — IPC handler validates paths against directory traversal, null bytes, protocol prefixes, non-JSON extensions, and enforces a 5MB size limit
+
 ## [0.17.7] - 2026-03-09
 
 ### Changed

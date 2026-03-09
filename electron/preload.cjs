@@ -65,6 +65,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('shortcut-open-settings', () => callback());
   },
 
+  // Read local file (for snippet loading from filesystem)
+  readLocalFile: (filePath) => ipcRenderer.invoke('read-local-file', filePath),
+
   // Platform info
   platform: process.platform,
 

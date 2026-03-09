@@ -124,8 +124,17 @@ class SnippetLibrary {
 }
 
 /**
- * Load snippets from external URL (GitHub raw, etc.)
- * @param {string} url - URL to snippet JSON file (HTTP/HTTPS only)
+ * Check if a string looks like a local file path (not an HTTP URL)
+ * @param {string} str - The string to check
+ * @returns {boolean}
+ */
+function isLocalFilePath(str) {
+  return !str.startsWith('http://') && !str.startsWith('https://');
+}
+
+/**
+ * Load snippets from external URL or local file path (Electron only)
+ * @param {string} url - URL or file path to snippet JSON file
  * @returns {Promise<SnippetLibrary|null>} Loaded snippet library or null on error
  */
 export async function loadSnippets(url) {
@@ -135,43 +144,62 @@ export async function loadSnippets(url) {
   }
 
   try {
-    console.log('Loading snippets from URL:', url);
+    let jsonData;
 
-    // Try direct fetch first
-    let response;
-    let usedProxy = false;
-
-    try {
-      response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    if (isLocalFilePath(url)) {
+      // Local file path — route through Electron IPC
+      if (!window.electronAPI?.readLocalFile) {
+        showSnippetErrorNotification('Local file paths only work in the desktop app');
+        return null;
       }
-    } catch (error) {
-      // If direct fetch fails (likely CORS), try with CORS proxy
-      console.warn('Direct fetch failed, trying CORS proxy...', error.message);
-      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-      console.log('Using CORS proxy:', proxyUrl);
 
-      response = await fetch(proxyUrl);
-      usedProxy = true;
+      console.log('Loading snippets from local file:', url);
+      const result = await window.electronAPI.readLocalFile(url);
 
-      if (!response.ok) {
-        throw new Error(`Proxy fetch failed: HTTP ${response.status}: ${response.statusText}`);
+      if (!result.success) {
+        throw new Error(result.error);
       }
-    }
 
-    if (usedProxy) {
-      console.log('✓ Loaded via CORS proxy');
-    }
+      jsonData = result.data;
+    } else {
+      // HTTP/HTTPS URL — existing fetch flow
+      console.log('Loading snippets from URL:', url);
 
-    // Check content type
-    const contentType = response.headers.get('content-type');
-    if (contentType && !contentType.includes('application/json') && !contentType.includes('text/plain')) {
-      console.warn('Response may not be JSON. Content-Type:', contentType);
-    }
+      let response;
+      let usedProxy = false;
 
-    const jsonData = await response.json();
+      try {
+        response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+      } catch (error) {
+        // If direct fetch fails (likely CORS), try with CORS proxy
+        console.warn('Direct fetch failed, trying CORS proxy...', error.message);
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        console.log('Using CORS proxy:', proxyUrl);
+
+        response = await fetch(proxyUrl);
+        usedProxy = true;
+
+        if (!response.ok) {
+          throw new Error(`Proxy fetch failed: HTTP ${response.status}: ${response.statusText}`);
+        }
+      }
+
+      if (usedProxy) {
+        console.log('✓ Loaded via CORS proxy');
+      }
+
+      // Check content type
+      const contentType = response.headers.get('content-type');
+      if (contentType && !contentType.includes('application/json') && !contentType.includes('text/plain')) {
+        console.warn('Response may not be JSON. Content-Type:', contentType);
+      }
+
+      jsonData = await response.json();
+    }
 
     // Validate snippet format
     if (!jsonData.snippets || typeof jsonData.snippets !== 'object') {
