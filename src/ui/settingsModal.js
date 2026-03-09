@@ -15,12 +15,13 @@ import { applyHighContrast, applyReducedMotion, applyFocusStyle, createFocusTrap
 
 // Per-section dirty state tracking
 const sectionDirtyState = {
-  'general-settings': false,
-  'editor-settings': false,
-  'behaviour-settings': false,
-  'integration-settings': false,
+  'appearance-settings': false,
+  'session-settings': false,
+  'playback-settings': false,
+  'highlighting-settings': false,
+  'addons-settings': false,
   'accessibility-settings': false,
-  'advanced-settings': false,
+  'projection-settings': false,
 };
 
 // Snapshot of settings when modal opens (for Reset)
@@ -227,7 +228,7 @@ export async function openSettingsModal() {
   clearAllDirtyStates();
 
   // Activate first tab
-  switchSection('general-settings');
+  switchSection('appearance-settings');
 
   // Focus first sidebar tab for accessibility
   const firstTab = modal.querySelector('.sidebar-tab');

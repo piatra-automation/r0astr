@@ -89,29 +89,33 @@
         <nav class="settings-sidebar" role="tablist" aria-label="Settings categories">
           <div class="sidebar-header">Categories</div>
 
-          <button class="sidebar-tab active" role="tab" aria-selected="true" data-section="general-settings">
-            <span class="tab-name">General</span>
-            <span class="tab-description">Session, autosave, beat-locking</span>
+          <button class="sidebar-tab active" role="tab" aria-selected="true" data-section="appearance-settings">
+            <span class="tab-name">Appearance</span>
+            <span class="tab-description">Skin, fonts, opacity</span>
           </button>
-          <button class="sidebar-tab" role="tab" aria-selected="false" data-section="editor-settings">
-            <span class="tab-name">Editor</span>
-            <span class="tab-description">Font, theme, formatting</span>
+          <button class="sidebar-tab" role="tab" aria-selected="false" data-section="session-settings">
+            <span class="tab-name">Session</span>
+            <span class="tab-description">Restore, autosave, confirmations</span>
           </button>
-          <button class="sidebar-tab" role="tab" aria-selected="false" data-section="behaviour-settings">
-            <span class="tab-name">Behaviour</span>
-            <span class="tab-description">Opacity, collapse, focus</span>
+          <button class="sidebar-tab" role="tab" aria-selected="false" data-section="playback-settings">
+            <span class="tab-name">Playback</span>
+            <span class="tab-description">Beat-locking, tempo, collapse</span>
           </button>
-          <button class="sidebar-tab" role="tab" aria-selected="false" data-section="integration-settings">
-            <span class="tab-name">Integrations</span>
-            <span class="tab-description">Skins, snippets</span>
+          <button class="sidebar-tab" role="tab" aria-selected="false" data-section="highlighting-settings">
+            <span class="tab-name">Highlighting</span>
+            <span class="tab-description">Wrapping, formatting, syntax</span>
+          </button>
+          <button class="sidebar-tab" role="tab" aria-selected="false" data-section="addons-settings">
+            <span class="tab-name">Add-ons</span>
+            <span class="tab-description">Snippets, custom skins</span>
           </button>
           <button class="sidebar-tab" role="tab" aria-selected="false" data-section="accessibility-settings">
             <span class="tab-name">Accessibility</span>
             <span class="tab-description">Contrast, motion, focus style</span>
           </button>
-          <button class="sidebar-tab" role="tab" aria-selected="false" data-section="advanced-settings">
-            <span class="tab-name">Advanced</span>
-            <span class="tab-description">Tempo, projection margins</span>
+          <button class="sidebar-tab" role="tab" aria-selected="false" data-section="projection-settings">
+            <span class="tab-name">Projection</span>
+            <span class="tab-description">Screen margins</span>
           </button>
 
           <div class="sidebar-divider"></div>
@@ -129,9 +133,77 @@
         <!-- Main Content Area -->
         <div class="settings-main">
           <div class="settings-content" role="tabpanel">
-            <!-- GENERAL Section -->
-            <section class="settings-section active" id="general-settings" aria-labelledby="general-settings-heading">
-              <h3 id="general-settings-heading">General</h3>
+            <!-- APPEARANCE Section -->
+            <section class="settings-section active" id="appearance-settings" aria-labelledby="appearance-settings-heading">
+              <h3 id="appearance-settings-heading">Appearance</h3>
+              <div class="settings-section-content">
+                <!-- UI Skin Selector -->
+                <div class="setting-item">
+                  <label for="skin-select">UI Skin / Theme</label>
+                  <select id="skin-select" class="setting-select">
+                    <!-- Options populated dynamically from bundled + custom skins -->
+                  </select>
+                  <p class="setting-description">
+                    Choose UI skin. Requires page reload to take effect.
+                  </p>
+                </div>
+
+                <!-- Font Size Slider -->
+                <div class="setting-item">
+                  <label for="font-size-slider">
+                    Code Editor Font Size: <span id="font-size-value">14px</span>
+                  </label>
+                  <input type="range" id="font-size-slider" class="setting-slider" min="10" max="24" value="14" step="1">
+                  <p class="setting-description">
+                    Adjust font size for all code editors (10-24px)
+                  </p>
+                </div>
+
+                <!-- Editor Theme Selection -->
+                <div class="setting-item">
+                  <label for="editor-theme-select">Editor Theme</label>
+                  <select id="editor-theme-select" class="setting-select">
+                    <option value="atomone">Atom One Dark</option>
+                    <option value="abcdef">Abcdef</option>
+                    <option value="bespin">Bespin</option>
+                    <option value="dracula">Dracula</option>
+                    <option value="gruvboxDark">Gruvbox Dark</option>
+                    <option value="materialDark">Material Dark</option>
+                    <option value="nord">Nord</option>
+                    <option value="solarizedDark">Solarized Dark</option>
+                  </select>
+                  <p class="setting-description">
+                    Color theme for code editor (requires syntax highlighting enabled)
+                  </p>
+                </div>
+
+                <!-- Active Panel Opacity Slider -->
+                <div class="setting-item">
+                  <label for="active-panel-opacity-slider">
+                    Active Panel Opacity: <span id="active-panel-opacity-value">95%</span>
+                  </label>
+                  <input type="range" id="active-panel-opacity-slider" class="setting-slider" min="50" max="100" value="95" step="5">
+                  <p class="setting-description">
+                    Opacity for the currently focused/active panel (50-100%)
+                  </p>
+                </div>
+
+                <!-- Background Panel Opacity Slider -->
+                <div class="setting-item">
+                  <label for="background-panel-opacity-slider">
+                    Background Panels Opacity: <span id="background-panel-opacity-value">60%</span>
+                  </label>
+                  <input type="range" id="background-panel-opacity-slider" class="setting-slider" min="20" max="100" value="60" step="5">
+                  <p class="setting-description">
+                    Cumulative opacity for unfocused panels (20-100%)
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <!-- SESSION Section -->
+            <section class="settings-section" id="session-settings" aria-labelledby="session-settings-heading">
+              <h3 id="session-settings-heading">Session</h3>
               <div class="settings-section-content">
                 <!-- Restore Session Toggle -->
                 <div class="setting-item">
@@ -170,7 +242,13 @@
                     How frequently to save panel state to localStorage
                   </p>
                 </div>
+              </div>
+            </section>
 
+            <!-- PLAYBACK Section -->
+            <section class="settings-section" id="playback-settings" aria-labelledby="playback-settings-heading">
+              <h3 id="playback-settings-heading">Playback</h3>
+              <div class="settings-section-content">
                 <!-- Beat-Locking -->
                 <div class="setting-item">
                   <label>Beat-Locking</label>
@@ -192,42 +270,61 @@
                     </label>
                   </div>
                 </div>
+
+                <!-- Show Tempo Knob -->
+                <div class="setting-item">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="show-tempo-knob" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-text">Automatic TEMPO Control</span>
+                  </label>
+                  <p class="setting-description">
+                    Automatically adds a global tempo slider controlling playback speed
+                  </p>
+                </div>
+
+                <!-- Show CPM -->
+                <div class="setting-item">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="show-cpm" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-text">Display as CPM (Cycles Per Minute)</span>
+                  </label>
+                  <p class="setting-description">
+                    Show tempo as CPM instead of BPM (BPM = CPM × 4)
+                  </p>
+                </div>
+
+                <!-- Collapse on Blur Toggle -->
+                <div class="setting-item">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="collapse-on-blur-toggle" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-text">Collapse unfocused panels</span>
+                  </label>
+                  <p class="setting-description">
+                    When enabled, background panels collapse to show only header
+                  </p>
+                </div>
+
+                <!-- Show Controls When Collapsed Toggle -->
+                <div class="setting-item">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="show-controls-collapsed-toggle" class="toggle-input">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-text">Show controls when panel collapsed</span>
+                  </label>
+                  <p class="setting-description">
+                    Keep sliders and visualizers visible when panel is collapsed
+                  </p>
+                </div>
               </div>
             </section>
 
-            <!-- EDITOR Section -->
-            <section class="settings-section" id="editor-settings" aria-labelledby="editor-settings-heading">
-              <h3 id="editor-settings-heading">Editor</h3>
+            <!-- HIGHLIGHTING Section -->
+            <section class="settings-section" id="highlighting-settings" aria-labelledby="highlighting-settings-heading">
+              <h3 id="highlighting-settings-heading">Highlighting</h3>
               <div class="settings-section-content">
-                <!-- Font Size Slider -->
-                <div class="setting-item">
-                  <label for="font-size-slider">
-                    Code Editor Font Size: <span id="font-size-value">14px</span>
-                  </label>
-                  <input type="range" id="font-size-slider" class="setting-slider" min="10" max="24" value="14" step="1">
-                  <p class="setting-description">
-                    Adjust font size for all code editors (10-24px)
-                  </p>
-                </div>
-
-                <!-- Editor Theme Selection -->
-                <div class="setting-item">
-                  <label for="editor-theme-select">Editor Theme</label>
-                  <select id="editor-theme-select" class="setting-select">
-                    <option value="atomone">Atom One Dark</option>
-                    <option value="abcdef">Abcdef</option>
-                    <option value="bespin">Bespin</option>
-                    <option value="dracula">Dracula</option>
-                    <option value="gruvboxDark">Gruvbox Dark</option>
-                    <option value="materialDark">Material Dark</option>
-                    <option value="nord">Nord</option>
-                    <option value="solarizedDark">Solarized Dark</option>
-                  </select>
-                  <p class="setting-description">
-                    Color theme for code editor (requires syntax highlighting enabled)
-                  </p>
-                </div>
-
                 <!-- Wrap Lines Toggle -->
                 <div class="setting-item">
                   <label class="toggle-label">
@@ -278,70 +375,17 @@
               </div>
             </section>
 
-            <!-- BEHAVIOUR Section -->
-            <section class="settings-section" id="behaviour-settings" aria-labelledby="behaviour-settings-heading">
-              <h3 id="behaviour-settings-heading">Behaviour</h3>
+            <!-- ADD-ONS Section -->
+            <section class="settings-section" id="addons-settings" aria-labelledby="addons-settings-heading">
+              <h3 id="addons-settings-heading">Add-ons</h3>
               <div class="settings-section-content">
-                <!-- Active Panel Opacity Slider -->
+                <!-- Snippet Location Input -->
                 <div class="setting-item">
-                  <label for="active-panel-opacity-slider">
-                    Active Panel Opacity: <span id="active-panel-opacity-value">95%</span>
-                  </label>
-                  <input type="range" id="active-panel-opacity-slider" class="setting-slider" min="50" max="100" value="95" step="5">
+                  <label for="snippet-location-input">Snippet Library URL/Path</label>
+                  <input type="text" id="snippet-location-input" class="setting-text-input"
+                    placeholder="https://example.com/snippets.json">
                   <p class="setting-description">
-                    Opacity for the currently focused/active panel (50-100%)
-                  </p>
-                </div>
-
-                <!-- Background Panel Opacity Slider -->
-                <div class="setting-item">
-                  <label for="background-panel-opacity-slider">
-                    Background Panels Opacity: <span id="background-panel-opacity-value">60%</span>
-                  </label>
-                  <input type="range" id="background-panel-opacity-slider" class="setting-slider" min="20" max="100" value="60" step="5">
-                  <p class="setting-description">
-                    Cumulative opacity for unfocused panels (20-100%)
-                  </p>
-                </div>
-
-                <!-- Collapse on Blur Toggle -->
-                <div class="setting-item">
-                  <label class="toggle-label">
-                    <input type="checkbox" id="collapse-on-blur-toggle" class="toggle-input">
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-text">Collapse unfocused panels</span>
-                  </label>
-                  <p class="setting-description">
-                    When enabled, background panels collapse to show only header
-                  </p>
-                </div>
-
-                <!-- Show Controls When Collapsed Toggle -->
-                <div class="setting-item">
-                  <label class="toggle-label">
-                    <input type="checkbox" id="show-controls-collapsed-toggle" class="toggle-input">
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-text">Show controls when panel collapsed</span>
-                  </label>
-                  <p class="setting-description">
-                    Keep sliders and visualizers visible when panel is collapsed
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            <!-- INTEGRATIONS Section -->
-            <section class="settings-section" id="integration-settings" aria-labelledby="integration-settings-heading">
-              <h3 id="integration-settings-heading">Integrations</h3>
-              <div class="settings-section-content">
-                <!-- UI Skin Selector -->
-                <div class="setting-item">
-                  <label for="skin-select">UI Skin / Theme</label>
-                  <select id="skin-select" class="setting-select">
-                    <!-- Options populated dynamically from bundled + custom skins -->
-                  </select>
-                  <p class="setting-description">
-                    Choose UI skin. Requires page reload to take effect.
+                    URL or file path to external snippet library (JSON format)
                   </p>
                 </div>
 
@@ -367,16 +411,6 @@
                   <div id="custom-skins-list" class="custom-skins-list">
                     <!-- Populated dynamically -->
                   </div>
-                </div>
-
-                <!-- Snippet Location Input -->
-                <div class="setting-item">
-                  <label for="snippet-location-input">Snippet Library URL/Path</label>
-                  <input type="text" id="snippet-location-input" class="setting-text-input"
-                    placeholder="https://example.com/snippets.json">
-                  <p class="setting-description">
-                    URL or file path to external snippet library (JSON format)
-                  </p>
                 </div>
               </div>
             </section>
@@ -436,35 +470,11 @@
               </div>
             </section>
 
-            <!-- ADVANCED Section -->
-            <section class="settings-section" id="advanced-settings" aria-labelledby="advanced-settings-heading">
-              <h3 id="advanced-settings-heading">Advanced</h3>
+            <!-- PROJECTION Section -->
+            <section class="settings-section" id="projection-settings" aria-labelledby="projection-settings-heading">
+              <h3 id="projection-settings-heading">Projection</h3>
               <div class="settings-section-content">
-                <!-- Show Tempo Knob -->
-                <div class="setting-item">
-                  <label class="toggle-label">
-                    <input type="checkbox" id="show-tempo-knob" class="toggle-input">
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-text">Automatic TEMPO Control</span>
-                  </label>
-                  <p class="setting-description">
-                    Automatically adds a global tempo slider controlling playback speed
-                  </p>
-                </div>
-
-                <!-- Show CPM -->
-                <div class="setting-item">
-                  <label class="toggle-label">
-                    <input type="checkbox" id="show-cpm" class="toggle-input">
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-text">Display as CPM (Cycles Per Minute)</span>
-                  </label>
-                  <p class="setting-description">
-                    Show tempo as CPM instead of BPM (BPM = CPM × 4)
-                  </p>
-                </div>
-
-                <!-- Projection Tweaks Sub-section -->
+                <!-- Projection Margins description -->
                 <div class="setting-item">
                   <label>Projection Margins</label>
                   <p class="setting-description">
