@@ -132,8 +132,12 @@ h1 {
   height: var(--logo-height);
   display: flex;
   align-items: center;
-  pointer-events: none;
-  /* Logo is not interactive, inherits drag from parent */
+}
+
+.banner-bar .site-logo a {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
 .banner-bar .site-logo img {
