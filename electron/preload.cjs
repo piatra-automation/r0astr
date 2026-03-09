@@ -68,6 +68,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Read local file (for snippet loading from filesystem)
   readLocalFile: (filePath) => ipcRenderer.invoke('read-local-file', filePath),
 
+  // Open native file picker dialog
+  openFileDialog: (options) => ipcRenderer.invoke('open-file-dialog', options),
+
   // Platform info
   platform: process.platform,
 

@@ -894,6 +894,23 @@ export function initializeSettingsModal() {
   const snippetLocationInput = document.getElementById('snippet-location-input');
   const skinPackInput = document.getElementById('skin-pack-input');
 
+  // Snippet Browse button — show only in Electron, opens native file picker
+  const snippetBrowseBtn = document.getElementById('snippet-browse-btn');
+  if (snippetBrowseBtn && window.electronAPI?.openFileDialog) {
+    snippetBrowseBtn.style.display = '';
+    snippetBrowseBtn.addEventListener('click', async () => {
+      const result = await window.electronAPI.openFileDialog({
+        title: 'Select Snippet Library',
+        filters: [{ name: 'JSON Files', extensions: ['json'] }],
+      });
+      if (!result.canceled && result.filePath) {
+        snippetLocationInput.value = result.filePath;
+        // Trigger the same load logic as blur
+        snippetLocationInput.dispatchEvent(new Event('blur'));
+      }
+    });
+  }
+
   // Snippet Location - validate and load snippets on blur
   snippetLocationInput?.addEventListener('blur', async (e) => {
     const input = e.target;

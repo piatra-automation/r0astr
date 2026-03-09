@@ -4045,62 +4045,152 @@ eventBus.on('panel:reordered', () => {
 
 // NOTE: updateAllEditorFontSizes is now imported from ./panels/panelEditor.js
 
-  // Listen for settings changes to update tempo control and font sizes
-  window.addEventListener('settings-changed', () => {
+  // Guard: skin re-render in progress — settings-changed must wait
+  let skinReRenderInProgress = false;
+  let pendingSettingsUpdate = false;
+
+  function applySettingsUpdate() {
     renderTempoControl();
     updateAllEditorFontSizes();
     updateMasterControlsVisibility();
+  }
+
+  // Listen for settings changes to update tempo control and font sizes
+  window.addEventListener('settings-changed', () => {
+    if (skinReRenderInProgress) {
+      // Defer until skin re-render completes — avoids mutating DOM mid-rebuild
+      pendingSettingsUpdate = true;
+      return;
+    }
+    applySettingsUpdate();
   });
 
   // Listen for skin changes to hot-reload UI
   window.addEventListener('skin-changed', async (event) => {
+    skinReRenderInProgress = true;
     console.log('[SkinHotReload] Re-rendering panels with new skin...');
 
-    // Restore master panel parts to <li> before any teardown/re-render
-    // (so clearAllRegions doesn't destroy moved DOM elements)
-    restoreMasterPanel();
+    try {
+      // Restore master panel parts to <li> before any teardown/re-render
+      // (so clearAllRegions doesn't destroy moved DOM elements)
+      restoreMasterPanel();
 
-    // Apply or teardown page layout based on skin config
-    const layout = skinManager.getLayout();
-    if (layout) {
-      // Skin has layout mode — render page template and apply regions
-      const pageHTML = skinManager.hasTemplate('page')
-        ? skinManager.render('page', {})
-        : skinManager.getFallbackTemplate('page', {});
-      applyLayout(layout, pageHTML);
-      initColumnResizers();
-      console.log('[SkinHotReload] Layout mode activated');
-    } else {
-      teardownLayout();
-    }
+      // Apply or teardown page layout based on skin config
+      const layout = skinManager.getLayout();
+      if (layout) {
+        // Skin has layout mode — render page template and apply regions
+        const pageHTML = skinManager.hasTemplate('page')
+          ? skinManager.render('page', {})
+          : skinManager.getFallbackTemplate('page', {});
+        applyLayout(layout, pageHTML);
+        initColumnResizers();
+        console.log('[SkinHotReload] Layout mode activated');
+      } else {
+        teardownLayout();
+      }
 
-    // Re-render all panels with new templates (preserves internal state, including master)
-    await reRenderAllPanels(createEditorView, editorViews, smRenderSliders, getPanelSliders, handleEditorChange, handleMasterChange);
+      // Re-render all panels with new templates (preserves internal state, including master)
+      await reRenderAllPanels(createEditorView, editorViews, smRenderSliders, getPanelSliders, handleEditorChange, handleMasterChange);
 
-    // Decompose master panel AFTER re-render so moved parts survive clearAllRegions
-    if (layout) {
-      decomposeMasterPanel(layout);
-    }
+      // Decompose master panel AFTER re-render so moved parts survive clearAllRegions
+      if (layout) {
+        decomposeMasterPanel(layout);
+      }
 
-    // Initialize drag reorder for the active mode
-    if (isLayoutMode()) {
-      initializeLayoutReorder();
-    }
+      // Initialize drag reorder for the active mode
+      if (isLayoutMode()) {
+        initializeLayoutReorder();
+      }
 
-    // Restore visual state (playing/stale/error classes) on newly created DOM
-    for (const panelId of Object.keys(cardStates)) {
-      updateVisualIndicators(panelId);
-    }
+      // Wait for DOM to fully settle before restoring state and verifying
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-    // Force CodeMirror re-measurement after DOM moves and layout changes
-    // (editors created before their containers are in final positions may have zero dimensions)
-    requestAnimationFrame(() => {
+      // Restore visual state (playing/stale/error classes) on newly created DOM
+      for (const panelId of Object.keys(cardStates)) {
+        updateVisualIndicators(panelId);
+      }
+
+      // Force CodeMirror re-measurement after DOM moves and layout changes
       for (const [, view] of editorViews) {
         view.requestMeasure();
       }
-    });
 
-    console.log('✓ All panels re-rendered with new skin');
+      // Verify panels actually rendered — recover if any are missing
+      const allPanels = getAllPanels();
+      const layoutMode = isLayoutMode();
+
+      for (const panel of allPanels) {
+        const panelId = panel.id;
+        let present;
+
+        if (layoutMode) {
+          // Layout mode: check for editor part in a region
+          present = document.querySelector(`.layout-part-editor[data-panel-id="${panelId}"]`);
+        } else {
+          // Classic mode: check for panel <li> in the tree
+          present = document.querySelector(`.level-panel[data-panel-id="${panelId}"]`);
+        }
+
+        if (!present) {
+          console.warn(`[SkinHotReload] Panel ${panelId} missing from DOM after re-render — recovering...`);
+          try {
+            const panelElement = renderPanel(panelId, { expanded: true });
+            await new Promise(resolve => setTimeout(resolve, 0));
+            const editorContainer = getPanelEditorContainer(panelId);
+            if (editorContainer && !editorViews.has(panelId)) {
+              const view = createEditorView(editorContainer, {
+                initialCode: panel.code || '',
+                onChange: handleEditorChange,
+                panelId,
+              });
+              editorViews.set(panelId, view);
+            }
+            updateVisualIndicators(panelId);
+            console.log(`[SkinHotReload] ✓ Recovered panel ${panelId}`);
+          } catch (recoverError) {
+            console.error(`[SkinHotReload] ✗ Failed to recover panel ${panelId}:`, recoverError);
+          }
+        }
+      }
+
+      // Final CodeMirror remeasure after recovery (if any panels were re-added)
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      for (const [, view] of editorViews) {
+        view.requestMeasure();
+      }
+
+      console.log('✓ All panels re-rendered with new skin');
+    } catch (error) {
+      console.error('[SkinHotReload] Fatal error during skin re-render:', error);
+      console.error('[SkinHotReload] Attempting full panel recovery...');
+
+      // Last resort: try to re-render all panels from scratch
+      try {
+        await reRenderAllPanels(createEditorView, editorViews, smRenderSliders, getPanelSliders, handleEditorChange, handleMasterChange);
+        for (const panelId of Object.keys(cardStates)) {
+          updateVisualIndicators(panelId);
+        }
+        requestAnimationFrame(() => {
+          for (const [, view] of editorViews) {
+            view.requestMeasure();
+          }
+        });
+        console.log('[SkinHotReload] ✓ Recovery re-render succeeded');
+      } catch (retryError) {
+        console.error('[SkinHotReload] ✗ Recovery failed. Manual reload required:', retryError);
+      }
+    } finally {
+      skinReRenderInProgress = false;
+
+      // Signal that re-render is complete (hotReloadSkin awaits this)
+      window.dispatchEvent(new Event('skin-render-complete'));
+
+      // Apply any deferred settings update
+      if (pendingSettingsUpdate) {
+        pendingSettingsUpdate = false;
+        applySettingsUpdate();
+      }
+    }
   });
 
   initializeStrudel();

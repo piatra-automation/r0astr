@@ -522,6 +522,21 @@ function setupIpcHandlers() {
     broadcastToRemote(message);
   });
 
+  // Open native file picker dialog
+  ipcMain.handle('open-file-dialog', async (event, options = {}) => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: options.title || 'Select File',
+      filters: options.filters || [{ name: 'All Files', extensions: ['*'] }],
+      properties: ['openFile'],
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return { canceled: true };
+    }
+
+    return { canceled: false, filePath: result.filePaths[0] };
+  });
+
   // Read local file (for snippet loading from filesystem)
   ipcMain.handle('read-local-file', async (event, filePath) => {
     try {

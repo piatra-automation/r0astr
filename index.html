@@ -382,8 +382,13 @@
                 <!-- Snippet Location Input -->
                 <div class="setting-item">
                   <label for="snippet-location-input">Snippet Library URL/Path</label>
-                  <input type="text" id="snippet-location-input" class="setting-text-input"
-                    placeholder="https://example.com/snippets.json">
+                  <div class="setting-input-with-button">
+                    <input type="text" id="snippet-location-input" class="setting-text-input"
+                      placeholder="https://example.com/snippets.json">
+                    <button type="button" id="snippet-browse-btn" class="btn-ghost btn-browse" title="Browse for file" style="display: none;">
+                      <span class="material-icons">folder_open</span>
+                    </button>
+                  </div>
                   <p class="setting-description">
                     URL or file path to external snippet library (JSON format)
                   </p>

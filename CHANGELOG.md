@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.18.1] - 2026-03-09
+
+### Fixed
+- **Panels disappear after skin switch** — fixed race condition between `skin-changed` and `settings-changed` events; added DOM verification with automatic recovery for any panels missing after re-render; replaced fragile `setTimeout(0)` with double `requestAnimationFrame` for reliable DOM settlement
+- **Stale templates after skin switch** — bundled skin loader now clears template cache before loading new templates, preventing leftover layout-mode templates from lingering
+
+### Added
+- **Snippet file picker (Electron)** — native Browse button next to the snippet location input opens a file dialog for selecting local JSON files; only visible in the desktop app
+
+### Changed
+- **Skin hot-reload completion signaling** — `hotReloadSkin()` now awaits the full async re-render via a completion event, so callers don't proceed until panels are fully rebuilt
+
 ## [0.18.0] - 2026-03-09
 
 ### Added

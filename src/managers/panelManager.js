@@ -687,22 +687,30 @@ export async function reRenderAllPanels(createEditorView, editorViews, renderSli
     masterContainer.innerHTML = '';
   }
 
-  // Re-render each panel (including master)
+  // Render all panel DOM elements first, then create editors in a second pass.
+  // This lets the browser lay out all elements before CodeMirror measures them.
+  const renderedPanelIds = [];
+
   for (const [panelId, panelData] of panels) {
     try {
       console.log(`[PanelManager] Rendering ${panelId} (number: ${panelData.number}, title: "${panelData.title}")`);
-
-      // Render panel DOM with new template (expanded so panels are visible after skin swap)
-      const panelElement = renderPanel(panelId, { expanded: true });
+      renderPanel(panelId, { expanded: true });
+      renderedPanelIds.push(panelId);
       console.log(`[PanelManager] ✓ Panel ${panelId} DOM created`);
+    } catch (error) {
+      console.error(`[PanelManager] ✗ Failed to render ${panelId}:`, error);
+    }
+  }
 
-      // Wait for DOM to settle before looking up editor container
-      await new Promise(resolve => setTimeout(resolve, 0));
+  // Let the browser lay out all newly inserted DOM before creating editors
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-      // Recreate CodeMirror editor with existing code
+  // Second pass: create CodeMirror editors and sliders
+  for (const panelId of renderedPanelIds) {
+    try {
+      const panelData = panels.get(panelId);
       const editorContainer = getPanelEditorContainer(panelId);
       if (editorContainer) {
-        console.log(`[PanelManager] Creating editor for ${panelId}`, editorContainer);
         const view = createEditorView(editorContainer, {
           initialCode: panelData.code || '',
           onChange: panelId === MASTER_PANEL_ID ? onMasterChange : onChange,
@@ -723,23 +731,26 @@ export async function reRenderAllPanels(createEditorView, editorViews, renderSli
         }
       }
     } catch (error) {
-      console.error(`[PanelManager] ✗ Failed to render ${panelId}:`, error);
-      // Continue with next panel instead of stopping
+      console.error(`[PanelManager] ✗ Failed to create editor for ${panelId}:`, error);
     }
   }
 
   // Re-create master panel editor (static HTML panel, not in panels Map)
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await new Promise(resolve => requestAnimationFrame(resolve));
   const masterContainerFresh = getPanelEditorContainer(MASTER_PANEL_ID);
   if (masterContainerFresh) {
     console.log('[PanelManager] Recreating master panel editor');
-    const masterEditorView = createEditorView(masterContainerFresh, {
-      initialCode: masterCode,
-      onChange: onMasterChange,
-      panelId: MASTER_PANEL_ID
-    });
-    editorViews.set(MASTER_PANEL_ID, masterEditorView);
-    console.log('[PanelManager] ✓ Master panel editor recreated');
+    try {
+      const masterEditorView = createEditorView(masterContainerFresh, {
+        initialCode: masterCode,
+        onChange: onMasterChange,
+        panelId: MASTER_PANEL_ID
+      });
+      editorViews.set(MASTER_PANEL_ID, masterEditorView);
+      console.log('[PanelManager] ✓ Master panel editor recreated');
+    } catch (error) {
+      console.error('[PanelManager] ✗ Failed to create master editor:', error);
+    }
   } else {
     console.error('[PanelManager] ✗ Master panel container not found');
   }

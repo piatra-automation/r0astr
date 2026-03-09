@@ -256,7 +256,8 @@ class SkinManager {
         });
       }
 
-      // 4. Load and compile HTML templates
+      // 4. Load and compile HTML templates (clear stale templates from previous skin)
+      this.templates.clear();
       const templatePromises = Object.entries(manifest.templates || {}).map(
         async ([name, filename]) => {
           const response = await fetch(`${skinPath}/templates/${filename}`);
@@ -358,20 +359,30 @@ class SkinManager {
 
   /**
    * Hot-reload skin without page refresh
-   * Re-renders all panels with new templates while preserving state
+   * Re-renders all panels with new templates while preserving state.
+   * Returns a Promise that resolves after the re-render is fully complete.
    * @param {string} skinName - Name of skin to load
    * @returns {Promise<void>}
    */
   async hotReloadSkin(skinName) {
     console.log(`[SkinManager] Hot-reloading skin: ${skinName}`);
 
-    // Load new skin
+    // Load new skin (CSS, templates, layout config)
     await this.loadSkin(skinName);
 
-    // Dispatch event for components to re-render
+    // Dispatch event for components to re-render.
+    // The skin-changed handler is async — use a completion promise so callers
+    // can await the full re-render instead of just the skin load.
+    const reRenderComplete = new Promise((resolve) => {
+      window.addEventListener('skin-render-complete', resolve, { once: true });
+    });
+
     window.dispatchEvent(new CustomEvent('skin-changed', {
       detail: { skinName, manifest: this.currentSkin }
     }));
+
+    // Wait for the async handler to signal completion
+    await reRenderComplete;
 
     console.log(`✓ Skin hot-reloaded: ${skinName}`);
   }
