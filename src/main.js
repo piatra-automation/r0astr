@@ -3902,6 +3902,12 @@ async function init() {
     console.log('✓ Electron environment detected');
   }
 
+  // Show current port in banner subtitle
+  const portInfo = document.getElementById('banner-port-info');
+  if (portInfo && window.location.port) {
+    portInfo.textContent = `localhost:${window.location.port}`;
+  }
+
   // Load settings first (before any other initialization)
   appSettings = loadSettings();
   console.log('✓ Settings loaded');

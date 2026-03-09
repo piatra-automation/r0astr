@@ -31,8 +31,8 @@ const clients = new Map();
 // Development mode check
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
-// Server port
-const PORT = 5173;
+// Server port (resolved at startup — tries 5173, 5174, … until one is free)
+let PORT = 5173;
 
 /**
  * Create the WebSocket and HTTP server
@@ -131,23 +131,37 @@ function createWebSocketAndHttpServer() {
     }));
   });
 
-  httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`[Server] HTTP + WebSocket server running on http://0.0.0.0:${PORT}`);
+  // Try ports starting from PORT, incrementing on conflict
+  function tryListen(port) {
+    httpServer.listen(port, '0.0.0.0', () => {
+      PORT = port;
+      console.log(`[Server] HTTP + WebSocket server running on http://0.0.0.0:${PORT}`);
 
-    // Get network addresses for remote control
-    const os = require('os');
-    const interfaces = os.networkInterfaces();
-    Object.keys(interfaces).forEach((name) => {
-      interfaces[name].forEach((iface) => {
-        if (iface.family === 'IPv4' && !iface.internal) {
-          console.log(`[Server] Remote control: http://${iface.address}:${PORT}/remote.html`);
-        }
+      // Get network addresses for remote control
+      const os = require('os');
+      const interfaces = os.networkInterfaces();
+      Object.keys(interfaces).forEach((name) => {
+        interfaces[name].forEach((iface) => {
+          if (iface.family === 'IPv4' && !iface.internal) {
+            console.log(`[Server] Remote control: http://${iface.address}:${PORT}/remote.html`);
+          }
+        });
       });
+
+      // Server is ready
+      resolve();
     });
 
-    // Server is ready
-    resolve();
-  });
+    httpServer.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.log(`[Server] Port ${port} in use, trying ${port + 1}...`);
+        httpServer.removeAllListeners('error');
+        tryListen(port + 1);
+      }
+    });
+  }
+
+  tryListen(PORT);
   });
 }
 

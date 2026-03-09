@@ -415,8 +415,7 @@ export default defineConfig({
   ],
   server: {
     host: '0.0.0.0', // Listen on all network interfaces (allows iPad/phone access)
-    port: 5173,
-    strictPort: true
+    port: 5173
   },
   build: {
     // Generate sourcemaps for debugging

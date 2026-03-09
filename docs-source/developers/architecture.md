@@ -4,7 +4,7 @@ Technical overview of `r0astr`'s system design.
 
 ## System Diagram
 
-![r0astr architecture diagram](../assets/images/architecture.png)
+<img src="../assets/images/architecture.png" alt="r0astr architecture diagram" width="70%">
 
 ## Core Components
 
