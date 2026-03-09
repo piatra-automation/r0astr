@@ -1511,6 +1511,9 @@ async function initializeCards() {
   document.addEventListener('click', (e) => {
     const titleElement = e.target.closest('.panel-title');
     if (titleElement) {
+      // In tree mode, title is inside <summary> — toggle handler manages focus
+      if (!isLayoutMode() && titleElement.closest('summary')) return;
+
       const panelId = titleElement.dataset.panelId || resolvePanelId(titleElement);
       if (!panelId) return;
 
@@ -1837,8 +1840,15 @@ async function initializeCards() {
         return;
       }
 
+      // Tree mode (default skin): summary clicks handled by native <details> toggle
+      // + the toggle event handler (capture phase). Don't call bringPanelToFront here
+      // because it fires BEFORE the native toggle and updatePanelOpacities conflicts.
+      const clickedSummary = e.target.closest('summary');
+      if (clickedSummary && !isLayoutMode()) {
+        return;
+      }
+
       // Layout mode: Toggle editor in/out of screen
-      // Tree mode (default skin): native <details> handles expand/collapse
       if (isLayoutMode()) {
         const editorView = editorViews.get(panelId);
         const settings = getSettings();
