@@ -20,7 +20,6 @@ extra_css = ["assets/stylesheets/custom.css"]
 nav = [
   { "Home" = "index.md" },
   { "Getting Started" = "getting-started.md" },
-  { "Downloads" = "downloads.md" },
   { "Learn" = [
     { "Overview" = "learn/index.md" },
     { "Concepts" = "learn/concepts.md" },
@@ -30,6 +29,7 @@ nav = [
     { "Example Arrangements" = "learn/example-arrangements.md" },
     { "Troubleshooting" = "guides/troubleshooting.md" },
   ] },
+  { "FAQ" = "community/faq.md" },
   { "Developers" = [
     { "Overview" = "developers/index.md" },
     { "API Reference" = "developers/api.md" },
@@ -40,7 +40,7 @@ nav = [
     { "Skin Gallery" = "developers/skin-gallery.md" },
     { "Contributing" = "developers/contributing.md" },
   ] },
-  { "FAQ" = "community/faq.md" },
+  { "Downloads" = "downloads.md" },
 ]
 
 # ---------------------------------------------------------------------------
