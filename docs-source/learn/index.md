@@ -41,6 +41,21 @@ It's up to you how much you prepare versus how much you improvise. Snippets give
 
 ---
 
+## Remote Interface
+
+A cheap, free alternative to MIDI controllers — no investment in custom hardware required.
+
+Use the **phone in your pocket** or the **tablet in your bag**. The remote connects over WebSocket and gives you a central place to adjust sliders, toggle controls, and manage your performance in real time.
+
+- **Turn tracks on and off** at the push of a button.
+- **Set up multiple tracks** and swap between them live on the remote.
+- **Revisit code panels** as needed without breaking flow.
+- Works on **any tablet, phone, or computer** — no special hardware, no cost.
+
+The remote interface is intended to make advanced performance features immediately available to everyone — free, open source, low barrier to entry. Perfect for students, music instruction, and anyone who wants to perform without buying gear first. Power to the creators.
+
+---
+
 ## Built for Live Performance
 
 `r0astr` is designed with the stage in mind.
