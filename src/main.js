@@ -76,6 +76,19 @@ function handleEditorChange(code, panelId) {
   }
 }
 
+// Master panel editor change handler (module scope — used by both initializeStrudel and skin-changed handler)
+let masterCodeTimer;
+function handleMasterChange(code) {
+  // Debounce master code evaluation (expensive regex parsing)
+  clearTimeout(masterCodeTimer);
+  masterCodeTimer = setTimeout(() => {
+    evaluateMasterCode();
+  }, 800);
+
+  // Auto-save master panel code (debounced separately)
+  autoSavePanelState();
+}
+
 // UI modules - utility functions only (initializeKeyboardShortcuts kept in main.js for complete logic)
 import {
   findFocusedPanel,
@@ -1240,17 +1253,8 @@ async function initializeCards() {
   // Tree layout uses editor-panel-0, legacy uses master-code
   const masterCodeContainer = document.getElementById('editor-panel-0') ||
                               document.getElementById('master-code');
-  let masterCodeTimer;
-  const handleMasterChange = (code) => {
-    // Debounce master code evaluation (expensive regex parsing)
-    clearTimeout(masterCodeTimer);
-    masterCodeTimer = setTimeout(() => {
-      evaluateMasterCode();
-    }, 800); // 800ms debounce for master panel
-
-    // Auto-save master panel code (debounced separately)
-    autoSavePanelState();
-  };
+  // handleMasterChange is defined at module scope (see above) so it's
+  // accessible from both initializeStrudel() and the skin-changed handler.
 
   if (masterCodeContainer) {
     console.log('[Init] Initializing master panel CodeMirror');
