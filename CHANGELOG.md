@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.19.1] - 2026-03-10
+
+### Changed
+- **Banner shows LAN IP** — header now displays the host machine's local network IP and port instead of `localhost`, so remote devices can easily find the connection address
+
 ## [0.19.0] - 2026-03-10
 
 ### Added

@@ -2,6 +2,17 @@ import { defineConfig } from 'vite';
 import bundleAudioWorkletPlugin from 'vite-plugin-bundle-audioworklet';
 import { createWebSocketServer, broadcastToAll, setPanelManager } from './src/websocket-server.mjs';
 import { getServerConfig, saveServerConfig, isAuthRequired, validateApiKey, isLocalhost } from './src/serverConfig.mjs';
+import { networkInterfaces } from 'os';
+
+function getLanIP() {
+  const nets = networkInterfaces();
+  for (const iface of Object.values(nets)) {
+    for (const info of iface) {
+      if (info.family === 'IPv4' && !info.internal) return info.address;
+    }
+  }
+  return null;
+}
 
 // Helper to parse JSON request body
 function parseBody(req) {
@@ -511,6 +522,8 @@ const websocketAndApiPlugin = () => ({
         res.end(JSON.stringify({
           status: 'ok',
           authRequired: isAuthRequired(),
+          lanIP: getLanIP(),
+          port: req.socket?.localPort || 5173,
           timestamp: new Date().toISOString()
         }));
       } else {

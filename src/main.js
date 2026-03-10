@@ -3916,10 +3916,21 @@ async function init() {
     console.log('✓ Electron environment detected');
   }
 
-  // Show current port in banner subtitle
+  // Show LAN IP + port in banner subtitle so remote devices know where to connect
   const portInfo = document.getElementById('banner-port-info');
-  if (portInfo && window.location.port) {
-    portInfo.textContent = `localhost:${window.location.port}`;
+  if (portInfo) {
+    fetch('/health')
+      .then(r => r.json())
+      .then(data => {
+        if (data.lanIP) {
+          portInfo.textContent = `${data.lanIP}:${data.port || window.location.port}`;
+        } else if (window.location.port) {
+          portInfo.textContent = `localhost:${window.location.port}`;
+        }
+      })
+      .catch(() => {
+        if (window.location.port) portInfo.textContent = `localhost:${window.location.port}`;
+      });
   }
 
   // Load settings first (before any other initialization)
