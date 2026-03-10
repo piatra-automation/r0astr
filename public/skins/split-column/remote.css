@@ -158,6 +158,13 @@ body {
   border-radius: 0;
 }
 
+/* Scroll gutter — minimal */
+.container::after {
+  background: linear-gradient(90deg, transparent 0%, rgba(81, 207, 102, 0.02) 100%);
+  border-left-color: rgba(255, 255, 255, 0.06);
+  border-radius: 0;
+}
+
 /* Global controls — flat bottom bar */
 .global-controls {
   background: rgba(29, 63, 79, 0.9);

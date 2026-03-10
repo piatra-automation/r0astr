@@ -90,6 +90,19 @@ body {
   border-bottom: 1px solid var(--border-default);
 }
 
+.remote-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.remote-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
 .remote-banner h1 {
   margin: 0;
   font-size: 16px;
@@ -186,12 +199,31 @@ body {
 }
 
 /* =====================
-   Container
+   Container — with scroll gutter
+   Right-side gutter provides a touch-action: auto strip
+   so the user can scroll without accidentally triggering buttons.
    ===================== */
 
 .container {
   padding: 12px;
+  padding-right: 28px; /* Scroll gutter width */
   max-width: 100%;
+  position: relative;
+}
+
+/* Visual scroll gutter — subtle strip down the right edge */
+.container::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 28px;
+  background: linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.03) 100%);
+  border-left: 1px solid var(--border-subtle);
+  touch-action: auto; /* This strip scrolls normally */
+  z-index: 50;
+  pointer-events: auto;
 }
 
 /* =====================
@@ -670,6 +702,7 @@ body {
 
   .container {
     padding: 16px;
+    padding-right: 28px;
   }
 }
 
@@ -727,6 +760,11 @@ body {
     font-size: 14px;
   }
 
+  .remote-logo {
+    width: 22px;
+    height: 22px;
+  }
+
   .remote-metronome {
     padding: 4px 16px;
   }
@@ -744,6 +782,7 @@ body {
 
   .container {
     padding: 8px 12px;
+    padding-right: 28px;
   }
 
   body {

@@ -34,6 +34,12 @@ body::before {
   border-bottom: 1px solid rgba(0, 229, 255, 0.2);
 }
 
+.remote-logo {
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 2px;
+}
+
 .remote-banner h1 {
   color: #00e5ff;
   -webkit-text-fill-color: #00e5ff;
@@ -185,6 +191,12 @@ body::before {
   background: #00e5ff;
   border-radius: 2px;
   box-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
+}
+
+/* Scroll gutter — tactical */
+.container::after {
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.03) 100%);
+  border-left-color: rgba(0, 229, 255, 0.1);
 }
 
 /* Global controls — tactical bottom bar */

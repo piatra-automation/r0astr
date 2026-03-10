@@ -25,6 +25,10 @@ body {
   border-bottom-color: rgba(0, 212, 255, 0.15);
 }
 
+.remote-logo {
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+}
+
 /* Connection status — glass pill */
 .connection-status {
   background: rgba(255, 255, 255, 0.08);
@@ -137,6 +141,12 @@ body {
 
 .panel-slider-control input[type="range"]::-moz-range-thumb {
   background: linear-gradient(135deg, #00d4ff, #0095ff);
+}
+
+/* Scroll gutter — glass */
+.container::after {
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.03) 100%);
+  border-left-color: rgba(0, 212, 255, 0.1);
 }
 
 /* Global controls — glass bottom bar */

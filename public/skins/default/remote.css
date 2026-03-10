@@ -5,16 +5,14 @@
  * All colors in oklch.
  */
 
-/* Green gradient background */
+/* Background — same image as main app, darkened for control readability */
 body {
   background:
     linear-gradient(
-      135deg,
-      oklch(0.06 0.04 150) 0%,
-      oklch(0.04 0 0) 40%,
-      oklch(0.04 0 0) 60%,
-      oklch(0.06 0.03 150) 100%
-    );
+      oklch(0.04 0 0 / 0.7),
+      oklch(0.04 0 0 / 0.85)
+    ),
+    url('./assets/background.jpg') center / cover no-repeat fixed;
   background-attachment: fixed;
 }
 
@@ -80,6 +78,12 @@ body {
 
 .remote-metronome.downbeat {
   background: oklch(0.55 0.15 150 / 0.08);
+}
+
+/* Scroll gutter — match skin */
+.container::after {
+  background: linear-gradient(90deg, transparent 0%, oklch(0.55 0.15 150 / 0.03) 100%);
+  border-left-color: oklch(0.55 0.15 150 / 0.1);
 }
 
 /* Global buttons — green play */
