@@ -19,7 +19,7 @@ body {
 }
 
 /* Header — green gradient text */
-h1 {
+.remote-banner h1 {
   background: linear-gradient(135deg, oklch(0.55 0.15 150), oklch(0.5 0.15 150));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -27,11 +27,6 @@ h1 {
 }
 
 /* Connection status badge — skin overrides */
-.connection-status {
-  background: var(--surface-card-50);
-  border: 1px solid var(--border-default);
-}
-
 .connection-status.connected {
   background: oklch(0.7 0.2 150 / 0.15);
   border-color: oklch(0.7 0.2 150 / 0.3);
@@ -45,13 +40,13 @@ h1 {
 /* Panel controls — green glow when playing */
 .panel-control.playing {
   box-shadow:
-    0 0 15px oklch(0.55 0.15 150 / 0.25),
-    0 0 30px oklch(0.55 0.15 150 / 0.15);
+    0 0 16px oklch(0.55 0.15 150 / 0.25),
+    0 0 32px oklch(0.55 0.15 150 / 0.12);
 }
 
 /* Play button glow */
 .panel-control.playing .panel-button {
-  box-shadow: 0 0 12px oklch(0.55 0.15 150 / 0.5);
+  box-shadow: 0 0 16px oklch(0.55 0.15 150 / 0.5);
 }
 
 /* Master sliders section — skin accent */
@@ -63,7 +58,7 @@ h1 {
 .remote-metronome .step-box.active {
   box-shadow:
     0 0 8px oklch(0.55 0.15 150 / 0.6),
-    0 0 16px oklch(0.55 0.15 150 / 0.4);
+    0 0 16px oklch(0.55 0.15 150 / 0.3);
 }
 
 .remote-metronome .step-box[data-step="0"].active,
@@ -72,7 +67,7 @@ h1 {
 .remote-metronome .step-box[data-step="12"].active {
   box-shadow:
     0 0 12px oklch(0.7 0.2 150 / 0.7),
-    0 0 24px oklch(0.7 0.2 150 / 0.5);
+    0 0 24px oklch(0.7 0.2 150 / 0.4);
 }
 
 /* Downbeat markers — primary tint */
@@ -84,5 +79,14 @@ h1 {
 }
 
 .remote-metronome.downbeat {
-  background: oklch(0.55 0.15 150 / 0.1);
+  background: oklch(0.55 0.15 150 / 0.08);
+}
+
+/* Global buttons — green play */
+.play-all-btn {
+  box-shadow: 0 2px 12px oklch(0.7 0.2 150 / 0.3);
+}
+
+.stop-all-btn {
+  box-shadow: 0 2px 12px oklch(0.6 0.2 25 / 0.3);
 }

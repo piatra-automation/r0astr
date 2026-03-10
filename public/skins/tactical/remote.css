@@ -1,0 +1,265 @@
+/**
+ * Tactical Skin - Remote Control Panel
+ *
+ * Sci-fi military HUD aesthetic.
+ * Matches main theme: #00e5ff cyan primary, #ff9100 orange accent,
+ * dark navy background, grid pattern, glowing elements, Orbitron font.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap');
+
+/* Dark navy with grid pattern */
+body {
+  background: #0a0e17;
+  font-family: 'Orbitron', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Banner — tactical HUD header */
+.remote-banner {
+  position: sticky;
+  z-index: 100;
+  background: rgba(10, 14, 23, 0.9);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+.remote-banner h1 {
+  color: #00e5ff;
+  -webkit-text-fill-color: #00e5ff;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5), 0 0 4px rgba(0, 229, 255, 0.3);
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+
+/* Connection status — HUD badge */
+.connection-status {
+  background: rgba(0, 229, 255, 0.06);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.connection-status.connected {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.4);
+  color: #00e5ff;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
+}
+
+.connection-status.disconnected {
+  background: rgba(255, 82, 82, 0.1);
+  border-color: rgba(255, 82, 82, 0.4);
+  color: #ff5252;
+  box-shadow: 0 0 8px rgba(255, 82, 82, 0.2);
+}
+
+/* Panel controls — tactical card with angled corners */
+.panel-control.size-1,
+.panel-control.size-3 {
+  background: rgba(0, 229, 255, 0.04);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  border-radius: 2px;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.08);
+}
+
+.panel-control.playing {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.2), 0 0 40px rgba(0, 229, 255, 0.08);
+}
+
+.panel-control.stale {
+  border-color: rgba(255, 145, 0, 0.5);
+  box-shadow: 0 0 12px rgba(255, 145, 0, 0.15);
+}
+
+/* Play button — glowing circle */
+.panel-button {
+  background: rgba(0, 229, 255, 0.06);
+  border: 2px solid rgba(0, 229, 255, 0.25);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.1);
+  font-family: 'Orbitron', sans-serif;
+}
+
+.panel-control.playing .panel-button {
+  background: rgba(0, 229, 255, 0.3);
+  border-color: #00e5ff;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.5), 0 0 40px rgba(0, 229, 255, 0.2);
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.8);
+}
+
+/* Master sliders — HUD panel */
+.master-sliders-remote {
+  background: rgba(0, 229, 255, 0.03);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  border-radius: 2px;
+}
+
+.remote-slider-control label {
+  color: #00e5ff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.3);
+}
+
+.remote-slider-control input[type="range"]::-webkit-slider-track {
+  background: rgba(0, 229, 255, 0.08);
+  border-radius: 0;
+}
+
+.remote-slider-control input[type="range"]::-webkit-slider-thumb {
+  background: #00e5ff;
+  border-color: #0a0e17;
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+.remote-slider-control input[type="range"]::-moz-range-track {
+  background: rgba(0, 229, 255, 0.08);
+  border-radius: 0;
+}
+
+.remote-slider-control input[type="range"]::-moz-range-thumb {
+  background: #00e5ff;
+  border-color: #0a0e17;
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+/* Panel sliders */
+.panel-slider-control .slider-value {
+  color: #00e5ff;
+  font-family: 'Orbitron', sans-serif;
+  text-shadow: 0 0 4px rgba(0, 229, 255, 0.3);
+}
+
+.panel-slider-control label {
+  font-family: 'Orbitron', sans-serif;
+}
+
+.panel-slider-control input[type="range"]::-webkit-slider-track {
+  background: rgba(0, 229, 255, 0.08);
+  border-radius: 0;
+}
+
+.panel-slider-control input[type="range"]::-webkit-slider-thumb {
+  background: #00e5ff;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
+}
+
+.panel-slider-control input[type="range"]::-moz-range-track {
+  background: rgba(0, 229, 255, 0.08);
+  border-radius: 0;
+}
+
+.panel-slider-control input[type="range"]::-moz-range-thumb {
+  background: #00e5ff;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
+}
+
+/* Global controls — tactical bottom bar */
+.global-controls {
+  background: rgba(10, 14, 23, 0.92);
+  border-top: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+.play-all-btn,
+.stop-all-btn,
+.update-all-btn {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  border-radius: 2px;
+}
+
+.play-all-btn {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: rgba(0, 229, 255, 0.5);
+  color: #00e5ff;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
+}
+
+.stop-all-btn {
+  background: rgba(255, 82, 82, 0.15);
+  border-color: rgba(255, 82, 82, 0.5);
+  color: #ff5252;
+  box-shadow: 0 0 12px rgba(255, 82, 82, 0.2);
+  text-shadow: 0 0 6px rgba(255, 82, 82, 0.4);
+}
+
+.update-all-btn {
+  background: rgba(255, 145, 0, 0.15);
+  border-color: rgba(255, 145, 0, 0.5);
+  color: #ff9100;
+  box-shadow: 0 0 12px rgba(255, 145, 0, 0.2);
+  text-shadow: 0 0 6px rgba(255, 145, 0, 0.4);
+}
+
+.update-all-btn:disabled {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+  text-shadow: none;
+}
+
+/* Metronome — tactical step sequencer */
+.remote-metronome {
+  background: rgba(10, 14, 23, 0.7);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.1);
+}
+
+.remote-metronome .step-box {
+  background: rgba(0, 229, 255, 0.06);
+  border: 1px solid rgba(0, 229, 255, 0.12);
+  border-radius: 1px;
+}
+
+.remote-metronome .step-box[data-step="0"],
+.remote-metronome .step-box[data-step="4"],
+.remote-metronome .step-box[data-step="8"],
+.remote-metronome .step-box[data-step="12"] {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: rgba(0, 229, 255, 0.2);
+}
+
+.remote-metronome .step-box.active {
+  background: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.6), 0 0 20px rgba(0, 229, 255, 0.3);
+}
+
+.remote-metronome .step-box[data-step="0"].active,
+.remote-metronome .step-box[data-step="4"].active,
+.remote-metronome .step-box[data-step="8"].active,
+.remote-metronome .step-box[data-step="12"].active {
+  background: #40efff;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.8), 0 0 28px rgba(0, 229, 255, 0.4);
+}
+
+.remote-metronome .step-box.beat {
+  background: #fff;
+  transform: scaleY(1.3);
+}
+
+.remote-metronome.downbeat {
+  background: rgba(0, 229, 255, 0.04);
+}

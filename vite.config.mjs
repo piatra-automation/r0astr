@@ -411,7 +411,19 @@ export default defineConfig({
   plugins: [
     bundleAudioWorkletPlugin(),
     // Only add WebSocket plugin in dev mode (Electron main process handles it in production)
-    ...(process.env.NODE_ENV === 'production' ? [] : [websocketAndApiPlugin()])
+    ...(process.env.NODE_ENV === 'production' ? [] : [websocketAndApiPlugin()]),
+    // Rewrite /remote to /remote.html so the remote interface loads instead of SPA fallback
+    {
+      name: 'rewrite-remote',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url === '/remote' || req.url === '/remote/') {
+            req.url = '/remote.html';
+          }
+          next();
+        });
+      }
+    }
   ],
   server: {
     host: '0.0.0.0', // Listen on all network interfaces (allows iPad/phone access)

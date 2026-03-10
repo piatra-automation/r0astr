@@ -1,27 +1,18 @@
 /**
  * Glass Skin - Remote Control Panel
  *
- * Modern glassmorphism design with frosted translucent panels
- * Matches the glass theme's purple/blue gradient with cyan accents
+ * Modern glassmorphism design with frosted translucent panels.
+ * Matches the glass theme's purple/blue gradient with cyan accents.
  */
 
 /* Deep purple gradient background */
 body {
   background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  background-attachment: fixed;
 }
 
-/* Header with glass effect */
-header {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(0, 212, 255, 0.2);
-}
-
-h1 {
+/* Header — cyan gradient text */
+.remote-banner h1 {
   background: linear-gradient(135deg, #00d4ff, #0095ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -29,12 +20,17 @@ h1 {
   font-weight: 700;
 }
 
-/* Connection status - glass pill */
+.remote-banner {
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom-color: rgba(0, 212, 255, 0.15);
+}
+
+/* Connection status — glass pill */
 .connection-status {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .connection-status.connected {
@@ -49,82 +45,68 @@ h1 {
   color: #ff5252;
 }
 
-/* Panel controls - frosted glass cards */
-.panel-control {
-  background: rgba(255, 255, 255, 0.08);
+/* Panel controls — frosted glass cards */
+.panel-control.size-1,
+.panel-control.size-3 {
+  background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
-              inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.panel-control:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(0, 212, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 .panel-control.playing {
-  background: rgba(0, 212, 255, 0.1);
-  border-color: rgba(0, 212, 255, 0.5);
-  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2),
-              0 0 40px rgba(0, 212, 255, 0.15),
-              inset 0 0 0 1px rgba(0, 212, 255, 0.1);
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.2),
+              0 0 40px rgba(0, 212, 255, 0.1),
+              inset 0 0 0 1px rgba(0, 212, 255, 0.08);
 }
 
-.panel-control.playing .panel-info .status {
-  color: #00d4ff;
-}
-
-/* Play button - glass circle */
+/* Play button — glass circle */
 .panel-button {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.panel-button:hover {
-  background: rgba(0, 212, 255, 0.2);
-  border-color: rgba(0, 212, 255, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .panel-control.playing .panel-button {
   background: linear-gradient(135deg, #00d4ff 0%, #0095ff 100%);
   border-color: #00d4ff;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5),
-              0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 24px rgba(0, 212, 255, 0.5),
+              0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Master sliders section - glass panel */
+/* Master sliders — glass panel */
 .master-sliders-remote {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 212, 255, 0.2);
+  border: 1px solid rgba(0, 212, 255, 0.15);
   border-radius: 16px;
 }
 
-/* Slider styling - cyan accent */
+/* Slider styling — cyan accent */
 .remote-slider-control label {
   color: #00d4ff;
 }
 
 .remote-slider-control input[type="range"]::-webkit-slider-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .remote-slider-control input[type="range"]::-webkit-slider-thumb {
   background: linear-gradient(135deg, #00d4ff, #0095ff);
   box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  border-color: #0f0c29;
 }
 
 .remote-slider-control input[type="range"]::-moz-range-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .remote-slider-control input[type="range"]::-moz-range-thumb {
@@ -132,13 +114,13 @@ h1 {
   box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
-/* Panel sliders - cyan accent */
+/* Panel sliders — cyan accent */
 .panel-slider-control .slider-value {
   color: #00d4ff;
 }
 
 .panel-slider-control input[type="range"]::-webkit-slider-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .panel-slider-control input[type="range"]::-webkit-slider-thumb {
@@ -146,78 +128,60 @@ h1 {
 }
 
 .panel-slider-control input[type="range"]::-moz-range-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .panel-slider-control input[type="range"]::-moz-range-thumb {
   background: linear-gradient(135deg, #00d4ff, #0095ff);
 }
 
-/* Global buttons - glass with color tint */
+/* Global controls — glass bottom bar */
+.global-controls {
+  background: rgba(15, 12, 41, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top-color: rgba(0, 212, 255, 0.15);
+}
+
+.play-all-btn {
+  background: rgba(0, 212, 255, 0.2);
+  border-color: rgba(0, 212, 255, 0.5);
+  color: #00d4ff;
+  box-shadow: 0 2px 16px rgba(0, 212, 255, 0.2);
+}
+
 .stop-all-btn {
   background: rgba(255, 82, 82, 0.2);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 2px solid rgba(255, 82, 82, 0.5);
-  box-shadow: 0 4px 20px rgba(255, 82, 82, 0.2);
-}
-
-.stop-all-btn:hover {
-  background: rgba(255, 82, 82, 0.3);
-  box-shadow: 0 4px 24px rgba(255, 82, 82, 0.3);
-}
-
-.stop-all-btn:active {
-  background: rgba(255, 82, 82, 0.4);
+  border-color: rgba(255, 82, 82, 0.5);
+  box-shadow: 0 2px 16px rgba(255, 82, 82, 0.2);
 }
 
 .update-all-btn {
   background: rgba(255, 152, 0, 0.2);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 2px solid rgba(255, 152, 0, 0.5);
-  box-shadow: 0 4px 20px rgba(255, 152, 0, 0.2);
-}
-
-.update-all-btn:hover:not(:disabled) {
-  background: rgba(255, 152, 0, 0.3);
-  box-shadow: 0 4px 24px rgba(255, 152, 0, 0.3);
+  border-color: rgba(255, 152, 0, 0.5);
+  color: #ff9800;
+  box-shadow: 0 2px 16px rgba(255, 152, 0, 0.2);
 }
 
 .update-all-btn:disabled {
-  background: rgba(100, 100, 100, 0.2);
-  border-color: rgba(150, 150, 150, 0.3);
+  background: rgba(100, 100, 100, 0.15);
+  border-color: rgba(150, 150, 150, 0.2);
+  color: rgba(255, 255, 255, 0.3);
   box-shadow: none;
 }
 
-/* Title flash animation - cyan */
-@keyframes titleFlash {
-  0% { color: #fff; }
-  50% { color: #00d4ff; }
-  100% { color: #fff; }
-}
-
-/* =====================
-   Metronome - Glass Style
-   ===================== */
-
+/* Metronome — glass style */
 .remote-metronome {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 212, 255, 0.2);
-  border-radius: 16px;
-  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom-color: rgba(0, 212, 255, 0.1);
 }
 
 .remote-metronome .step-box {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  width: 18px;
-  height: 28px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
 }
 
-/* Downbeat markers - cyan tint */
+/* Downbeat markers — cyan tint */
 .remote-metronome .step-box[data-step="0"],
 .remote-metronome .step-box[data-step="4"],
 .remote-metronome .step-box[data-step="8"],
@@ -225,30 +189,29 @@ h1 {
   background: rgba(0, 212, 255, 0.15);
 }
 
-/* Active step - cyan glow */
+/* Active step — cyan glow */
 .remote-metronome .step-box.active {
   background: linear-gradient(135deg, #00d4ff, #0095ff);
-  box-shadow: 0 0 12px rgba(0, 212, 255, 0.6),
-              0 0 24px rgba(0, 212, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.6),
+              0 0 20px rgba(0, 212, 255, 0.3);
 }
 
-/* Active downbeat - stronger glow */
+/* Active downbeat — stronger glow */
 .remote-metronome .step-box[data-step="0"].active,
 .remote-metronome .step-box[data-step="4"].active,
 .remote-metronome .step-box[data-step="8"].active,
 .remote-metronome .step-box[data-step="12"].active {
   background: linear-gradient(135deg, #40e0ff, #00d4ff);
-  box-shadow: 0 0 16px rgba(0, 212, 255, 0.8),
-              0 0 32px rgba(0, 212, 255, 0.4);
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.8),
+              0 0 28px rgba(0, 212, 255, 0.4);
 }
 
 /* Beat flash */
 .remote-metronome .step-box.beat {
-  transform: scaleY(1.15);
+  transform: scaleY(1.2);
 }
 
 /* Downbeat container pulse */
 .remote-metronome.downbeat {
-  background: rgba(0, 212, 255, 0.08);
-  border-color: rgba(0, 212, 255, 0.4);
+  background: rgba(0, 212, 255, 0.06);
 }

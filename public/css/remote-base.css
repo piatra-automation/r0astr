@@ -1,7 +1,8 @@
 /**
  * Remote Control Panel - Base Styles
  *
- * Structural layout for /remote view.
+ * Mobile-first layout for /remote view.
+ * Designed for phone/tablet use as a MIDI-like controller.
  * Skins override visuals via their own remote.css.
  *
  * Note: variables.css is NOT loaded in remote context,
@@ -43,10 +44,13 @@
   --text-muted: oklch(0.95 0 0 / 0.5);
 
   /* Radii */
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-lg: 6px;
-  --radius-xl: 8px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Touch targets — minimum 44px per Apple HIG */
+  --touch-min: 44px;
 }
 
 * {
@@ -61,12 +65,15 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--text-primary);
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
   touch-action: manipulation;
+  /* Reserve space for sticky footer controls */
+  padding-bottom: 80px;
 }
 
 /* =====================
-   Banner Bar
+   Banner Bar — compact, sticky
    ===================== */
 
 .remote-banner {
@@ -76,7 +83,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: 8px 16px;
   background: var(--surface-card-30);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -85,20 +92,21 @@ body {
 
 .remote-banner h1 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 
 .connection-status {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
-  padding: 6px 12px;
-  border-radius: 12px;
+  padding: 4px 10px;
+  border-radius: 10px;
   background: var(--surface-card-50);
   border: 1px solid var(--border-default);
-  display: inline-block;
+  white-space: nowrap;
 }
 
 .connection-status.connected {
@@ -114,24 +122,170 @@ body {
 }
 
 /* =====================
+   Metronome — flush under banner
+   ===================== */
+
+.remote-metronome {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 16px;
+  background: var(--surface-card-30);
+  border-bottom: 1px solid var(--border-subtle);
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.remote-metronome.active {
+  opacity: 1;
+}
+
+.remote-metronome .step-box {
+  flex: 1;
+  max-width: 24px;
+  height: 10px;
+  background: var(--surface-card-50);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  transition: background 0.08s ease, box-shadow 0.08s ease;
+}
+
+/* Downbeat markers (quarters) */
+.remote-metronome .step-box[data-step="0"],
+.remote-metronome .step-box[data-step="4"],
+.remote-metronome .step-box[data-step="8"],
+.remote-metronome .step-box[data-step="12"] {
+  background: var(--surface-card-80);
+  height: 12px;
+}
+
+/* Active step */
+.remote-metronome .step-box.active {
+  background: var(--color-primary);
+  box-shadow: 0 0 8px oklch(0.55 0.15 150 / 0.6);
+}
+
+/* Active downbeat - brighter */
+.remote-metronome .step-box[data-step="0"].active,
+.remote-metronome .step-box[data-step="4"].active,
+.remote-metronome .step-box[data-step="8"].active,
+.remote-metronome .step-box[data-step="12"].active {
+  background: oklch(0.7 0.2 150);
+  box-shadow: 0 0 12px oklch(0.7 0.2 150 / 0.7);
+}
+
+/* Beat flash effect */
+.remote-metronome .step-box.beat {
+  background: var(--text-primary);
+  transform: scaleY(1.2);
+}
+
+/* Downbeat container flash */
+.remote-metronome.downbeat {
+  background: oklch(0.55 0.15 150 / 0.06);
+}
+
+/* =====================
    Container
    ===================== */
 
 .container {
-  padding: 16px;
+  padding: 12px;
   max-width: 100%;
 }
 
 /* =====================
-   Masonry Grid - Panel Layout
+   Master Sliders — top section
+   ===================== */
+
+.master-sliders-remote {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--surface-card-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+}
+
+.master-sliders-remote:empty {
+  display: none;
+}
+
+.remote-slider-control {
+  margin-bottom: 12px;
+}
+
+.remote-slider-control:last-child {
+  margin-bottom: 0;
+}
+
+.remote-slider-control label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.remote-slider-control input[type="range"] {
+  width: 100%;
+  height: var(--touch-min);
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+.remote-slider-control input[type="range"]::-webkit-slider-track {
+  height: 6px;
+  background: var(--surface-card-80);
+  border-radius: 3px;
+  border: 1px solid var(--border-subtle);
+}
+
+.remote-slider-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  margin-top: -11px;
+  border: 2px solid var(--color-background);
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.4);
+}
+
+.remote-slider-control input[type="range"]::-moz-range-track {
+  height: 6px;
+  background: var(--surface-card-80);
+  border-radius: 3px;
+  border: 1px solid var(--border-subtle);
+}
+
+.remote-slider-control input[type="range"]::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  border: 2px solid var(--color-background);
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.4);
+}
+
+/* =====================
+   Panels Grid — mobile-first masonry
    ===================== */
 
 .panels-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 12px;
-  padding: 8px 0;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 4px 0;
 }
+
+/* =====================
+   Panel Controls — touch-friendly
+   ===================== */
 
 /* Size-1: Square button (1 grid unit) */
 .panel-control.size-1 {
@@ -144,7 +298,7 @@ body {
   background: var(--surface-card-50);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
-  transition: border-color 150ms, box-shadow 150ms;
+  transition: border-color 150ms, box-shadow 150ms, background 150ms;
   box-shadow: 0 2px 8px oklch(0 0 0 / 0.3);
 }
 
@@ -152,11 +306,10 @@ body {
   display: none;
 }
 
-/* Size-3: Wide layout (3 grid units) - button + sliders */
+/* Size-3: Wide layout (full row) — button + sliders */
 .panel-control.size-3 {
-  grid-column: span 3;
-  aspect-ratio: 3 / 1;
-  padding: 8px;
+  grid-column: 1 / -1;
+  padding: 10px 12px;
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 12px;
@@ -164,7 +317,7 @@ body {
   background: var(--surface-card-50);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
-  transition: border-color 150ms, box-shadow 150ms;
+  transition: border-color 150ms, box-shadow 150ms, background 150ms;
   box-shadow: 0 2px 8px oklch(0 0 0 / 0.3);
 }
 
@@ -181,114 +334,49 @@ body {
   box-shadow: 0 0 8px oklch(0.75 0.15 85 / 0.2);
 }
 
-/* Panel button - circular, ghost style */
+/* Panel button — circular, large touch target, multitouch-ready */
 .panel-button {
-  width: 60px;
-  height: 60px;
-  min-width: 60px;
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
   border-radius: 50%;
-  border: 1px solid var(--border-emphasis);
+  border: 2px solid var(--border-emphasis);
   background: var(--surface-card-80);
   color: var(--text-primary);
   font-size: 24px;
   cursor: pointer;
-  transition: background-color 150ms, border-color 150ms;
+  transition: background-color 150ms, border-color 150ms, transform 80ms;
   display: flex;
   align-items: center;
   justify-content: center;
   user-select: none;
-  box-shadow: 0 2px 6px oklch(0 0 0 / 0.3);
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.3);
+  touch-action: none; /* Critical: allows simultaneous multitouch */
 }
 
 .size-1 .panel-button {
-  width: 50px;
-  height: 50px;
-  min-width: 50px;
-  font-size: 20px;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  font-size: 22px;
 }
 
+/* Press feedback — used by multitouch pointer handler (replaces :active) */
+.panel-button.pressing {
+  transform: scale(0.88);
+  opacity: 0.85;
+}
+
+/* Fallback for mouse :active */
 .panel-button:active {
-  transform: scale(0.92);
+  transform: scale(0.90);
 }
 
 .panel-control.playing .panel-button {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: var(--text-primary);
-}
-
-/* =====================
-   Master Sliders
-   ===================== */
-
-.master-sliders-remote {
-  margin-bottom: 20px;
-  padding: 15px;
-  background: var(--surface-card-50);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-default);
-}
-
-.master-sliders-remote:empty {
-  display: none;
-}
-
-.remote-slider-control {
-  margin-bottom: 15px;
-}
-
-.remote-slider-control:last-child {
-  margin-bottom: 0;
-}
-
-.remote-slider-control label {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-primary);
-}
-
-.remote-slider-control input[type="range"] {
-  width: 100%;
-  height: 40px;
-  -webkit-appearance: none;
-  background: transparent;
-}
-
-.remote-slider-control input[type="range"]::-webkit-slider-track {
-  height: 8px;
-  background: var(--surface-card-80);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-subtle);
-}
-
-.remote-slider-control input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  cursor: pointer;
-  margin-top: -12px;
-  border: 2px solid var(--color-background);
-}
-
-.remote-slider-control input[type="range"]::-moz-range-track {
-  height: 8px;
-  background: var(--surface-card-80);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-subtle);
-}
-
-.remote-slider-control input[type="range"]::-moz-range-thumb {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  cursor: pointer;
-  border: 2px solid var(--color-background);
+  box-shadow: 0 0 16px oklch(0.55 0.15 150 / 0.4);
 }
 
 /* =====================
@@ -317,7 +405,7 @@ body {
   flex: 0 0 auto;
   font-size: 10px;
   color: var(--text-muted);
-  min-width: 40px;
+  min-width: 36px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -327,13 +415,13 @@ body {
   color: var(--color-primary);
   font-weight: 600;
   font-size: 10px;
-  min-width: 30px;
+  min-width: 28px;
   text-align: right;
 }
 
 .panel-slider-control input[type="range"] {
   flex: 1;
-  height: 20px;
+  height: 28px;
   min-width: 60px;
   -webkit-appearance: none;
   background: transparent;
@@ -342,225 +430,303 @@ body {
 .panel-slider-control input[type="range"]::-webkit-slider-track {
   height: 4px;
   background: var(--surface-card-80);
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
 }
 
 .panel-slider-control input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--color-primary);
   cursor: pointer;
-  margin-top: -6px;
+  margin-top: -8px;
+  box-shadow: 0 1px 4px oklch(0 0 0 / 0.3);
 }
 
 .panel-slider-control input[type="range"]::-moz-range-track {
   height: 4px;
   background: var(--surface-card-80);
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
 }
 
 .panel-slider-control input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--color-primary);
   cursor: pointer;
   border: none;
+  box-shadow: 0 1px 4px oklch(0 0 0 / 0.3);
 }
 
 /* =====================
-   Global Controls
+   Global Controls — sticky bottom bar
    ===================== */
 
 .global-controls {
-  margin-top: 20px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
   display: flex;
-  gap: 15px;
+  gap: 8px;
+  padding: 10px 12px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+  background: var(--surface-card-30);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border-default);
 }
 
+.play-all-btn,
 .stop-all-btn,
 .update-all-btn {
   flex: 1;
-  padding: 20px;
+  padding: 14px 8px;
   border-radius: var(--radius-lg);
   color: var(--text-primary);
   cursor: pointer;
-  font-size: 18px;
-  font-weight: 600;
-  transition: opacity 150ms;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: opacity 150ms, transform 80ms;
   user-select: none;
-  box-shadow: 0 4px 8px oklch(0 0 0 / 0.3);
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.3);
+  touch-action: none; /* Multitouch-ready */
+}
+
+/* Press feedback — multitouch pointer handler */
+.play-all-btn.pressing,
+.stop-all-btn.pressing,
+.update-all-btn.pressing:not(:disabled) {
+  transform: scale(0.95);
+  opacity: 0.85;
+}
+
+/* Fallback for mouse :active */
+.play-all-btn:active,
+.stop-all-btn:active,
+.update-all-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.play-all-btn {
+  border-color: var(--color-success);
+  background: var(--color-success);
+  color: oklch(0.1 0 0);
 }
 
 .stop-all-btn {
-  border: 2px solid var(--color-error);
+  border-color: var(--color-error);
   background: var(--color-error);
 }
 
-.stop-all-btn:active {
-  transform: scale(0.98);
-  opacity: 0.9;
-}
-
 .update-all-btn {
-  border: 2px solid var(--color-warning);
+  border-color: var(--color-warning);
   background: var(--color-warning);
   color: oklch(0.1 0 0);
 }
 
-.update-all-btn:active:not(:disabled) {
-  transform: scale(0.98);
-  opacity: 0.9;
-}
-
 .update-all-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.35;
   cursor: not-allowed;
   border-color: var(--border-default);
   background: var(--surface-card-80);
   color: var(--text-muted);
+  box-shadow: none;
 }
 
 /* =====================
    Animations
    ===================== */
 
-/* Fade-in for dynamically created panels */
 .panel-control-new {
   opacity: 0;
-  animation: fadeIn 300ms ease-in forwards;
+  animation: fadeIn 250ms ease-out forwards;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: scale(0.9);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1);
   }
 }
 
-/* Fade-out for panel deletion */
 .panel-control-removing {
-  animation: fadeOutCollapse 300ms ease-out forwards;
-  overflow: hidden;
+  animation: fadeOut 250ms ease-out forwards;
   pointer-events: none;
 }
 
-@keyframes fadeOutCollapse {
-  0% {
+@keyframes fadeOut {
+  from {
     opacity: 1;
-    max-height: 200px;
-    margin-bottom: 15px;
-    transform: translateX(0);
+    transform: scale(1);
   }
-  50% {
+  to {
     opacity: 0;
-    max-height: 200px;
-    margin-bottom: 15px;
-    transform: translateX(20px);
-  }
-  100% {
-    opacity: 0;
-    max-height: 0;
-    margin-bottom: 0;
-    transform: translateX(20px);
+    transform: scale(0.85);
   }
 }
 
 /* =====================
-   Metronome - Flush Under Banner
+   Responsive: Small phone (< 360px)
    ===================== */
 
-.remote-metronome {
-  display: flex;
-  justify-content: center;
-  gap: 3px;
-  padding: 8px 16px;
-  background: var(--surface-card-30);
-  border-bottom: 1px solid var(--border-subtle);
-  opacity: 0.6;
-  transition: opacity 0.3s ease;
-}
-
-.remote-metronome.active {
-  opacity: 1;
-}
-
-.remote-metronome .step-box {
-  flex: 1;
-  max-width: 20px;
-  height: 12px;
-  background: var(--surface-card-50);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  transition: background 0.08s ease, box-shadow 0.08s ease;
-}
-
-/* Downbeat markers (quarters) - slightly taller */
-.remote-metronome .step-box[data-step="0"],
-.remote-metronome .step-box[data-step="4"],
-.remote-metronome .step-box[data-step="8"],
-.remote-metronome .step-box[data-step="12"] {
-  background: var(--surface-card-80);
-  height: 14px;
-}
-
-/* Active step */
-.remote-metronome .step-box.active {
-  background: var(--color-primary);
-  box-shadow: 0 0 8px oklch(0.55 0.15 150 / 0.6);
-}
-
-/* Active downbeat - brighter */
-.remote-metronome .step-box[data-step="0"].active,
-.remote-metronome .step-box[data-step="4"].active,
-.remote-metronome .step-box[data-step="8"].active,
-.remote-metronome .step-box[data-step="12"].active {
-  background: oklch(0.7 0.2 150);
-  box-shadow: 0 0 12px oklch(0.7 0.2 150 / 0.7);
-}
-
-/* Beat flash effect */
-.remote-metronome .step-box.beat {
-  background: var(--text-primary);
-  transform: scaleY(1.15);
-}
-
-/* Downbeat container flash */
-.remote-metronome.downbeat {
-  background: oklch(0.55 0.15 150 / 0.08);
-}
-
-/* =====================
-   Responsive: Mobile
-   ===================== */
-
-@media (max-width: 767px) {
+@media (max-width: 359px) {
   .panels-grid {
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
 
-  .panel-control.size-3 {
-    grid-column: span 3;
-    aspect-ratio: auto;
-    min-height: 60px;
+  .size-1 .panel-button {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    font-size: 20px;
   }
 
   .global-controls {
-    flex-direction: column;
-    gap: 10px;
+    flex-wrap: wrap;
   }
 
+  .play-all-btn,
   .stop-all-btn,
   .update-all-btn {
+    font-size: 12px;
+    padding: 12px 6px;
+  }
+}
+
+/* =====================
+   Responsive: Phone portrait (360–599px) — default 3-col
+   ===================== */
+
+/* Already the default — no media query needed */
+
+/* =====================
+   Responsive: Phone landscape / small tablet (600–899px)
+   ===================== */
+
+@media (min-width: 600px) {
+  .panels-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .panel-button {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    font-size: 28px;
+  }
+
+  .size-1 .panel-button {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    font-size: 24px;
+  }
+
+  .container {
     padding: 16px;
-    font-size: 16px;
+  }
+}
+
+/* =====================
+   Responsive: Tablet (900px+)
+   ===================== */
+
+@media (min-width: 900px) {
+  .panels-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .panel-button {
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
+    font-size: 32px;
+  }
+}
+
+/* =====================
+   Responsive: Large tablet / desktop (1200px+)
+   ===================== */
+
+@media (min-width: 1200px) {
+  .panels-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .container {
+    max-width: 1100px;
+  }
+}
+
+/* =====================
+   Landscape orientation — tighter vertical spacing
+   ===================== */
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .remote-banner {
+    padding: 4px 16px;
+  }
+
+  .remote-banner h1 {
+    font-size: 14px;
+  }
+
+  .remote-metronome {
+    padding: 4px 16px;
+  }
+
+  .remote-metronome .step-box {
+    height: 6px;
+  }
+
+  .remote-metronome .step-box[data-step="0"],
+  .remote-metronome .step-box[data-step="4"],
+  .remote-metronome .step-box[data-step="8"],
+  .remote-metronome .step-box[data-step="12"] {
+    height: 8px;
+  }
+
+  .container {
+    padding: 8px 12px;
+  }
+
+  body {
+    padding-bottom: 60px;
+  }
+
+  .global-controls {
+    padding: 6px 12px;
+  }
+
+  .play-all-btn,
+  .stop-all-btn,
+  .update-all-btn {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  .panel-control.size-3 {
+    padding: 6px 10px;
   }
 }
 
@@ -586,6 +752,10 @@ body {
   .remote-metronome {
     transition: none;
   }
+
+  .panel-button {
+    transition: none;
+  }
 }
 
 /* =====================
@@ -594,11 +764,11 @@ body {
 
 @media (prefers-contrast: more) {
   :root {
-    --border-default: oklch(1 0 0 / 0.2);
-    --border-subtle: oklch(1 0 0 / 0.1);
+    --border-default: oklch(1 0 0 / 0.25);
+    --border-subtle: oklch(1 0 0 / 0.15);
     --text-muted: oklch(0.95 0 0 / 0.7);
-    --surface-card-30: oklch(1 0 0 / 0.05);
-    --surface-card-50: oklch(1 0 0 / 0.07);
-    --surface-card-80: oklch(1 0 0 / 0.1);
+    --surface-card-30: oklch(1 0 0 / 0.06);
+    --surface-card-50: oklch(1 0 0 / 0.09);
+    --surface-card-80: oklch(1 0 0 / 0.12);
   }
 }

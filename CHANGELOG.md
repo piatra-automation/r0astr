@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.18.3] - 2026-03-10
+
+### Added
+- **Remote interface multitouch** — panel buttons now respond to simultaneous multi-finger presses via pointer events; critical for scheduling multiple tracks at once during live performance
+- **Remote skin support for all skins** — added `remote.css` for split-column (sharp edges, teal, flat) and tactical (Orbitron font, cyan glow, clipped corners, grid overlay) skins
+- **`/remote` URL rewrite** — Vite middleware now serves `remote.html` at `/remote` instead of falling back to the main SPA
+
+### Changed
+- **Remote interface mobile-first restyle** — 3-column fluid grid scaling to 6 columns on large screens; sticky bottom control bar; larger touch targets (64px buttons, 44px+ slider areas); landscape mode with compressed layout; `100dvh` and safe-area-inset support for notched phones
+- **Remote skin updates** — default and glass skin `remote.css` updated to match new base layout structure
+
 ## [0.18.2] - 2026-03-10
 
 ### Fixed

@@ -1,0 +1,221 @@
+/**
+ * Split-Column Skin - Remote Control Panel
+ *
+ * Minimalist, sharp edges, teal gradient background.
+ * Matches main theme: #51cf66 primary, #f2d6e9 accent, zero border-radius.
+ */
+
+/* Teal gradient background */
+body {
+  background: linear-gradient(180deg, #1d3f4f 0%, #204f6b 100%);
+  background-attachment: fixed;
+}
+
+/* Banner — sharp, minimal */
+.remote-banner {
+  background: rgba(29, 63, 79, 0.85);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  border-radius: 0;
+}
+
+.remote-banner h1 {
+  color: #51cf66;
+  -webkit-text-fill-color: #51cf66;
+}
+
+/* No rounded corners — anywhere */
+.remote-banner,
+.connection-status,
+.panel-control.size-1,
+.panel-control.size-3,
+.panel-button,
+.master-sliders-remote,
+.global-controls,
+.play-all-btn,
+.stop-all-btn,
+.update-all-btn,
+.remote-metronome .step-box {
+  border-radius: 0 !important;
+}
+
+/* Connection status */
+.connection-status {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.connection-status.connected {
+  background: rgba(81, 207, 102, 0.12);
+  border-color: rgba(81, 207, 102, 0.3);
+  color: #51cf66;
+}
+
+.connection-status.disconnected {
+  background: rgba(255, 82, 82, 0.12);
+  border-color: rgba(255, 82, 82, 0.3);
+  color: #ff5252;
+}
+
+/* Panel controls — flat, subtle borders */
+.panel-control.size-1,
+.panel-control.size-3 {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.panel-control.playing {
+  background: rgba(81, 207, 102, 0.08);
+  border-color: rgba(81, 207, 102, 0.35);
+  box-shadow: none;
+}
+
+.panel-control.stale {
+  border-color: rgba(242, 214, 233, 0.4);
+  box-shadow: none;
+}
+
+/* Play button — square, flat */
+.panel-button {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+
+.panel-control.playing .panel-button {
+  background: #51cf66;
+  border-color: #51cf66;
+  color: #1d3f4f;
+  box-shadow: none;
+}
+
+/* Master sliders */
+.master-sliders-remote {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.remote-slider-control label {
+  color: #51cf66;
+}
+
+.remote-slider-control input[type="range"]::-webkit-slider-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 0;
+}
+
+.remote-slider-control input[type="range"]::-webkit-slider-thumb {
+  background: #51cf66;
+  border-color: #1d3f4f;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.remote-slider-control input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 0;
+}
+
+.remote-slider-control input[type="range"]::-moz-range-thumb {
+  background: #51cf66;
+  border-color: #1d3f4f;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Panel sliders */
+.panel-slider-control .slider-value {
+  color: #51cf66;
+}
+
+.panel-slider-control input[type="range"]::-webkit-slider-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 0;
+}
+
+.panel-slider-control input[type="range"]::-webkit-slider-thumb {
+  background: #51cf66;
+  border-radius: 0;
+}
+
+.panel-slider-control input[type="range"]::-moz-range-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 0;
+}
+
+.panel-slider-control input[type="range"]::-moz-range-thumb {
+  background: #51cf66;
+  border-radius: 0;
+}
+
+/* Global controls — flat bottom bar */
+.global-controls {
+  background: rgba(29, 63, 79, 0.9);
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.play-all-btn {
+  background: rgba(81, 207, 102, 0.2);
+  border-color: rgba(81, 207, 102, 0.5);
+  color: #51cf66;
+  box-shadow: none;
+}
+
+.stop-all-btn {
+  background: rgba(255, 82, 82, 0.2);
+  border-color: rgba(255, 82, 82, 0.5);
+  box-shadow: none;
+}
+
+.update-all-btn {
+  background: rgba(242, 214, 233, 0.15);
+  border-color: rgba(242, 214, 233, 0.4);
+  color: #f2d6e9;
+  box-shadow: none;
+}
+
+.update-all-btn:disabled {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.25);
+  box-shadow: none;
+}
+
+/* Metronome — minimal */
+.remote-metronome {
+  background: rgba(29, 63, 79, 0.6);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.remote-metronome .step-box {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.remote-metronome .step-box[data-step="0"],
+.remote-metronome .step-box[data-step="4"],
+.remote-metronome .step-box[data-step="8"],
+.remote-metronome .step-box[data-step="12"] {
+  background: rgba(81, 207, 102, 0.2);
+}
+
+.remote-metronome .step-box.active {
+  background: #51cf66;
+  box-shadow: none;
+}
+
+.remote-metronome .step-box[data-step="0"].active,
+.remote-metronome .step-box[data-step="4"].active,
+.remote-metronome .step-box[data-step="8"].active,
+.remote-metronome .step-box[data-step="12"].active {
+  background: #6ed87e;
+  box-shadow: none;
+}
+
+.remote-metronome .step-box.beat {
+  background: #fff;
+}
+
+.remote-metronome.downbeat {
+  background: rgba(81, 207, 102, 0.06);
+}

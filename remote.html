@@ -769,30 +769,84 @@
       console.log('[Remote] Sent:', message);
     }
 
-    // Story 8.1 Task 5: Use event delegation for panel buttons (supports dynamic panels)
-    document.getElementById('panels-grid').addEventListener('click', (e) => {
-      const button = e.target.closest('.panel-button');
-      if (button) {
+    // =====================
+    // Multitouch Support
+    // =====================
+    // Using pointer events for simultaneous multi-finger button presses.
+    // Each touch point fires its own pointerdown independently, unlike click
+    // which serialises and blocks during an active touch.
+
+    // Track active pointer IDs to prevent duplicate fires per gesture
+    const activePointers = new Set();
+
+    /**
+     * Bind a multitouch-friendly tap handler to a button or delegated container.
+     * Uses pointerdown for instant response + pointerup/pointercancel for cleanup.
+     * Prevents ghost clicks and double-fires.
+     */
+    function bindMultitouchButton(element, handler, { delegate = null } = {}) {
+      element.addEventListener('pointerdown', (e) => {
+        // Only respond to touch and mouse primary button
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+        const target = delegate ? e.target.closest(delegate) : element;
+        if (!target) return;
+
+        // Prevent duplicate fire for this pointer
+        if (activePointers.has(e.pointerId)) return;
+        activePointers.add(e.pointerId);
+
+        // Capture this pointer so we get pointerup even if finger moves off
+        try { element.setPointerCapture(e.pointerId); } catch (_) {}
+
+        // Prevent browser default (scroll, zoom, long-press menu)
+        e.preventDefault();
+
+        // Visual press feedback
+        target.classList.add('pressing');
+
+        // Fire the handler
+        handler(target, e);
+      });
+
+      element.addEventListener('pointerup', (e) => {
+        activePointers.delete(e.pointerId);
+        const target = delegate ? e.target.closest(delegate) : element;
+        if (target) target.classList.remove('pressing');
+      });
+
+      element.addEventListener('pointercancel', (e) => {
+        activePointers.delete(e.pointerId);
+        const target = delegate ? e.target.closest(delegate) : element;
+        if (target) target.classList.remove('pressing');
+      });
+
+      // Prevent context menu on long press
+      element.addEventListener('contextmenu', (e) => e.preventDefault());
+    }
+
+    // Panel buttons — delegated multitouch on grid container
+    bindMultitouchButton(
+      document.getElementById('panels-grid'),
+      (button) => {
         const panelId = button.dataset.panel;
         sendCommand('panel.toggle', panelId);
         console.log(`[Remote] Toggled panel: ${panelId}`);
-      }
-    });
+      },
+      { delegate: '.panel-button' }
+    );
 
-    // Attach stop-all button listener
-    document.getElementById('stop-all').addEventListener('click', () => {
-      sendCommand('global.stopAll');
-    });
-
-    // Attach play-all button listener
-    document.getElementById('play-all').addEventListener('click', () => {
+    // Global control buttons
+    bindMultitouchButton(document.getElementById('play-all'), () => {
       sendCommand('global.playAll');
     });
 
-    // Attach update-all button listener
-    document.getElementById('update-all').addEventListener('click', () => {
-      const updateAllBtn = document.getElementById('update-all');
-      if (!updateAllBtn.disabled) {
+    bindMultitouchButton(document.getElementById('stop-all'), () => {
+      sendCommand('global.stopAll');
+    });
+
+    bindMultitouchButton(document.getElementById('update-all'), (btn) => {
+      if (!btn.disabled) {
         sendCommand('global.updateAll');
       }
     });
