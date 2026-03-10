@@ -227,20 +227,53 @@ body {
 }
 
 /* =====================
-   Master Sliders — top section
+   Aggregated Sliders — top section
+   Master + panel sliders together.
    ===================== */
 
-.master-sliders-remote {
-  margin-bottom: 16px;
+.all-sliders-remote {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.all-sliders-remote:not(:has(.remote-slider-control, .panel-slider-control)) {
+  display: none;
+}
+
+.slider-group {
   padding: 12px 16px;
   background: var(--surface-card-50);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
 }
 
-.master-sliders-remote:empty {
+.slider-group:empty {
   display: none;
 }
+
+/* Panel slider groups within the aggregated area */
+.panel-slider-group {
+  padding: 10px 16px;
+  background: var(--surface-card-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+}
+
+.slider-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Alias for backward compat */
+.master-sliders-remote {}
 
 .remote-slider-control {
   margin-bottom: 12px;
@@ -337,7 +370,7 @@ body {
   -webkit-user-select: none;
 }
 
-/* Size-1: Square card (1 grid unit) */
+/* Panel card — always uniform square */
 .panel-control.size-1 {
   grid-column: span 1;
   aspect-ratio: 1;
@@ -346,20 +379,6 @@ body {
   align-items: center;
   justify-content: center;
   padding: 6px;
-}
-
-.panel-control.size-1 .panel-sliders-remote {
-  display: none;
-}
-
-/* Size-3: Wide layout (full row) — button area + sliders */
-.panel-control.size-3 {
-  grid-column: 1 / -1;
-  padding: 10px 12px;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px;
-  align-items: center;
 }
 
 /* Playing state */
@@ -431,34 +450,9 @@ body {
   color: var(--color-primary);
 }
 
-/* Size-3: icon + label sit side-by-side instead of stacked */
-.panel-control.size-3 .panel-button-area {
-  flex-direction: row;
-  gap: 8px;
-}
-
-.panel-control.size-3 .panel-label {
-  font-size: 12px;
-  text-align: left;
-  white-space: normal;
-  word-break: break-word;
-}
-
 /* =====================
-   Panel Sliders (inside size-3 panels)
+   Panel Slider Controls (in aggregated area)
    ===================== */
-
-.panel-sliders-remote {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  min-width: 0;
-}
-
-.panel-sliders-remote:empty {
-  display: none;
-}
 
 .panel-slider-control {
   display: flex;

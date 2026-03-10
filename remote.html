@@ -48,13 +48,19 @@
   </div>
 
   <div class="container">
-    <div class="master-sliders-remote" id="master-sliders-remote">
-      <!-- Master panel sliders appear here dynamically -->
+    <!-- All sliders (master + panel) aggregated here -->
+    <div class="all-sliders-remote" id="all-sliders-remote">
+      <div class="slider-group" id="master-sliders-remote">
+        <!-- Master panel sliders appear here dynamically -->
+      </div>
+      <div class="slider-group" id="panel-sliders-all">
+        <!-- Panel sliders aggregated here by panel -->
+      </div>
     </div>
 
-    <!-- Masonry grid for panels -->
+    <!-- Uniform grid of panel buttons -->
     <div class="panels-grid" id="panels-grid">
-      <!-- Panels populated dynamically - use data-size="1" for plain, data-size="3" for sliders -->
+      <!-- Panels populated dynamically — always size-1 -->
     </div>
 
     <div class="global-controls">
@@ -93,73 +99,31 @@
      * @returns {HTMLElement} Panel control element
      */
     function createRemotePanelControl(panel) {
-      const { id, title, playing = false, stale = false, hasSliders = false } = panel;
+      const { id, title, playing = false, stale = false } = panel;
 
       const div = document.createElement('div');
-      // Default to size-1 (square), will be upgraded to size-3 when sliders arrive
-      div.className = `panel-control panel-control-new ${hasSliders ? 'size-3' : 'size-1'}`;
+      div.className = 'panel-control panel-control-new size-1';
       div.id = `remote-${id}`;
       div.dataset.panelId = id;
-      div.dataset.size = hasSliders ? '3' : '1';
+      div.dataset.panel = id;
 
-      // Story 8.4: Add playing class if panel is playing
-      if (playing) {
-        div.classList.add('playing');
-      }
-
-      // Story 8.4: Add stale class if panel is stale
-      if (stale) {
-        div.classList.add('stale');
-      }
+      if (playing) div.classList.add('playing');
+      if (stale) div.classList.add('stale');
 
       const playIcon = playing ? '⏸' : '▶';
 
-      // The entire card is the touch target (data-panel on the card itself)
-      div.dataset.panel = id;
-
-      // Layout: icon + label (size-1), or icon + label + sliders (size-3)
       div.innerHTML = `
           <div class="panel-button-area">
             <span class="panel-icon">${playIcon}</span>
             <h3 class="panel-label">${escapeHtml(title)}</h3>
           </div>
-          <div class="panel-sliders-remote" id="panel-sliders-${escapeHtml(id)}"></div>
         `;
 
-      // Remove animation class after transition completes
       div.addEventListener('animationend', () => {
         div.classList.remove('panel-control-new');
       }, { once: true });
 
       return div;
-    }
-
-    /**
-     * Upgrade panel to size-3 when sliders are received
-     * @param {string} panelId - Panel ID
-     */
-    function upgradePanelToWide(panelId) {
-      const panel = document.getElementById(`remote-${panelId}`);
-      if (panel && panel.dataset.size !== '3') {
-        panel.classList.remove('size-1');
-        panel.classList.add('size-3');
-        panel.dataset.size = '3';
-        console.log(`[Remote] Panel ${panelId} upgraded to wide layout`);
-      }
-    }
-
-    /**
-     * Downgrade panel to size-1 when sliders are cleared
-     * @param {string} panelId - Panel ID
-     */
-    function downgradePanelToSquare(panelId) {
-      const panel = document.getElementById(`remote-${panelId}`);
-      if (panel && panel.dataset.size !== '1') {
-        panel.classList.remove('size-3');
-        panel.classList.add('size-1');
-        panel.dataset.size = '1';
-        console.log(`[Remote] Panel ${panelId} downgraded to square layout`);
-      }
     }
 
     /**
@@ -216,6 +180,7 @@
       // Wait for animation to complete, then remove from DOM
       panelElement.addEventListener('animationend', () => {
         panelElement.remove();
+        clearPanelSliders(panelId);
         console.log('[Remote] Panel removed:', panelId);
       }, { once: true });
 
@@ -266,9 +231,10 @@
     function rebuildRemoteUI(panels) {
       console.log('[Remote] Rebuilding UI with', panels.length, 'panels');
 
-      // Clear existing panels (keep grid container)
+      // Clear existing panels and aggregated sliders
       const panelsContainer = document.getElementById('panels-grid');
       panelsContainer.innerHTML = '';
+      document.getElementById('panel-sliders-all').innerHTML = '';
 
       // Clear state tracking
       Object.keys(panelStates).forEach(key => delete panelStates[key]);
@@ -489,12 +455,8 @@
         panelEl.classList.remove('playing');
         if (iconEl) iconEl.textContent = '▶';
 
-        // Clear sliders when panel stops and downgrade to square
-        const slidersContainer = document.getElementById(`panel-sliders-${panelId}`);
-        if (slidersContainer) {
-          slidersContainer.innerHTML = '';
-          downgradePanelToSquare(panelId);
-        }
+        // Clear this panel's sliders from the aggregated area
+        clearPanelSliders(panelId);
       }
     }
 
@@ -591,28 +553,29 @@
      * @param {string} panelId - Panel ID
      * @param {Array} sliders - Slider metadata array
      */
+    /**
+     * Render panel sliders in the aggregated slider area at the top.
+     * Each panel gets a labelled group in #panel-sliders-all.
+     */
     function renderPanelSliders(panelId, sliders) {
-      const container = document.getElementById(`panel-sliders-${panelId}`);
-      if (!container) {
-        console.warn(`[Remote] Panel sliders container not found for ${panelId}`);
-        return;
-      }
+      const aggregatedContainer = document.getElementById('panel-sliders-all');
 
-      container.innerHTML = '';
+      // Remove existing group for this panel (if re-rendering)
+      const existing = document.getElementById(`panel-slider-group-${panelId}`);
+      if (existing) existing.remove();
 
-      if (!sliders || sliders.length === 0) {
-        // No sliders - downgrade to square
-        downgradePanelToSquare(panelId);
-        return;
-      }
+      if (!sliders || sliders.length === 0) return;
 
-      // Has sliders - upgrade to wide layout
-      upgradePanelToWide(panelId);
+      // Look up panel title for the group label
+      const panelEl = document.getElementById(`remote-${panelId}`);
+      const panelTitle = panelEl?.querySelector('.panel-label')?.textContent || panelId;
 
-      // console.log(`[Remote SLIDER DEBUG] Rendering ${sliders.length} sliders for ${panelId}:`, sliders);
+      const group = document.createElement('div');
+      group.className = 'panel-slider-group';
+      group.id = `panel-slider-group-${panelId}`;
+      group.innerHTML = `<div class="slider-group-label">${escapeHtml(panelTitle)}</div>`;
 
       sliders.forEach(({ sliderId, label, value, min, max, step }) => {
-        // Ensure value is numeric (parse if string, fallback to 0 if invalid)
         let numericValue;
         if (typeof value === 'number' && !isNaN(value)) {
           numericValue = value;
@@ -622,7 +585,6 @@
         } else {
           numericValue = 0;
         }
-        // console.log(`[Remote SLIDER DEBUG] Slider ${sliderId}: value=${value} (type: ${typeof value}), numericValue=${numericValue}`);
 
         const sliderControl = document.createElement('div');
         sliderControl.className = 'panel-slider-control';
@@ -645,13 +607,9 @@
         input.addEventListener('input', (e) => {
           const newValue = parseFloat(e.target.value);
 
-          // Update local display immediately
           const valueDisplay = sliderControl.querySelector('.slider-value');
-          if (valueDisplay) {
-            valueDisplay.textContent = newValue.toFixed(2);
-          }
+          if (valueDisplay) valueDisplay.textContent = newValue.toFixed(2);
 
-          // Send change to main UI
           if (ws && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({
               type: 'panel.sliderChange',
@@ -662,8 +620,18 @@
           }
         });
 
-        container.appendChild(sliderControl);
+        group.appendChild(sliderControl);
       });
+
+      aggregatedContainer.appendChild(group);
+    }
+
+    /**
+     * Clear a panel's sliders from the aggregated area
+     */
+    function clearPanelSliders(panelId) {
+      const group = document.getElementById(`panel-slider-group-${panelId}`);
+      if (group) group.remove();
     }
 
     /**

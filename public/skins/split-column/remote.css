@@ -27,9 +27,8 @@ body {
 .remote-banner,
 .connection-status,
 .panel-control.size-1,
-.panel-control.size-3,
-.panel-button,
-.master-sliders-remote,
+.slider-group,
+.panel-slider-group,
 .global-controls,
 .play-all-btn,
 .stop-all-btn,
@@ -99,10 +98,16 @@ body {
   color: #51cf66;
 }
 
-/* Master sliders */
-.master-sliders-remote {
+/* Slider groups */
+.slider-group,
+.panel-slider-group {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.slider-group-label {
+  color: rgba(255, 255, 255, 0.4);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
 .remote-slider-control label {

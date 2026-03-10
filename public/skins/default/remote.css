@@ -47,9 +47,14 @@ body {
   box-shadow: 0 0 16px oklch(0.55 0.15 150 / 0.5);
 }
 
-/* Master sliders section — skin accent */
-.master-sliders-remote {
+/* Slider groups — skin accent */
+.slider-group,
+.panel-slider-group {
   border-color: oklch(0.55 0.15 150 / 0.2);
+}
+
+.slider-group-label {
+  color: oklch(0.55 0.15 150 / 0.6);
 }
 
 /* Metronome — green active glow */

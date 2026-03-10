@@ -89,13 +89,19 @@ body {
   color: #00d4ff;
 }
 
-/* Master sliders — glass panel */
-.master-sliders-remote {
+/* Slider groups — glass panel */
+.slider-group,
+.panel-slider-group {
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(0, 212, 255, 0.15);
   border-radius: 16px;
+}
+
+.slider-group-label {
+  color: rgba(0, 212, 255, 0.6);
+  border-bottom-color: rgba(0, 212, 255, 0.15);
 }
 
 /* Slider styling — cyan accent */
