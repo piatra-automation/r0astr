@@ -1,6 +1,9 @@
 dist
 out
 !docs/dist
+
+# Server config (contains API keys)
+server.config.json
 docs/app
 dist-*
 cabal-dev

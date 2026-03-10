@@ -117,6 +117,10 @@
             <span class="tab-name">Projection</span>
             <span class="tab-description">Screen margins</span>
           </button>
+          <button class="sidebar-tab" role="tab" aria-selected="false" data-section="server-settings">
+            <span class="tab-name">Server</span>
+            <span class="tab-description">CORS, API key</span>
+          </button>
 
           <div class="sidebar-divider"></div>
           <button class="sidebar-action-btn" id="reload-settings-btn" type="button">
@@ -517,6 +521,37 @@
                     Left: <span id="projection-margin-left-value">0px</span>
                   </label>
                   <input type="range" id="projection-margin-left" class="setting-slider" min="0" max="200" value="0" step="5">
+                </div>
+              </div>
+            </section>
+
+            <!-- SERVER Section -->
+            <section class="settings-section" id="server-settings" aria-labelledby="server-settings-heading">
+              <h3 id="server-settings-heading">Server</h3>
+              <div class="settings-section-content">
+                <div class="setting-item">
+                  <label>API Key</label>
+                  <p class="setting-description">
+                    Require this key for remote connections (REST API &amp; WebSocket). Leave empty for no authentication.
+                  </p>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="password" id="server-api-key" placeholder="No API key set" style="flex: 1; padding: 6px 10px; background: var(--bg-secondary, #1e1e1e); color: var(--text-primary, #fff); border: 1px solid var(--border-color, #444); border-radius: 4px; font-family: monospace;">
+                    <button type="button" id="server-api-key-toggle" class="btn-ghost" style="padding: 4px 10px; font-size: 12px;">Show</button>
+                    <button type="button" id="server-api-key-generate" class="btn-ghost" style="padding: 4px 10px; font-size: 12px;">Generate</button>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <label for="server-cors-origins">Allowed Origins</label>
+                  <p class="setting-description">
+                    Comma-separated origins allowed for CORS (e.g. <code>http://192.168.1.50:5173</code>). Use <code>*</code> for all origins.
+                  </p>
+                  <input type="text" id="server-cors-origins" placeholder="*" style="width: 100%; padding: 6px 10px; background: var(--bg-secondary, #1e1e1e); color: var(--text-primary, #fff); border: 1px solid var(--border-color, #444); border-radius: 4px; font-family: monospace;">
+                </div>
+
+                <div class="setting-item" id="server-status-display">
+                  <label>Status</label>
+                  <p class="setting-description" id="server-status-text">Loading server config...</p>
                 </div>
               </div>
             </section>

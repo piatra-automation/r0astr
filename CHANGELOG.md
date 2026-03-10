@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.19.0] - 2026-03-10
+
+### Added
+- **Server settings tab** — new Server section in settings dialog for configuring CORS allowed origins and API key authentication
+- **API key authentication** — optional API key for REST API and WebSocket connections; localhost always exempt; remote clients prompted to enter key
+- **Server-side config** — `server.config.json` for persisting server settings (CORS, auth) outside of browser localStorage
+- **Remote auth flow** — remote panel detects auth requirement, prompts for API key, stores in localStorage, handles rejection gracefully without reconnect loops
+
 ## [0.18.4] - 2026-03-10
 
 ### Changed

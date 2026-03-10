@@ -38,6 +38,17 @@
 </head>
 
 <body>
+  <!-- Auth Overlay -->
+  <div id="auth-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: var(--bg-secondary, #1e1e1e); border: 1px solid var(--border-color, #444); border-radius: 12px; padding: 32px; max-width: 360px; width: 90%; text-align: center;">
+      <h2 style="margin: 0 0 8px; color: var(--text-primary, #fff); font-size: 18px;">Authentication Required</h2>
+      <p style="margin: 0 0 20px; color: var(--text-secondary, #aaa); font-size: 14px;">Enter the API key to connect to r0astr</p>
+      <input type="password" id="auth-key-input" placeholder="API Key" style="width: 100%; padding: 10px 14px; background: var(--bg-primary, #111); color: var(--text-primary, #fff); border: 1px solid var(--border-color, #555); border-radius: 6px; font-family: monospace; font-size: 16px; box-sizing: border-box; margin-bottom: 12px;">
+      <p id="auth-error" style="display: none; color: #ff6b6b; font-size: 13px; margin: 0 0 12px;">Invalid API key</p>
+      <button id="auth-submit-btn" style="width: 100%; padding: 12px; background: var(--accent-color, #51cf66); color: #000; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer;">Connect</button>
+    </div>
+  </div>
+
   <!-- Banner Bar -->
   <div class="remote-banner">
     <div class="remote-brand">
@@ -77,6 +88,8 @@
 
     let ws = null;
     let reconnectTimer = null;
+    let authFailed = false; // Prevents auto-reconnect loop on auth failure
+    let storedApiKey = localStorage.getItem('r0astr_remote_apikey') || '';
 
     // Story 8.4: Panel state tracking (dynamically populated from full_state)
     const panelStates = {};
@@ -264,16 +277,23 @@
 
     function connectWebSocket() {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      let wsUrl = `${protocol}//${window.location.host}/ws`;
 
-      console.log('[Remote] Connecting to:', wsUrl);
+      // Append API key as query param if available
+      if (storedApiKey) {
+        wsUrl += `?apiKey=${encodeURIComponent(storedApiKey)}`;
+      }
+
+      console.log('[Remote] Connecting to:', wsUrl.replace(/apiKey=[^&]+/, 'apiKey=***'));
       updateConnectionStatus('connecting');
+      authFailed = false;
 
       ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
         console.log('[Remote] Connected');
         updateConnectionStatus('connected');
+        authFailed = false;
 
         // Register as remote control client
         ws.send(JSON.stringify({
@@ -286,6 +306,10 @@
           clearTimeout(reconnectTimer);
           reconnectTimer = null;
         }
+
+        // Hide auth overlay if visible
+        const overlay = document.getElementById('auth-overlay');
+        if (overlay) overlay.style.display = 'none';
       };
 
       ws.onmessage = (event) => {
@@ -301,16 +325,64 @@
         console.error('[Remote] WebSocket error:', error);
       };
 
-      ws.onclose = () => {
-        console.log('[Remote] Disconnected - reconnecting in 3s');
+      ws.onclose = (event) => {
         ws = null;
         updateConnectionStatus('disconnected');
 
-        // Auto-reconnect
-        reconnectTimer = setTimeout(() => {
-          connectWebSocket();
-        }, 3000);
+        // HTTP 401 during upgrade results in immediate close
+        // The WebSocket never opens, so check if we got an abnormal close
+        if (!authFailed && event.code === 1006) {
+          // Could be auth rejection — check if auth is required
+          checkAuthRequired().then(required => {
+            if (required) {
+              console.log('[Remote] Connection rejected — auth required');
+              authFailed = true;
+              showAuthPrompt();
+            } else {
+              // Normal disconnect, auto-reconnect
+              scheduleReconnect();
+            }
+          }).catch(() => scheduleReconnect());
+          return;
+        }
+
+        if (authFailed) {
+          // Don't auto-reconnect on auth failure
+          console.log('[Remote] Auth failed — waiting for user input');
+          return;
+        }
+
+        scheduleReconnect();
       };
+    }
+
+    function scheduleReconnect() {
+      console.log('[Remote] Reconnecting in 3s');
+      reconnectTimer = setTimeout(() => connectWebSocket(), 3000);
+    }
+
+    async function checkAuthRequired() {
+      try {
+        const res = await fetch('/api/server-config/auth-required');
+        const data = await res.json();
+        return data.authRequired;
+      } catch {
+        return false;
+      }
+    }
+
+    function showAuthPrompt() {
+      const overlay = document.getElementById('auth-overlay');
+      const errorEl = document.getElementById('auth-error');
+      if (overlay) {
+        overlay.style.display = 'flex';
+        // Show error if we had a stored key that was rejected
+        if (storedApiKey) {
+          localStorage.removeItem('r0astr_remote_apikey');
+          storedApiKey = '';
+          if (errorEl) errorEl.style.display = 'block';
+        }
+      }
     }
 
     function handleMessage(message) {
@@ -754,8 +826,35 @@
       }
     });
 
-    // Initialize WebSocket connection
-    connectWebSocket();
+    // Auth overlay submit handler
+    document.getElementById('auth-submit-btn')?.addEventListener('click', () => {
+      const input = document.getElementById('auth-key-input');
+      const key = input?.value?.trim();
+      if (key) {
+        storedApiKey = key;
+        localStorage.setItem('r0astr_remote_apikey', key);
+        document.getElementById('auth-error').style.display = 'none';
+        authFailed = false;
+        connectWebSocket();
+      }
+    });
+
+    // Allow Enter key in auth input
+    document.getElementById('auth-key-input')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('auth-submit-btn')?.click();
+      }
+    });
+
+    // Initialize: check if auth is required before connecting
+    (async () => {
+      const required = await checkAuthRequired();
+      if (required && !storedApiKey) {
+        showAuthPrompt();
+      } else {
+        connectWebSocket();
+      }
+    })();
   </script>
 </body>
 

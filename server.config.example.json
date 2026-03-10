@@ -1,0 +1,8 @@
+{
+  "cors": {
+    "allowedOrigins": ["*"]
+  },
+  "auth": {
+    "apiKey": ""
+  }
+}

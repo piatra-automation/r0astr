@@ -1,6 +1,19 @@
 import { defineConfig } from 'vite';
 import bundleAudioWorkletPlugin from 'vite-plugin-bundle-audioworklet';
 import { createWebSocketServer, broadcastToAll, setPanelManager } from './src/websocket-server.mjs';
+import { getServerConfig, saveServerConfig, isAuthRequired, validateApiKey, isLocalhost } from './src/serverConfig.mjs';
+
+// Helper to parse JSON request body
+function parseBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try { resolve(JSON.parse(body)); }
+      catch (e) { reject(e); }
+    });
+  });
+}
 
 // Plugin to add WebSocket server and API routes to Vite
 const websocketAndApiPlugin = () => ({
@@ -20,7 +33,17 @@ const websocketAndApiPlugin = () => ({
     server.middlewares.use((req, res, next) => {
       // Only apply CORS to /api and /health endpoints
       if (req.url?.startsWith('/api') || req.url?.startsWith('/health')) {
-        res.setHeader('Access-Control-Allow-Origin', '*');
+        const config = getServerConfig();
+        const origins = config.cors.allowedOrigins;
+        const requestOrigin = req.headers.origin;
+
+        if (origins.includes('*')) {
+          res.setHeader('Access-Control-Allow-Origin', '*');
+        } else if (requestOrigin && origins.includes(requestOrigin)) {
+          res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+          res.setHeader('Vary', 'Origin');
+        }
+
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
 
@@ -32,6 +55,100 @@ const websocketAndApiPlugin = () => ({
         }
       }
       next();
+    });
+
+    // Auth middleware for API endpoints (runs after CORS, before routes)
+    server.middlewares.use((req, res, next) => {
+      if (!req.url?.startsWith('/api') && !req.url?.startsWith('/health')) {
+        next();
+        return;
+      }
+
+      // Public endpoints — no auth required
+      if (req.url?.startsWith('/api/server-config/auth-required') || req.url?.startsWith('/health')) {
+        next();
+        return;
+      }
+
+      // Localhost is always allowed
+      if (isLocalhost(req)) {
+        next();
+        return;
+      }
+
+      // If no API key configured, allow all
+      if (!isAuthRequired()) {
+        next();
+        return;
+      }
+
+      // Validate API key from header
+      const apiKey = req.headers['x-api-key'];
+      if (!validateApiKey(apiKey)) {
+        res.statusCode = 401;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'Unauthorized — invalid or missing API key' }));
+        return;
+      }
+
+      next();
+    });
+
+    // GET /api/server-config/auth-required (public, no auth)
+    server.middlewares.use('/api/server-config/auth-required', (req, res, next) => {
+      if (req.method !== 'GET') { next(); return; }
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ authRequired: isAuthRequired() }));
+    });
+
+    // GET /api/server-config (localhost-only)
+    server.middlewares.use('/api/server-config', (req, res, next) => {
+      if (req.method !== 'GET' || req.url !== '/' && req.url !== '') { next(); return; }
+
+      if (!isLocalhost(req)) {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'Server config is only accessible from localhost' }));
+        return;
+      }
+
+      const config = getServerConfig();
+      // Mask API key — show only last 4 chars
+      const maskedKey = config.auth.apiKey
+        ? '****' + config.auth.apiKey.slice(-4)
+        : '';
+
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({
+        cors: config.cors,
+        auth: { apiKey: maskedKey, hasKey: !!config.auth.apiKey }
+      }));
+    });
+
+    // POST /api/server-config (localhost-only)
+    server.middlewares.use('/api/server-config', async (req, res, next) => {
+      if (req.method !== 'POST' || req.url !== '/' && req.url !== '') { next(); return; }
+
+      if (!isLocalhost(req)) {
+        res.statusCode = 403;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'Server config is only accessible from localhost' }));
+        return;
+      }
+
+      try {
+        const body = await parseBody(req);
+        const saved = saveServerConfig(body);
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: true, config: { cors: saved.cors, auth: { hasKey: !!saved.auth.apiKey } } }));
+      } catch (error) {
+        res.statusCode = 400;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'Invalid config', details: error.message }));
+      }
     });
 
     // API middleware - runs before Vite's default middleware
@@ -393,6 +510,7 @@ const websocketAndApiPlugin = () => ({
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({
           status: 'ok',
+          authRequired: isAuthRequired(),
           timestamp: new Date().toISOString()
         }));
       } else {

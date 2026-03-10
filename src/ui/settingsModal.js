@@ -22,10 +22,14 @@ const sectionDirtyState = {
   'addons-settings': false,
   'accessibility-settings': false,
   'projection-settings': false,
+  'server-settings': false,
 };
 
 // Snapshot of settings when modal opens (for Reset)
 let settingsSnapshot = null;
+
+// Server config cache (fetched from server, not localStorage)
+let serverConfigCache = null;
 
 /**
  * Populate skin selector with bundled + custom skins
@@ -452,6 +456,93 @@ async function loadSettingsIntoForm() {
   if (focusIndicatorSelect) {
     focusIndicatorSelect.value = accessibility.focusStyle || 'default';
   }
+
+  // Server settings (fetched from server, not localStorage)
+  await loadServerSettingsIntoForm();
+}
+
+/**
+ * Load server config from the server API and populate form fields
+ */
+async function loadServerSettingsIntoForm() {
+  const statusText = document.getElementById('server-status-text');
+  const apiKeyInput = document.getElementById('server-api-key');
+  const corsInput = document.getElementById('server-cors-origins');
+
+  try {
+    const res = await fetch('/api/server-config');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const config = await res.json();
+    serverConfigCache = config;
+
+    if (apiKeyInput) {
+      // Show masked key or empty
+      apiKeyInput.value = config.auth.hasKey ? config.auth.apiKey : '';
+      apiKeyInput.placeholder = config.auth.hasKey ? 'Key is set (enter new to replace)' : 'No API key set';
+    }
+    if (corsInput) {
+      corsInput.value = (config.cors.allowedOrigins || ['*']).join(', ');
+    }
+    if (statusText) {
+      statusText.textContent = config.auth.hasKey
+        ? 'API key is active — remote clients must authenticate.'
+        : 'No API key — all connections allowed.';
+    }
+  } catch (err) {
+    console.error('[Settings] Failed to load server config:', err);
+    if (statusText) {
+      statusText.textContent = 'Could not load server config.';
+    }
+  }
+}
+
+/**
+ * Save server settings to the server via API
+ */
+async function saveServerSettings() {
+  const apiKeyInput = document.getElementById('server-api-key');
+  const corsInput = document.getElementById('server-cors-origins');
+
+  const apiKeyValue = apiKeyInput?.value?.trim() || '';
+  const corsValue = corsInput?.value?.trim() || '*';
+
+  // Parse CORS origins
+  const origins = corsValue.split(',').map(s => s.trim()).filter(Boolean);
+
+  // Build config — only send apiKey if the user typed a new value (not the masked one)
+  const config = {
+    cors: { allowedOrigins: origins.length > 0 ? origins : ['*'] },
+    auth: {},
+  };
+
+  // If the input contains the masked value (starts with ****), don't change the key
+  // If empty, clear the key. Otherwise set the new key.
+  if (apiKeyValue.startsWith('****')) {
+    // User didn't change the key — fetch current and preserve it
+    // We need the server to keep the existing key
+    // Send a sentinel to indicate "keep existing"
+    config.auth.apiKey = '__KEEP__';
+  } else {
+    config.auth.apiKey = apiKeyValue;
+  }
+
+  try {
+    const res = await fetch('/api/server-config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    console.log('[Settings] Server config saved:', result);
+    // Reload to show updated status
+    await loadServerSettingsIntoForm();
+    return true;
+  } catch (err) {
+    console.error('[Settings] Failed to save server config:', err);
+    showSettingsNotification('Failed to save server config.', 'error');
+    return false;
+  }
 }
 
 /**
@@ -621,6 +712,11 @@ async function handleSaveSettings() {
 
   // Save to localStorage
   const success = saveSettings(newSettings);
+
+  // Save server settings if that section is dirty
+  if (sectionDirtyState['server-settings']) {
+    await saveServerSettings();
+  }
 
   if (success) {
     // Update snapshot to reflect saved state
@@ -1107,6 +1203,32 @@ export function initializeSettingsModal() {
     saveSettings(settings);
 
     console.log(`Focus indicator style set to: ${style}`);
+  });
+
+  // --- Server settings handlers ---
+  const serverApiKeyInput = document.getElementById('server-api-key');
+  const serverApiKeyToggle = document.getElementById('server-api-key-toggle');
+  const serverApiKeyGenerate = document.getElementById('server-api-key-generate');
+  const serverCorsInput = document.getElementById('server-cors-origins');
+
+  // Show/hide API key
+  serverApiKeyToggle?.addEventListener('click', () => {
+    if (serverApiKeyInput.type === 'password') {
+      serverApiKeyInput.type = 'text';
+      serverApiKeyToggle.textContent = 'Hide';
+    } else {
+      serverApiKeyInput.type = 'password';
+      serverApiKeyToggle.textContent = 'Show';
+    }
+  });
+
+  // Generate random API key
+  serverApiKeyGenerate?.addEventListener('click', () => {
+    const key = crypto.randomUUID();
+    serverApiKeyInput.value = key;
+    serverApiKeyInput.type = 'text';
+    serverApiKeyToggle.textContent = 'Hide';
+    markSectionDirty('server-settings');
   });
 
   // Setup focus trap for modal

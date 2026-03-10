@@ -6,6 +6,7 @@
  */
 
 import { WebSocketServer } from 'ws';
+import { isAuthRequired, validateApiKey } from './serverConfig.mjs';
 
 /**
  * Message Protocol:
@@ -37,9 +38,25 @@ export function createWebSocketServer(server) {
 
   // Handle WebSocket upgrade requests only for /ws path
   server.on('upgrade', (request, socket, head) => {
-    const { pathname } = new URL(request.url, 'http://localhost');
+    const url = new URL(request.url, 'http://localhost');
 
-    if (pathname === '/ws') {
+    if (url.pathname === '/ws') {
+      // Auth check for WebSocket connections
+      if (isAuthRequired()) {
+        const addr = request.socket?.remoteAddress || '';
+        const fromLocalhost = addr === '127.0.0.1' || addr === '::1' || addr === '::ffff:127.0.0.1';
+
+        if (!fromLocalhost) {
+          const apiKey = url.searchParams.get('apiKey');
+          if (!validateApiKey(apiKey)) {
+            console.log(`[WebSocket] Rejected connection — invalid API key from ${addr}`);
+            socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+            socket.destroy();
+            return;
+          }
+        }
+      }
+
       wss.handleUpgrade(request, socket, head, (ws) => {
         wss.emit('connection', ws, request);
       });
