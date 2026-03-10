@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.18.4] - 2026-03-10
+
+### Changed
+- **Remote panel cards — labelled and full-area touch targets** — entire panel card is now the tap target (not just the icon); cards display panel title beneath the play/pause icon; size-3 cards show label alongside icon; sliders excluded from tap zone to remain draggable
+- **All skin remote.css updated** — `.panel-button` replaced with `.panel-icon` / `.panel-label` across default, glass, split-column, and tactical skins
+
 ## [0.18.3] - 2026-03-10
 
 ### Added

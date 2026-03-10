@@ -44,8 +44,8 @@ body {
     0 0 32px oklch(0.55 0.15 150 / 0.12);
 }
 
-/* Play button glow */
-.panel-control.playing .panel-button {
+/* Icon glow when playing */
+.panel-control.playing .panel-icon {
   box-shadow: 0 0 16px oklch(0.55 0.15 150 / 0.5);
 }
 

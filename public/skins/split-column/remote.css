@@ -75,18 +75,28 @@ body {
   box-shadow: none;
 }
 
-/* Play button — square, flat */
-.panel-button {
+/* Icon — square, flat */
+.panel-icon {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0 !important;
   box-shadow: none;
 }
 
-.panel-control.playing .panel-button {
+.panel-control.playing .panel-icon {
   background: #51cf66;
   border-color: #51cf66;
   color: #1d3f4f;
   box-shadow: none;
+}
+
+/* Label */
+.panel-label {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.panel-control.playing .panel-label {
+  color: #51cf66;
 }
 
 /* Master sliders */

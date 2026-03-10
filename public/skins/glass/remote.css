@@ -65,8 +65,8 @@ body {
               inset 0 0 0 1px rgba(0, 212, 255, 0.08);
 }
 
-/* Play button — glass circle */
-.panel-button {
+/* Icon circle — glass */
+.panel-icon {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -74,11 +74,15 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.panel-control.playing .panel-button {
+.panel-control.playing .panel-icon {
   background: linear-gradient(135deg, #00d4ff 0%, #0095ff 100%);
   border-color: #00d4ff;
   box-shadow: 0 0 24px rgba(0, 212, 255, 0.5),
               0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.panel-control.playing .panel-label {
+  color: #00d4ff;
 }
 
 /* Master sliders — glass panel */

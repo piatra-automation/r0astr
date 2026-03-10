@@ -234,6 +234,7 @@ body {
   height: var(--touch-min);
   -webkit-appearance: none;
   background: transparent;
+  touch-action: auto; /* Sliders must remain draggable */
 }
 
 .remote-slider-control input[type="range"]::-webkit-slider-track {
@@ -287,26 +288,39 @@ body {
    Panel Controls — touch-friendly
    ===================== */
 
-/* Size-1: Square button (1 grid unit) */
-.panel-control.size-1 {
-  grid-column: span 1;
-  aspect-ratio: 1;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* =====================
+   Panel Card — shared base
+   The entire card is the touch target.
+   ===================== */
+
+.panel-control {
   background: var(--surface-card-50);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
-  transition: border-color 150ms, box-shadow 150ms, background 150ms;
+  transition: border-color 150ms, box-shadow 150ms, background 150ms, transform 80ms;
   box-shadow: 0 2px 8px oklch(0 0 0 / 0.3);
+  cursor: pointer;
+  user-select: none;
+  touch-action: none; /* Critical: allows simultaneous multitouch */
+  -webkit-user-select: none;
+}
+
+/* Size-1: Square card (1 grid unit) */
+.panel-control.size-1 {
+  grid-column: span 1;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
 }
 
 .panel-control.size-1 .panel-sliders-remote {
   display: none;
 }
 
-/* Size-3: Wide layout (full row) — button + sliders */
+/* Size-3: Wide layout (full row) — button area + sliders */
 .panel-control.size-3 {
   grid-column: 1 / -1;
   padding: 10px 12px;
@@ -314,11 +328,6 @@ body {
   grid-template-columns: auto 1fr;
   gap: 12px;
   align-items: center;
-  background: var(--surface-card-50);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  transition: border-color 150ms, box-shadow 150ms, background 150ms;
-  box-shadow: 0 2px 8px oklch(0 0 0 / 0.3);
 }
 
 /* Playing state */
@@ -334,49 +343,73 @@ body {
   box-shadow: 0 0 8px oklch(0.75 0.15 85 / 0.2);
 }
 
-/* Panel button — circular, large touch target, multitouch-ready */
-.panel-button {
-  width: 64px;
-  height: 64px;
-  min-width: 64px;
+/* Press feedback — multitouch pointer handler */
+.panel-control.pressing {
+  transform: scale(0.93);
+  opacity: 0.9;
+}
+
+/* =====================
+   Button Area (icon + label inside card)
+   ===================== */
+
+.panel-button-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none; /* Card handles all touch */
+}
+
+.panel-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: 2px solid var(--border-emphasis);
   background: var(--surface-card-80);
   color: var(--text-primary);
-  font-size: 24px;
-  cursor: pointer;
-  transition: background-color 150ms, border-color 150ms, transform 80ms;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  user-select: none;
-  box-shadow: 0 2px 8px oklch(0 0 0 / 0.3);
-  touch-action: none; /* Critical: allows simultaneous multitouch */
+  font-size: 20px;
+  transition: background-color 150ms, border-color 150ms;
+  box-shadow: 0 2px 6px oklch(0 0 0 / 0.3);
 }
 
-.size-1 .panel-button {
-  width: 56px;
-  height: 56px;
-  min-width: 56px;
-  font-size: 22px;
-}
-
-/* Press feedback — used by multitouch pointer handler (replaces :active) */
-.panel-button.pressing {
-  transform: scale(0.88);
-  opacity: 0.85;
-}
-
-/* Fallback for mouse :active */
-.panel-button:active {
-  transform: scale(0.90);
-}
-
-.panel-control.playing .panel-button {
+.panel-control.playing .panel-icon {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: var(--text-primary);
-  box-shadow: 0 0 16px oklch(0.55 0.15 150 / 0.4);
+  box-shadow: 0 0 12px oklch(0.55 0.15 150 / 0.4);
+}
+
+.panel-label {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel-control.playing .panel-label {
+  color: var(--color-primary);
+}
+
+/* Size-3: icon + label sit side-by-side instead of stacked */
+.panel-control.size-3 .panel-button-area {
+  flex-direction: row;
+  gap: 8px;
+}
+
+.panel-control.size-3 .panel-label {
+  font-size: 12px;
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
 }
 
 /* =====================
@@ -425,6 +458,7 @@ body {
   min-width: 60px;
   -webkit-appearance: none;
   background: transparent;
+  touch-action: auto; /* Override card's touch-action: none for slider dragging */
 }
 
 .panel-slider-control input[type="range"]::-webkit-slider-track {
@@ -586,11 +620,14 @@ body {
     gap: 8px;
   }
 
-  .size-1 .panel-button {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    font-size: 20px;
+  .panel-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .panel-label {
+    font-size: 9px;
   }
 
   .global-controls {
@@ -621,18 +658,14 @@ body {
     gap: 12px;
   }
 
-  .panel-button {
-    width: 72px;
-    height: 72px;
-    min-width: 72px;
-    font-size: 28px;
+  .panel-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
   }
 
-  .size-1 .panel-button {
-    width: 64px;
-    height: 64px;
-    min-width: 64px;
-    font-size: 24px;
+  .panel-label {
+    font-size: 11px;
   }
 
   .container {
@@ -656,11 +689,14 @@ body {
     padding: 20px;
   }
 
-  .panel-button {
-    width: 80px;
-    height: 80px;
-    min-width: 80px;
-    font-size: 32px;
+  .panel-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 28px;
+  }
+
+  .panel-label {
+    font-size: 12px;
   }
 }
 

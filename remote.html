@@ -131,9 +131,15 @@
 
       const playIcon = playing ? '⏸' : '▶';
 
-      // Grid layout: button on left, sliders on right (for size-3)
+      // The entire card is the touch target (data-panel on the card itself)
+      div.dataset.panel = id;
+
+      // Layout: icon + label (size-1), or icon + label + sliders (size-3)
       div.innerHTML = `
-          <button class="panel-button" data-panel="${escapeHtml(id)}" title="${escapeHtml(title)}">${playIcon}</button>
+          <div class="panel-button-area">
+            <span class="panel-icon">${playIcon}</span>
+            <h3 class="panel-label">${escapeHtml(title)}</h3>
+          </div>
           <div class="panel-sliders-remote" id="panel-sliders-${escapeHtml(id)}"></div>
         `;
 
@@ -547,17 +553,14 @@
         return;
       }
 
-      const buttonEl = panelEl.querySelector('.panel-button');
-      const statusEl = panelEl.querySelector('.status');
+      const iconEl = panelEl.querySelector('.panel-icon');
 
       if (playing) {
         panelEl.classList.add('playing');
-        if (buttonEl) buttonEl.textContent = '⏸';
-        if (statusEl) statusEl.textContent = 'Playing';
+        if (iconEl) iconEl.textContent = '⏸';
       } else {
         panelEl.classList.remove('playing');
-        if (buttonEl) buttonEl.textContent = '▶';
-        if (statusEl) statusEl.textContent = 'Stopped';
+        if (iconEl) iconEl.textContent = '▶';
 
         // Clear sliders when panel stops and downgrade to square
         const slidersContainer = document.getElementById(`panel-sliders-${panelId}`);
@@ -789,6 +792,9 @@
         // Only respond to touch and mouse primary button
         if (e.pointerType === 'mouse' && e.button !== 0) return;
 
+        // Don't intercept slider interactions
+        if (e.target.closest('input[type="range"]')) return;
+
         const target = delegate ? e.target.closest(delegate) : element;
         if (!target) return;
 
@@ -825,15 +831,17 @@
       element.addEventListener('contextmenu', (e) => e.preventDefault());
     }
 
-    // Panel buttons — delegated multitouch on grid container
+    // Panel cards — entire card is the touch target, delegated multitouch
     bindMultitouchButton(
       document.getElementById('panels-grid'),
-      (button) => {
-        const panelId = button.dataset.panel;
-        sendCommand('panel.toggle', panelId);
-        console.log(`[Remote] Toggled panel: ${panelId}`);
+      (card) => {
+        const panelId = card.dataset.panel;
+        if (panelId) {
+          sendCommand('panel.toggle', panelId);
+          console.log(`[Remote] Toggled panel: ${panelId}`);
+        }
       },
-      { delegate: '.panel-button' }
+      { delegate: '.panel-control' }
     );
 
     // Global control buttons
