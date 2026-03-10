@@ -161,10 +161,57 @@ If the connection drops:
 
 ---
 
-## Security
+## Security & Authentication
 
-!!! warning "Local Network Only"
-    The remote control is designed for local network use only. No authentication is enforced — anyone on your network can connect. Use on trusted networks only.
+By default, `r0astr` allows connections from any device on the network without credentials. You can optionally require an API key for remote connections.
+
+### Setting Up an API Key
+
+Edit `server.config.json` in your project root (copy from `server.config.example.json` if it doesn't exist):
+
+```json
+{
+  "cors": {
+    "allowedOrigins": ["*"]
+  },
+  "auth": {
+    "apiKey": "my-secret-key-here"
+  }
+}
+```
+
+Restart `r0astr` after changing the config. Once an API key is set:
+
+- **Localhost** connections (the machine running `r0astr`) are always allowed without a key
+- **Remote** devices must provide the key to connect
+
+The remote interface will prompt for the API key when it detects that authentication is required.
+
+### Restricting Allowed Origins (CORS)
+
+To limit which origins can access the REST API, replace `"*"` with specific origins:
+
+```json
+{
+  "cors": {
+    "allowedOrigins": [
+      "http://192.168.1.100:5173",
+      "http://192.168.1.50:5173"
+    ]
+  }
+}
+```
+
+!!! note
+    CORS only affects browser-based REST API access. WebSocket connections are controlled by API key authentication, not CORS.
+
+### Security Recommendations
+
+| Scenario | Recommendation |
+|----------|----------------|
+| Home studio, private WiFi | No API key needed — default config is fine |
+| Shared network or venue WiFi | Set an API key to prevent others from controlling your session |
+| Public internet | Not recommended — `r0astr` is designed for local networks |
 
 ---
 

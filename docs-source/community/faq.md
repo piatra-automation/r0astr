@@ -73,6 +73,25 @@ See [Remote Control](../remote-control.md) for detailed instructions.
 - Check that `r0astr` is running on your computer
 - Try refreshing the remote page
 - Check your firewall settings
+- If authentication is enabled, make sure you enter the correct API key when prompted
+
+### How do I secure my remote connection?
+
+Set an API key in `server.config.json`:
+
+```json
+{
+  "auth": {
+    "apiKey": "your-secret-key"
+  }
+}
+```
+
+Remote devices will need to provide this key to connect. Localhost connections are always allowed without a key. See [Remote Control — Security](../remote-control.md#security-authentication) for details.
+
+### Can I restrict which devices connect?
+
+Yes. Edit `server.config.json` to set specific CORS origins and/or require an API key. See the [API Reference — Authentication & CORS](developers/api.md#authentication-cors) for full configuration options.
 
 ---
 

@@ -68,6 +68,23 @@ s("bd sd").gain(0.5)
 - Try refreshing the remote page
 - Check that WebSocket port is not blocked
 
+### Remote Shows "Unauthorized" or Won't Connect
+
+If an API key is configured in `server.config.json`:
+
+1. **Check the key** - The remote interface should prompt for the key. Make sure you enter it exactly as set in the config file
+2. **Localhost is exempt** - If you're connecting from the same machine, auth is bypassed automatically
+3. **Check `server.config.json`** - Verify the `auth.apiKey` field contains the correct key
+4. **Restart after config changes** - `r0astr` reads the config on startup
+
+### CORS Errors in Browser Console
+
+If you see `Access-Control-Allow-Origin` errors when using the REST API:
+
+1. **Check `server.config.json`** - Make sure `cors.allowedOrigins` includes the origin you're calling from, or is set to `["*"]`
+2. **Include the full origin** - Origins must match exactly, including port (e.g., `http://192.168.1.50:5173`)
+3. **Restart after changes** - Config is read on server startup
+
 ---
 
 ## Installation Issues

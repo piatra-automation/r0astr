@@ -22,16 +22,115 @@
 
 </div>
 
-!!! warning "Local Network Only"
-    No authentication is enforced on either protocol. Both are designed for trusted local networks only. Do not expose to the public internet.
+---
+
+## Authentication & CORS
+
+`r0astr` supports optional API key authentication and configurable CORS origins via `server.config.json`.
+
+### Server Configuration File
+
+Create or edit `server.config.json` in the project root:
+
+```json
+{
+  "cors": {
+    "allowedOrigins": ["*"]
+  },
+  "auth": {
+    "apiKey": ""
+  }
+}
+```
+
+Copy `server.config.example.json` as a starting point.
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `cors.allowedOrigins` | `["*"]` | Array of allowed origins. Use `["*"]` to allow all, or list specific origins like `["http://192.168.1.50:5173"]` |
+| `auth.apiKey` | `""` | API key string. When empty, no authentication is required |
+
+!!! tip "When to set an API key"
+    If you're running `r0astr` on an untrusted or shared network, set an API key to prevent unauthorized access. On a private home network, leaving it empty is fine.
+
+### API Key Authentication
+
+When an API key is configured:
+
+- **Localhost requests** are always allowed without a key
+- **Remote REST requests** must include the `X-API-Key` header
+- **Remote WebSocket connections** must include the key as a query parameter
+
+=== "REST API"
+
+    ```bash
+    curl -H "X-API-Key: your-secret-key" \
+      http://192.168.1.100:5173/api/panels
+    ```
+
+=== "WebSocket"
+
+    ```javascript
+    const ws = new WebSocket("ws://192.168.1.100:5173/ws?apiKey=your-secret-key");
+    ```
+
+**Public endpoint** — `/api/server-config/auth-required` requires no authentication and returns whether a key is needed:
+
+```json
+{ "authRequired": true }
+```
+
+Clients can call this first to decide whether to prompt for a key.
+
+### CORS
+
+CORS headers apply to `/api/*` and `/health` endpoints. When `allowedOrigins` is set to `["*"]`, all origins are accepted. To restrict access:
+
+```json
+{
+  "cors": {
+    "allowedOrigins": [
+      "http://192.168.1.100:5173",
+      "http://192.168.1.50:5173"
+    ]
+  }
+}
+```
+
+Requests from unlisted origins will not receive CORS headers and will be blocked by the browser.
+
+### Server Config API (localhost only)
+
+These endpoints are only accessible from localhost and are used by the settings UI.
+
+#### GET /api/server-config { #get-server-config data-toc-label="Get Server Config" }
+
+Returns the current server configuration. The API key is masked.
+
+```json
+{
+  "cors": { "allowedOrigins": ["*"] },
+  "auth": { "apiKey": "****ab12", "hasKey": true }
+}
+```
+
+#### POST /api/server-config { #set-server-config data-toc-label="Set Server Config" }
+
+Update server configuration. Use `"__KEEP__"` as the `apiKey` value to preserve the existing key without resending it.
+
+```bash
+curl -X POST http://localhost:5173/api/server-config \
+  -H "Content-Type: application/json" \
+  -d '{"cors": {"allowedOrigins": ["*"]}, "auth": {"apiKey": "__KEEP__"}}'
+```
 
 ---
 
 ## REST API
 
-All endpoints return JSON. CORS is open (`*`) for local development.
+All endpoints return JSON.
 
-**Headers:** `Content-Type: application/json`
+**Headers:** `Content-Type: application/json` — plus `X-API-Key: <key>` if authentication is enabled (see above)
 
 ---
 
@@ -251,6 +350,14 @@ All messages are JSON objects with a `type` field. The server runs alongside Vit
 ws://[host]:5173/ws
 ```
 
+If authentication is enabled, include the API key as a query parameter:
+
+```
+ws://[host]:5173/ws?apiKey=your-secret-key
+```
+
+Connections from localhost do not require a key. Connections from remote addresses without a valid key receive a `401 Unauthorized` and are dropped.
+
 On connect, the server sends:
 
 ```json
@@ -385,19 +492,28 @@ Broadcast from the main interface to remote clients.
 ### curl — list panels, start one
 
 ```bash
-# List all panels
+# List all panels (no auth)
 curl http://localhost:5173/api/panels | jq
 
+# List all panels (with auth, from remote device)
+curl -H "X-API-Key: your-secret-key" \
+  http://192.168.1.100:5173/api/panels | jq
+
 # Start panel 1
-curl -X POST http://localhost:5173/api/panels/panel-1/playback \
+curl -X POST http://192.168.1.100:5173/api/panels/panel-1/playback \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: your-secret-key" \
   -d '{"state": "play"}'
+
+# Check if auth is required (always public)
+curl http://192.168.1.100:5173/api/server-config/auth-required
 ```
 
 ### JavaScript — WebSocket remote
 
 ```javascript
-const ws = new WebSocket("ws://localhost:5173/ws");
+// Include apiKey param if auth is enabled
+const ws = new WebSocket("ws://192.168.1.100:5173/ws?apiKey=your-secret-key");
 
 ws.onopen = () => {
   ws.send(JSON.stringify({
