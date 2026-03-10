@@ -34,7 +34,7 @@ export const MESSAGE_TYPES = {
   PANEL_DELETED: 'panel_deleted',
   PANEL_RENAMED: 'panel_renamed',
   PANEL_STATE_CHANGED: 'panel_state_changed',
-  PANEL_SLIDERS: 'panel_sliders',
+  PANEL_SLIDERS: 'panel.sliders',
   MASTER_SLIDERS: 'master.sliders',
   STATE_SYNC: 'full_state',
   STATE_UPDATE: 'state.update',
@@ -313,7 +313,7 @@ function setupOutgoingListeners() {
 
   // Slider events
   listen('slider:changed', (data) => {
-    send(MESSAGE_TYPES.PANEL_SLIDERS, {
+    send('panel.sliderValue', {
       panelId: data.panelId,
       sliderId: data.sliderId,
       value: data.value
