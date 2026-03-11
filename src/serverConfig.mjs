@@ -6,11 +6,11 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const CONFIG_PATH = resolve(__dirname, '..', 'server.config.json');
+// Use process.cwd() — import.meta.url breaks when Vite esbuild-bundles this module
+// into a temp file, causing __dirname to resolve to /tmp instead of the project root.
+const CONFIG_PATH = resolve(process.cwd(), 'server.config.json');
 
 const DEFAULT_CONFIG = {
   cors: {
