@@ -278,6 +278,10 @@ function setupKeyboardNavigation() {
     panelTree.addEventListener('keydown', (e) => {
       if (!['ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
 
+      // Don't intercept arrow keys when a CodeMirror editor has focus —
+      // they're needed for cursor movement while coding
+      if (document.activeElement.closest('.cm-editor')) return;
+
       const panels = Array.from(panelTree.querySelectorAll('.level-panel'));
       const currentPanel = document.activeElement.closest('.level-panel');
       const currentIndex = panels.indexOf(currentPanel);

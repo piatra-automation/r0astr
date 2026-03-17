@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.19.2] - 2026-03-17
+
+### Fixed
+- **Arrow keys now work in code editors** — accessibility panel-tree keyboard navigation was intercepting arrow keys bubbling from CodeMirror editors, preventing cursor movement while coding
+- **Server config not loading/saving** — `serverConfig.mjs` used `import.meta.url` for path resolution which breaks when Vite esbuild-bundles the module into a temp file; switched to `process.cwd()`
+
+### Changed
+- **Docs updated for auth & CORS** — API reference, remote control, troubleshooting, and FAQ now document API key authentication, CORS configuration, and `server.config.json` setup
+
 ## [0.19.1] - 2026-03-10
 
 ### Changed
