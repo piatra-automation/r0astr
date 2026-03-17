@@ -81,7 +81,19 @@ function createWebSocketAndHttpServer() {
 
   // Health check endpoint
   expressApp.get('/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    const os = require('os');
+    const interfaces = os.networkInterfaces();
+    let lanIP = null;
+    for (const iface of Object.values(interfaces)) {
+      for (const info of iface) {
+        if (info.family === 'IPv4' && !info.internal) {
+          lanIP = info.address;
+          break;
+        }
+      }
+      if (lanIP) break;
+    }
+    res.json({ status: 'ok', lanIP, port: PORT, timestamp: new Date().toISOString() });
   });
 
   httpServer = createServer(expressApp);
