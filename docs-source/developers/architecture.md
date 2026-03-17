@@ -43,6 +43,8 @@ Key integration points:
 - Runs on the Vite dev server (dev) or Electron main process (production)
 - Handles remote control connections
 - Broadcasts state changes to all clients
+- Optional API key authentication for remote connections (localhost always exempt)
+- Configurable CORS origins via `server.config.json`
 
 ## Key Files
 
@@ -60,7 +62,10 @@ Key integration points:
 | `src/panels/panelUI.js` | Button state and visual indicators |
 | `src/utils/eventBus.js` | Pub/sub event system |
 | `src/websocket-server.mjs` | WebSocket server (Node.js side) |
+| `src/serverConfig.mjs` | Server-side config (CORS, API key auth) |
+| `server.config.json` | Persisted server settings (not in git) |
 | `vite.config.mjs` | Build config + REST API + WebSocket setup |
+| `electron/main.cjs` | Electron main process, HTTP/WS server |
 
 ## Data Flow
 

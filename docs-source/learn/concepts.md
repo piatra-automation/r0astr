@@ -27,7 +27,7 @@ graph TB
 
 
 
-## Cards
+## Panels
 
 Each **panel** is an independent instrument in `r0astr`.
 

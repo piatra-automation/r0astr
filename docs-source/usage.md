@@ -6,17 +6,17 @@ Learn how to use `r0astr` effectively for live coding and music composition.
 
 The `r0astr` interface consists of:
 
-- **4 Instrument Cards** - Each card is an independent instrument
-- **Master Panel** - Global controls (if configured)
-- **Code Editors** - Write your pattern code in each card
+- **Instrument Panels** - Each panel is an independent instrument (create as many as you need)
+- **Master Panel** - Global controls (TEMPO, shared sliders)
+- **Code Editors** - Write your pattern code in each panel's CodeMirror editor
 - **Play/Pause Buttons** - Control each instrument individually
 
 ## Basic Controls
 
 ### Starting a Pattern
 
-1. Write or edit pattern code in a card's textarea
-2. Click the **Play** button for that card
+1. Write or edit pattern code in a panel's editor
+2. Click the **Play** button for that panel
 3. The pattern starts playing immediately
 
 ### Updating a Pattern

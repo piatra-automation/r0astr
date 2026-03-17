@@ -29,7 +29,7 @@ Build integrations and extensions for `r0astr`.
 ### Plugin Structure
 
 ```
-my-`r0astr`-plugin/
+my-r0astr-plugin/
 ├── package.json        # Dependencies and metadata
 ├── src/
 │   └── index.js        # Entry point
@@ -41,9 +41,9 @@ my-`r0astr`-plugin/
 
 ```json
 {
-  "name": "my-`r0astr`-plugin",
+  "name": "my-r0astr-plugin",
   "version": "1.0.0",
-  "description": "My `r0astr` plugin",
+  "description": "My r0astr plugin",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js"
@@ -64,7 +64,8 @@ A complete working plugin:
 // src/index.js
 const WebSocket = require('ws');
 
-const R0ASTR_URL = process.env.R0ASTR_URL || 'ws://localhost:5173/ws';
+const R0ASTR_HOST = process.env.R0ASTR_HOST || 'localhost:5173';
+const API_KEY = process.env.R0ASTR_API_KEY || '';
 
 class R0astrPlugin {
   constructor() {
@@ -73,11 +74,16 @@ class R0astrPlugin {
   }
 
   connect() {
-    console.log(`Connecting to `r0astr` at ${R0ASTR_URL}...`);
-    this.ws = new WebSocket(R0ASTR_URL);
+    // Include API key as query param if authentication is enabled
+    const url = API_KEY
+      ? `ws://${R0ASTR_HOST}/ws?apiKey=${API_KEY}`
+      : `ws://${R0ASTR_HOST}/ws`;
+
+    console.log(`Connecting to r0astr at ${R0ASTR_HOST}...`);
+    this.ws = new WebSocket(url);
 
     this.ws.on('open', () => {
-      console.log('Connected to `r0astr`!');
+      console.log('Connected to r0astr!');
       this.connected = true;
       this.onConnected();
     });
@@ -88,7 +94,7 @@ class R0astrPlugin {
     });
 
     this.ws.on('close', () => {
-      console.log('Disconnected from `r0astr`');
+      console.log('Disconnected from r0astr');
       this.connected = false;
       // Attempt reconnect after 5 seconds
       setTimeout(() => this.connect(), 5000);
@@ -100,19 +106,26 @@ class R0astrPlugin {
   }
 
   onConnected() {
-    // Request current state on connect
-    this.send({ type: 'state:get' });
+    // Register as a remote client to receive state broadcasts
+    this.send({ type: 'client.register', clientType: 'remote' });
   }
 
   onMessage(message) {
     console.log('Received:', message.type);
 
     switch (message.type) {
-      case 'state:current':
-        console.log('Current state:', message.payload);
+      case 'server.hello':
+        console.log('Server assigned client ID:', message.clientId);
         break;
-      case 'event:panel-state':
-        console.log('Panel changed:', message.payload);
+      case 'full_state':
+        console.log('Panels:', message.panels.length);
+        console.log('Master sliders:', message.masterSliders);
+        break;
+      case 'playback_changed':
+        console.log(`Panel ${message.panelId} playing: ${message.playing}`);
+        break;
+      case 'panel_updated':
+        console.log(`Panel ${message.panelId} code updated`);
         break;
     }
   }
@@ -124,29 +137,28 @@ class R0astrPlugin {
   }
 
   // Panel control methods
-  startPanel(panelId) {
-    this.send({
-      type: 'panel:start',
-      payload: { panelId }
-    });
+  playPanel(panelIndex) {
+    this.send({ type: 'panel.play', panel: panelIndex });
   }
 
-  stopPanel(panelId) {
-    this.send({
-      type: 'panel:stop',
-      payload: { panelId }
-    });
+  pausePanel(panelIndex) {
+    this.send({ type: 'panel.pause', panel: panelIndex });
   }
 
-  updatePattern(panelId, pattern) {
-    this.send({
-      type: 'panel:update',
-      payload: { panelId, pattern }
-    });
+  togglePanel(panelIndex) {
+    this.send({ type: 'panel.toggle', panel: panelIndex });
+  }
+
+  updateCode(panelId, code) {
+    this.send({ type: 'panel.updateCode', panelId, code });
   }
 
   stopAll() {
-    this.send({ type: 'playback:stop-all' });
+    this.send({ type: 'global.stopAll' });
+  }
+
+  setMasterSlider(sliderId, value) {
+    this.send({ type: 'master.sliderChange', sliderId, value });
   }
 }
 
@@ -154,10 +166,10 @@ class R0astrPlugin {
 const plugin = new R0astrPlugin();
 plugin.connect();
 
-// Example: Start panel 1 after 3 seconds
+// Example: Toggle panel 1 after 3 seconds
 setTimeout(() => {
-  console.log('Starting panel 1...');
-  plugin.startPanel('panel-1');
+  console.log('Toggling panel 1...');
+  plugin.togglePanel(1);
 }, 3000);
 ```
 
@@ -166,54 +178,107 @@ setTimeout(() => {
 ```bash
 npm install
 npm start
+
+# With authentication:
+R0ASTR_HOST=192.168.1.100:5173 R0ASTR_API_KEY=my-secret npm start
 ```
+
+---
+
+## Authentication
+
+If `r0astr` has an API key configured in `server.config.json`, your plugin must include it when connecting:
+
+```javascript
+// API key is passed as a query parameter on the WebSocket URL
+const ws = new WebSocket('ws://192.168.1.100:5173/ws?apiKey=your-key');
+```
+
+Connections from localhost are always allowed without a key. To check if authentication is required, query the public REST endpoint:
+
+```bash
+curl http://192.168.1.100:5173/api/server-config/auth-required
+# Returns: { "authRequired": true }
+```
+
+See [API Reference — Authentication & CORS](api.md#authentication-cors) for details.
 
 ---
 
 ## Lifecycle Events
 
-The `r0astr` server broadcasts events your plugin can listen to:
+The `r0astr` server broadcasts events your plugin can listen to. Register as a `remote` client to receive them.
 
-### Panel State Changed
+### Full State (on connect)
 
-Fired when any panel starts or stops:
+Sent automatically when a remote client connects:
 
-```javascript
+```json
 {
-  "type": "event:panel-state",
-  "payload": {
-    "panelId": "panel-1",
-    "playing": true
-  }
+  "type": "full_state",
+  "panels": [
+    { "id": "panel-123", "title": "Drums", "code": "s(\"bd*4\")", "playing": true }
+  ],
+  "masterCode": "let TEMPO = slider(30, 15, 45);",
+  "masterSliders": [{ "id": 0, "label": "TEMPO", "min": 15, "max": 45, "default": 30 }]
 }
 ```
 
-### Pattern Updated
+### Playback Changed
 
-Fired when a panel's pattern changes:
+Fired when any panel starts or stops:
 
-```javascript
+```json
 {
-  "type": "event:pattern-update",
-  "payload": {
-    "panelId": "panel-1",
-    "pattern": "s(\"bd*4\")"
-  }
+  "type": "playback_changed",
+  "panelId": "panel-123",
+  "playing": true
 }
+```
+
+### Panel Updated
+
+Fired when a panel's code changes:
+
+```json
+{
+  "type": "panel_updated",
+  "panelId": "panel-123",
+  "code": "s(\"bd*4, hh*8\")",
+  "autoPlay": true
+}
+```
+
+### Panel Lifecycle
+
+```json
+{ "type": "panel_created", "panelId": "panel-456", "title": "Bass" }
+{ "type": "panel_deleted", "panelId": "panel-456" }
+{ "type": "panel_renamed", "panelId": "panel-123", "title": "New Name" }
+```
+
+### Slider Updates
+
+```json
+{ "type": "master.sliderValue", "sliderId": 0, "value": 25 }
+{ "type": "panel.sliderValue", "panelId": "panel-123", "sliderId": 0, "value": 800 }
 ```
 
 ### Subscribing to Events
 
-Events are automatically broadcast to all connected clients. Simply handle them in your `onMessage` handler:
+Events are automatically broadcast to all registered remote clients. Handle them in your `onMessage` handler:
 
 ```javascript
 onMessage(message) {
   switch (message.type) {
-    case 'event:panel-state':
-      this.handlePanelState(message.payload);
+    case 'playback_changed':
+      this.handlePlaybackChange(message);
       break;
-    case 'event:pattern-update':
-      this.handlePatternUpdate(message.payload);
+    case 'panel_updated':
+      this.handlePatternUpdate(message);
+      break;
+    case 'master.sliderValue':
+      this.handleSliderChange(message);
       break;
   }
 }
@@ -227,22 +292,30 @@ onMessage(message) {
 
 | Command | Payload | Description |
 |---------|---------|-------------|
-| `panel:start` | `{ panelId }` | Start a panel |
-| `panel:stop` | `{ panelId }` | Stop a panel |
-| `panel:update` | `{ panelId, pattern }` | Update pattern |
-| `playback:stop-all` | - | Stop all panels |
-| `playback:tempo` | `{ bpm }` | Set tempo |
-| `state:get` | - | Request current state |
+| `client.register` | `{ clientType: "remote" }` | Register to receive state broadcasts |
+| `panel.play` | `{ panel: 1 }` | Start a panel (by index) |
+| `panel.pause` | `{ panel: 1 }` | Pause a panel |
+| `panel.toggle` | `{ panel: 1 }` | Toggle play/pause |
+| `panel.updateCode` | `{ panelId, code }` | Update pattern code |
+| `global.stopAll` | — | Stop all panels |
+| `global.updateAll` | — | Re-evaluate all panels |
+| `master.sliderChange` | `{ sliderId, value }` | Change a master slider |
+| `panel.sliderChange` | `{ panelId, sliderId, value }` | Change a panel slider |
 
-### Response Types
+### Broadcast Events
 
 | Type | Payload | When |
 |------|---------|------|
-| `state:current` | Full state object | After `state:get` |
-| `event:panel-state` | Panel status | When panel starts/stops |
-| `error` | Error details | On invalid command |
+| `server.hello` | `{ clientId, timestamp }` | On connection |
+| `full_state` | `{ panels, masterCode, masterSliders }` | After remote registration |
+| `playback_changed` | `{ panelId, playing }` | Panel starts/stops |
+| `panel_updated` | `{ panelId, code }` | Code changed |
+| `panel_created` | `{ panelId, title }` | New panel added |
+| `panel_deleted` | `{ panelId }` | Panel removed |
+| `master.sliderValue` | `{ sliderId, value }` | Master slider moved |
+| `panel.sliderValue` | `{ panelId, sliderId, value }` | Panel slider moved |
 
-See [API Reference](api.md) for complete documentation.
+See [API Reference](api.md) for complete documentation including REST endpoints.
 
 ---
 
@@ -267,17 +340,17 @@ See [API Reference](api.md) for complete documentation.
 ### Debugging Tips
 
 - Log all incoming messages during development
-- Use `state:get` to verify initial state
+- Register as `remote` to get `full_state` on connect
 - Check the browser console for errors
 - Use environment variables for connection URL:
   ```bash
-  R0ASTR_URL=ws://192.168.1.100:5173/ws npm start
+  R0ASTR_HOST=192.168.1.100:5173 R0ASTR_API_KEY=my-key npm start
   ```
 
 ### Testing Checklist
 
-- [ ] Plugin connects successfully
-- [ ] Panel commands work (start, stop, update)
+- [ ] Plugin connects successfully (with and without auth)
+- [ ] Panel commands work (play, pause, toggle, updateCode)
 - [ ] Events are received correctly
 - [ ] Reconnection works after disconnect
 - [ ] Errors are handled gracefully
@@ -288,7 +361,7 @@ See [API Reference](api.md) for complete documentation.
 
 ### MIDI Controller
 
-Map MIDI CC to sliders, notes to panel triggers:
+Map MIDI CC to master sliders, notes to panel triggers:
 
 ```javascript
 const midi = require('midi');
@@ -299,14 +372,15 @@ midiInput.on('message', (deltaTime, message) => {
   const [status, cc, value] = message;
 
   if (status === 0xB0) { // CC message
-    // Map CC to slider value
-    const sliderValue = value / 127;
-    // Update pattern with new value
+    // Map CC 1-4 to master slider IDs 0-3
+    const sliderId = cc - 1;
+    const normalized = value / 127;
+    plugin.setMasterSlider(sliderId, normalized);
   }
 
   if (status === 0x90) { // Note on
-    const panelId = `panel-${(cc % 4) + 1}`;
-    plugin.startPanel(panelId);
+    const panelIndex = (cc % 8) + 1;
+    plugin.togglePanel(panelIndex);
   }
 });
 ```
@@ -323,8 +397,11 @@ const oscPort = new osc.UDPPort({
 });
 
 oscPort.on('message', (oscMessage) => {
-  if (oscMessage.address === '/r0astr/panel/1/start') {
-    plugin.startPanel('panel-1');
+  if (oscMessage.address === '/r0astr/panel/1/toggle') {
+    plugin.togglePanel(1);
+  }
+  if (oscMessage.address === '/r0astr/stop') {
+    plugin.stopAll();
   }
 });
 ```
@@ -343,20 +420,22 @@ const patterns = [
 let index = 0;
 
 setInterval(() => {
-  plugin.updatePattern('panel-1', patterns[index]);
+  plugin.updateCode('panel-1', patterns[index]);
   index = (index + 1) % patterns.length;
 }, 4000); // Change every 4 seconds
 ```
 
 ### Visualizer
 
-React to pattern changes for visuals:
+React to playback changes for visuals:
 
 ```javascript
 onMessage(message) {
-  if (message.type === 'event:panel-state') {
-    // Update visuals based on which panels are playing
-    updateVisualization(message.payload);
+  if (message.type === 'playback_changed') {
+    updateVisualization(message.panelId, message.playing);
+  }
+  if (message.type === 'master.sliderValue') {
+    updateSliderDisplay(message.sliderId, message.value);
   }
 }
 ```
@@ -383,7 +462,7 @@ npm publish
 Include in your README:
 
 - Installation instructions
-- Configuration options
+- Configuration options (including auth setup)
 - Usage examples
 - `r0astr` version compatibility
 
@@ -420,7 +499,8 @@ ws.on('close', () => {
 Use environment variables for flexibility:
 
 ```javascript
-const R0ASTR_URL = process.env.R0ASTR_URL || 'ws://localhost:5173/ws';
+const R0ASTR_HOST = process.env.R0ASTR_HOST || 'localhost:5173';
+const API_KEY = process.env.R0ASTR_API_KEY || '';
 ```
 
 ### Logging
@@ -428,8 +508,8 @@ const R0ASTR_URL = process.env.R0ASTR_URL || 'ws://localhost:5173/ws';
 Provide clear console output:
 
 ```javascript
-console.log('[`r0astr`-plugin] Connected');
-console.log('[`r0astr`-plugin] Panel 1 started');
+console.log('[r0astr-plugin] Connected');
+console.log('[r0astr-plugin] Panel 1 toggled');
 ```
 
 ---
