@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.19.3] - 2026-03-30
+
+### Fixed
+- **Health endpoint returns LAN IP** — Electron health check was returning `localhost` instead of the machine's LAN IP, breaking remote device discovery via the banner
+- **Docs synced with codebase** — plugin protocol documentation, changelog, and terminology updated to match current implementation
+
 ## [0.19.2] - 2026-03-17
 
 ### Fixed
