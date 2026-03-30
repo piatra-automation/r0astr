@@ -43,22 +43,7 @@
 
     ### First Launch
 
-    !!! warning "Security Warning"
-        macOS may show a warning because `r0astr` is not notarized by Apple.
-
-    **If you see "`r0astr` is damaged" or "unidentified developer":**
-
-    1. **Right-click** (or Control-click) the app
-    2. Select **Open** from the menu
-    3. Click **Open** in the dialog
-
-    **Or use Terminal:**
-
-    ```bash
-    xattr -cr /Applications/r0astr.app
-    ```
-
-    Then open the app normally.
+    r0astr is signed and notarized by Apple. Double-click the app to open it — no warnings or workarounds needed.
 
 === "Windows"
 
