@@ -78,23 +78,22 @@ features = [
 text = "Inter"
 code = "JetBrains Mono"
 
-# Light mode
+# Dark mode (default — music tools belong in the dark)
 [[project.theme.palette]]
-media = "(prefers-color-scheme: light)"
-scheme = "default"
-primary = "indigo"
-accent = "indigo"
-toggle.icon = "lucide/sun"
-toggle.name = "Switch to dark mode"
-
-# Dark mode
-[[project.theme.palette]]
-media = "(prefers-color-scheme: dark)"
+media = "(prefers-color-scheme)"
 scheme = "slate"
 primary = "indigo"
 accent = "indigo"
 toggle.icon = "lucide/moon-star"
 toggle.name = "Switch to light mode"
+
+# Light mode (opt-in via toggle)
+[[project.theme.palette]]
+scheme = "default"
+primary = "indigo"
+accent = "indigo"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
 
 # ---------------------------------------------------------------------------
 # Social
